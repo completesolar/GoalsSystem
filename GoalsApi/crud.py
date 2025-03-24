@@ -1,10 +1,11 @@
 from sqlalchemy.orm import Session
 # from schemas.schema import Goals
-from models.models import Goals
+from models.models import Goals, Who , Proj, Vp, Status
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from schemas.schema import GoalsResponse,GoalsUpdate  # Pydantic schema
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy.sql import text
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -19,11 +20,23 @@ def get_goals_by_id(db: Session, goalid: int):
     return db.query(Goals).filter(Goals.goalid == goalid).first()
 
 def get_all_goals(db: Session,response_model =list[GoalsResponse]):
-    db_goals = db.query(Goals).all()
-
+    db_goals = db.query(Goals).order_by(Goals.goalid.desc()).all()
     # Convert each SQLAlchemy model to a Pydantic model before returning
     return jsonable_encoder(db_goals)
 
+def create_who(db: Session, who: str):
+    db_who = Who(who=who)
+    db.add(db_who)
+    db.commit()
+    db.refresh(db_who)
+    return db_who
+
+def create_proj(db: Session, proj: str):
+    db_proj = Proj(proj=proj)
+    db.add(db_proj)
+    db.commit()
+    db.refresh(db_proj)
+    return db_proj
 def update_goal(db: Session, goal_id: int, goal_update: GoalsUpdate):
     # Step 1: Retrieve the goal from the database
     db_goal = db.query(Goals).filter(Goals.goalid == goal_id).first()

@@ -27,7 +27,6 @@ class GoalsCreate(Goals):
      gdb: str
      fiscalyear: int
      updateBy: str
-
 class GoalsUpdate(Goals):
      who: Optional[str] = None
      p: Optional[int] = None
@@ -39,7 +38,6 @@ class GoalsUpdate(Goals):
      s: Optional[str] = None
      gdb: Optional[str] = None
      updateBy: Optional[str] = None
-
 class GoalsResponse(Goals):
      goalid: int
      class Config:
