@@ -92,10 +92,7 @@ export class AppComponent implements OnInit {
       sortable: true
     },
     {
-      field: "p", width: 50, editable: true, cellEditor: 'agSelectCellEditor',
-      cellEditorParams: {
-        values: PriorityConstant // Dropdown options
-      }
+      field: "p", width: 50, editable: true
     },
     {
       headerName: "PROJ", field: "proj", editable: true, cellEditor: 'agSelectCellEditor', width: 110,
@@ -163,10 +160,22 @@ export class AppComponent implements OnInit {
     }
   }
   onCellValueChanged(event: any) {
-    console.log(event.data);
-    this.goalsService.updateGoal(event.data).subscribe((data: any) => {
-      console.log(data)
-    });
+    if (this.who != '' && this.who != undefined && !WHOConstant.includes(this.who)) {
+      this._snackBar.open('Invalid WHO', 'X', {
+        duration: 2000,
+        panelClass: ['red-snackbar']
+      });
+    } else if (this.vp != '' && this.vp != undefined && !VPContant.includes(this.vp)) {
+      this._snackBar.open('Invalid VP', 'X', {
+        duration: 2000,
+        panelClass: ['red-snackbar']
+      });
+    } else {
+      this.goalsService.updateGoal(event.data).subscribe((data: any) => {
+        console.log(data)
+        this.getgoals();
+      });
+    }
   }
   isFirstRowEditable(params: any) {
     return params.node.rowIndex === 0;  // Only the first row (index 0) is editable
@@ -202,32 +211,46 @@ export class AppComponent implements OnInit {
   // }
 
   onChange() {
-    if (this.b != undefined && this.b != "" && this.e != undefined && this.e != ""
-      && this.d != undefined && this.d != "" && this.p != undefined && this.p != ""
-      && this.proj != undefined && this.proj != ""
-      && this.s != undefined && this.s != "" && this.vp != undefined && this.vp != ""
-      && this.who != undefined && this.who != ""
-      && this.gdb != undefined && this.gdb != "" && this.FiscalYear != undefined && this.FiscalYear != "") {
-      this.rowData1 = [{ who: this.who, p: this.p, proj: this.proj, vp: this.vp, B: this.b, e: this.e, d: this.d, s: this.s, gdb: this.gdb }, ...this.rowData1];
-      this.goalsService.createGoal({ who: this.who, p: this.p, proj: this.proj, vp: this.vp, b: this.b, e: this.e, d: this.d, s: this.s, gdb: this.gdb, fiscalyear: this.FiscalYear, updateBy: 'Sumit' }).subscribe((data: any) => {
-        console.log(data)
+    if (this.who != '' && this.who != undefined && !WHOConstant.includes(this.who)) {
+      this._snackBar.open('Invalid WHO', 'X', {
+        duration: 2000,
+        panelClass: ['red-snackbar']
       });
-      // Optionally, refresh the grid
-      this.gridApi.setRowData(this.rowData1);
-      this.who = '';
-      this.p = '';
-      this.proj = '';
-      this.vp = '';
-      this.b = '';
-      this.e = '';
-      this.d = '';
-      this.s = '';
-      this.gdb = '';
+    } else if (this.vp != '' && this.vp != undefined && !VPContant.includes(this.vp)) {
+      this._snackBar.open('Invalid VP', 'X', {
+        duration: 2000,
+        panelClass: ['red-snackbar']
+      });
+    }
+    else if (this.proj != '' && this.proj != undefined && !ProjConstant.includes(this.proj)) {
+      if (this.b != undefined && this.b != "" && this.e != undefined && this.e != ""
+        && this.d != undefined && this.d != "" && this.p != undefined && this.p != ""
+        && this.proj != undefined && this.proj != ""
+        && this.s != undefined && this.s != "" && this.vp != undefined && this.vp != ""
+        && this.who != undefined && this.who != ""
+        && this.gdb != undefined && this.gdb != "" && this.FiscalYear != undefined && this.FiscalYear != "") {
+        this.rowData1 = [{ who: this.who, p: this.p, proj: this.proj, vp: this.vp, B: this.b, e: this.e, d: this.d, s: this.s, gdb: this.gdb }, ...this.rowData1];
+        this.goalsService.createGoal({ who: this.who, p: this.p, proj: this.proj, vp: this.vp, b: this.b, e: this.e, d: this.d, s: this.s, gdb: this.gdb, fiscalyear: this.FiscalYear, updateBy: 'Sumit' }).subscribe((data: any) => {
+          console.log(data)
+          this.getgoals();
+        });
+        // Optionally, refresh the grid
+        this.gridApi.setRowData(this.rowData1);
+        this.who = '';
+        this.p = '';
+        this.proj = '';
+        this.vp = '';
+        this.b = '';
+        this.e = '';
+        this.d = '';
+        this.s = '';
+        this.gdb = '';
 
-      this._snackBar.open('Saved Successfully', 'X', {
-        duration: 1000,
-        panelClass: ['green-snackbar']
-      });
+        this._snackBar.open('Saved Successfully', 'X', {
+          duration: 1000,
+          panelClass: ['green-snackbar']
+        });
+      }
     }
   }
   emailValidator(params: any) {
