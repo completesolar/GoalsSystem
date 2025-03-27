@@ -1,0 +1,10 @@
+services:
+  backend:
+    build: .
+    container_name: goalsapp
+    image: goalsappimage
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
