@@ -1,4 +1,4 @@
 export const environment = {
-    baseURL: 'http://localhost:8000',   
+    baseURL: 'https://dev-goals.completesolar.com',   
     production: false
 }
