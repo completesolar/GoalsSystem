@@ -16,6 +16,7 @@
             "outputPath": "dist/goals",
             "index": "src/index.html",
             "main": "src/main.ts",
+            "baseHref": "/goals/",
             "polyfills": [
               "zone.js"
             ],
@@ -36,8 +37,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kb",
-                  "maximumError": "1mb"
+                  "maximumWarning": "3mb",
+                  "maximumError": "5mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -97,5 +98,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": false
   }
 }
