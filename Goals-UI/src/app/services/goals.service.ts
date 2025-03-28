@@ -10,16 +10,16 @@ export class GoalsService {
   constructor( private http: HttpClient) { }
   
   getGoals() {
-    return this.http.get(`${this.baseURL}/goals`);
+    return this.http.get(`${this.baseURL}/goalslist`);
   }
   getGoal(id: number) {
-    return this.http.get(`${this.baseURL}/goals/${id}`);
+    return this.http.get(`${this.baseURL}/goalslist/${id}`);
   }
   createGoal(goal: any) {
-    return this.http.post(`${this.baseURL}/goals`, goal);
+    return this.http.post(`${this.baseURL}/goalslist`, goal);
   }
   updateGoal(goal: any) { 
-    return this.http.put(`${this.baseURL}/goals/${goal.goalid}`, goal);
+    return this.http.put(`${this.baseURL}/goalslist/${goal.goalid}`, goal);
   }
 
   login() {
