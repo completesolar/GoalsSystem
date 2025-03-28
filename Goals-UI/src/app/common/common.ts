@@ -81,4 +81,4 @@ export const WHOConstant: string[] = ["JVA","MRA","KLA","KAA","EFA","CJA","SGA",
     "KMW","SXW","BMW","TJW","GZW","RHW","JXW","RXW","TAW","CMY","GAY","JGY","WY","ZXY","AZY",
     "BSY","MRY","DXY","AXY","CXZ","AKZ","JXZ","ZXZ","FDZ","MCZ"]
 
-    export const statuslist = ["N","C","ND","CD","R","K"]
+    export const statuslist = ["N","C","ND","CD","R","K","D"]

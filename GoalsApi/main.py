@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from controllers.goals import Goals, router
+from controllers.goals import router
 from database import engine
 from models.models import Base
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,6 +14,7 @@ origins = [
     "http://localhost",
     "http://localhost:8080",
     "http://localhost:4200",
+    "http://localhost:8000/goals"
 ]
 
 app.add_middleware(

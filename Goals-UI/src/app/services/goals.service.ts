@@ -21,4 +21,8 @@ export class GoalsService {
   updateGoal(goal: any) { 
     return this.http.put(`${this.baseURL}/goals/${goal.goalid}`, goal);
   }
+
+  login() {
+    return this.http.get(`${this.baseURL}/login`);
+  }
 }
