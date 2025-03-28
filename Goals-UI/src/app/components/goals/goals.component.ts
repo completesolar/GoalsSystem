@@ -21,7 +21,7 @@ import { GoalsService } from '../../services/goals.service';
   styleUrls: ['./goals.component.css']
 })
 export class GoalsComponent {
- title = 'Goals';
+  title = 'Goals';
   private gridApi: any;
   private gridColumnApi: any;
   who: any;
@@ -111,7 +111,13 @@ export class GoalsComponent {
         values: statuslist // Dropdown options
       }
     },
-    { headerName: "GDB", field: "gdb", width: 450, editable: true },
+    {
+      headerName: "GDB", field: "gdb", width: 450, editable: true, cellRenderer: (params: any) => {
+        const paramsValue = params.value.split(':');
+        const eDiv = `<b>${paramsValue[0]}:</b> ${paramsValue[1]}`
+        return eDiv;
+      }
+    },
     {
       headerName: 'Actions', editable: false, width: 110, cellclass: 'actions-cell',
       cellRenderer: (params: any) => {
@@ -214,15 +220,15 @@ export class GoalsComponent {
       });
     }
     else if (this.proj != '' && this.proj != undefined) {
-      if (this.b != undefined && this.b != "" 
+      if (this.b != undefined && this.b != ""
         && this.e != undefined && this.e != ""
-        && this.d != undefined && this.d != "" 
+        && this.d != undefined && this.d != ""
         && this.p != undefined && this.p != ""
         && this.proj != undefined && this.proj != ""
-        && this.s != undefined && this.s != "" 
+        && this.s != undefined && this.s != ""
         && this.vp != undefined && this.vp != ""
         && this.who != undefined && this.who != ""
-        && this.gdb != undefined && this.gdb != "" 
+        && this.gdb != undefined && this.gdb != ""
         && this.FiscalYear != undefined && this.FiscalYear != "") {
         //this.rowData1 = [{ who: this.who, p: this.p, proj: this.proj, vp: this.vp, B: this.b, e: this.e, d: this.d, s: this.s, gdb: this.gdb }, ...this.rowData1];
         this.goalsService.createGoal({ who: this.who, p: this.p, proj: this.proj, vp: this.vp, b: this.b, e: this.e, d: this.d, s: this.s, gdb: this.gdb, fiscalyear: this.FiscalYear, updateBy: 'Sumit' }).subscribe((data: any) => {
