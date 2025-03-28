@@ -7,7 +7,7 @@ export const environment = {
             "clientId": "1a3f14be-e3aa-453c-ac73-190faf1098ce",
             "authority": "https://login.microsoftonline.com/43754c3b-6e44-4fc9-8b0a-304ac51f69a1",
             "validateAuthority": true,
-            "redirectUri": "https://dev-goals.completesolar.com/goalslist",
+            "redirectUri": "https://dev-goals.completesolar.com/ui-goals",
             "postLogoutRedirectUri": "https://dev-goals.completesolar.com",
             "navigateToLoginRequestUrl": true
         },

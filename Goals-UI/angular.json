@@ -16,6 +16,7 @@
             "outputPath": "dist/goals",
             "index": "src/index.html",
             "main": "src/main.ts",
+            "baseHref": "/ui-goals/",
             "polyfills": [
               "zone.js"
             ],
