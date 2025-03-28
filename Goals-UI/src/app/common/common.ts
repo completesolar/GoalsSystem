@@ -5,7 +5,7 @@ export const PriorityConstant: number[] = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
 export const ProjConstant: string[] = ["ADMN", "AGE", "AOP", "AVL", "BOM", "CCC", "COMM", "COST", "ENG",
      "FAB", "FIN", "FUND", "GEN", "GM47", "HR", "INST", "IT", "OPEX", "PURC", "QUAL", "RCCA", 
      "SALES", "SOX", "TJRS"];
-export const VPContant: string[] = ["JVA","MRA","KLA","KAA","EFA","CJA","SGA","BSA","MXA"]
+export const VPContant: string[] = ["VNS","JVA","MRA","KLA","KAA","EFA","CJA","SGA","BSA","MXA"]
 export const WHOConstant: string[] = ["JVA","MRA","KLA","KAA","EFA","CJA","SGA","BSA","MXA",
     "SFA","JLA","JMA","MMA","AMA","UMA","JPA","JRA","CBA","JTA","HSA","HBA","RPA","SAA","ANA",
     "JNA","LMA","SMA","AVA","AGA","JIA","WJA","BAA","JDA","ETA","ACA","AJA","AZA","NEA","HDA",
