@@ -27,7 +27,7 @@
     "@popperjs/core": "^2.11.6",
     "ag-grid-angular": "^30.0.0",
     "ag-grid-autocomplete-editor": "^3.0.1",
-    "ag-grid-community": "^30.0.0",
+    "ag-grid-community": "^31.3.4",
     "angular-ng-autocomplete": "^2.0.12",
     "bootstrap": "^5.2.3",
     "rxjs": "~7.5.0",
