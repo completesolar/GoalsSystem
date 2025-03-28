@@ -3,6 +3,8 @@ from controllers.goals import router
 from database import engine
 from models.models import Base
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
 # Initialize FastAPI app
 app = FastAPI(
     title="Goals API",
@@ -10,11 +12,14 @@ app = FastAPI(
     version="1.0.0"
 )
 
+app.mount("/", StaticFiles(directory="/app/static", html=True), name="static")
+
 origins = [
     "http://localhost",
     "http://localhost:8080",
     "http://localhost:4200",
-    "http://localhost:8000/goals"
+    "http://localhost:8000/goals",
+    "https://dev-goals.completesolar.com"
 ]
 
 app.add_middleware(
