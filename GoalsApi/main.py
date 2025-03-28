@@ -12,7 +12,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-app.mount("/", StaticFiles(directory="/app/static", html=True), name="static")
+app.mount("/ui-goals", StaticFiles(directory="/app/static", html=True), name="static")
 
 origins = [
     "http://localhost",
