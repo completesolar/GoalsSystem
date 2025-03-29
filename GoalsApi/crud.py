@@ -1,21 +1,36 @@
 from sqlalchemy.orm import Session
 # from schemas.schema import Goals
-from models.models import Goals, Who , Proj, Vp, Status
+from models.models import Goals, Who , Proj, Vp, Status, goalshistory
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from schemas.schema import GoalsResponse,GoalsUpdate  # Pydantic schema
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.sql import text
+from json import dumps, loads
+from datetime import datetime
+from copy import deepcopy
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def create_goal(db: Session, goal: Goals):
+    currentdate = datetime.now()
     db_goal = Goals(who=goal.who, p=goal.p, proj=goal.proj, vp=goal.vp, b=goal.b, e=goal.e, d=goal.d, s=goal.s, gdb=goal.gdb, fiscalyear=goal.fiscalyear, updateBy=goal.updateBy)
     db.add(db_goal)
     db.commit()
     db.refresh(db_goal)
-    return db_goal
 
+    db_goalhistory = goalshistory(goalid=db_goal.goalid, oldgoal="", newgoal=dumps(goal.dict()), createddate=currentdate, createdby=goal.updateBy)  # Assuming you want to store the initial state in history
+    db.add(db_goalhistory)
+    db.commit()
+    db.refresh(db_goalhistory)
+
+    return db_goal
+def add_to_history(db: Session, goalid: int, oldgoal: str, newgoal: str, createddate: str, createdby: str):
+    db_goalshistory = goalshistory(goalid=goalid, oldgoal=oldgoal, newgoal=newgoal, createddate=createddate, createdby=createdby)   
+    db.add(db_goalshistory)
+    db.commit()
+    db.refresh(db_goalshistory)
+    return db_goalshistory
 def get_goals_by_id(db: Session, goalid: int):
     return db.query(Goals).filter(Goals.goalid == goalid).first()
 
@@ -38,9 +53,10 @@ def create_proj(db: Session, proj: str):
     db.refresh(db_proj)
     return db_proj
 def update_goal(db: Session, goal_id: int, goal_update: GoalsUpdate):
+    currentdate = datetime.now()
     # Step 1: Retrieve the goal from the database
     db_goal = db.query(Goals).filter(Goals.goalid == goal_id).first()
-
+    old_goal = deepcopy(db_goal)  # Create a copy of the old goal for history
     if db_goal is None:
         return "Goal not found"
     
@@ -73,5 +89,20 @@ def update_goal(db: Session, goal_id: int, goal_update: GoalsUpdate):
 
     # Step 4: Refresh the object from the database to return updated data
     db.refresh(db_goal)
+
+    # Use jsonable_encoder to convert the objects to dictionaries
+    old_goal_dict = jsonable_encoder(old_goal)
+    updated_goal_dict = jsonable_encoder(db_goal)
+
+    db_goalhistory = goalshistory(
+        goalid=goal_id,
+        oldgoal=dumps(old_goal_dict),  # Serialize the old goal to JSON
+        newgoal=dumps(updated_goal_dict),  # Serialize the updated goal to JSON
+        createddate=currentdate,
+        createdby=goal_update.updateBy
+    )
+    db.add(db_goalhistory)
+    db.commit()
+    db.refresh(db_goalhistory)
 
     return db_goal
