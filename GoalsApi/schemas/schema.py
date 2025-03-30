@@ -7,8 +7,8 @@ class Goals(BaseModel):
      proj: str
      vp: str
      b: int
-     e: int
-     d: int
+     e: str
+     d: str
      s: str
      gdb: str
      fiscalyear: int
@@ -21,8 +21,8 @@ class GoalsCreate(Goals):
      proj: str
      vp: str
      b: int
-     e: int
-     d: int
+     e: str
+     d: str
      s: str
      gdb: str
      fiscalyear: int
@@ -33,8 +33,8 @@ class GoalsUpdate(Goals):
      proj: Optional[str] = None
      vp: Optional[str] = None
      b: Optional[int] = None
-     e: Optional[int] = None
-     d: Optional[int] = None
+     e: Optional[str] = None
+     d: Optional[str] = None
      s: Optional[str] = None
      gdb: Optional[str] = None
      updateBy: Optional[str] = None
