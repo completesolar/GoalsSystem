@@ -14,7 +14,8 @@ origins = [
     "http://localhost",
     "http://localhost:8080",
     "http://localhost:4200",
-    "http://localhost:8000/goals"
+    "http://localhost:8000/goals",
+    "https://goals-dev.completesolar.com"
 ]
 
 app.add_middleware(
