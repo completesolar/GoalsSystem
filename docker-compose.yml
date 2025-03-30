@@ -21,7 +21,7 @@ services:
       - goals-network
     restart: always
     depends_on:
-      - backend
+      - goals-backend
 
 networks:
   goals-network:
