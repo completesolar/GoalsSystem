@@ -1,17 +1,17 @@
 services:
-  backend:
+  goals-backend:
     build: ./GoalsApi
     container_name: goalsapp-backend
     image: goals-backend-image
     ports:
-      - "8000:8000"
+      - "7000:8000"
     networks:
       - goals-network
     restart: always  
     environment:
       - PYTHONUNBUFFERED=1
 
-  frontend:
+  goals-frontend:
     build: ./Goals-UI
     container_name: goalsapp-frontend
     image: goals-frontend-image
