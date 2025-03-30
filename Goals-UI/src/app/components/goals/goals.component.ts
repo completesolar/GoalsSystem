@@ -7,7 +7,7 @@ import {
   GridOptions,
   ModuleRegistry
 } from "ag-grid-community";
-import { PriorityConstant, ProjConstant, statuslist, VPContant, WHOConstant } from '../../common/common';
+import { PriorityConstant, ProjConstant, statuslist, VPContant, WHOConstant,EdConstant } from '../../common/common';
 // import AutocompleteSelectCellEditor from 'ag-grid-autocomplete-editor/types/ag-grid-autocomplete-editor';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AutocompleteSelectCellEditor } from 'ag-grid-autocomplete-editor';
@@ -37,9 +37,9 @@ export class GoalsComponent {
   filteredOptions!: Observable<string[]>;
   status = statuslist;
   Blist = PriorityConstant;
-  Elist = PriorityConstant;
+  Elist = EdConstant.slice(1);
   Plist = PriorityConstant;
-  Dlist = PriorityConstant;
+  Dlist = EdConstant.slice(1);
   PROJlist = ProjConstant;
   Slist = statuslist;
   rowData1: any;
@@ -54,24 +54,24 @@ export class GoalsComponent {
       this.rowData1 = data;
     });
   }
-  selectData = [
-    { value: 0, label: "this" },
-    { value: 1, label: "is" },
-    { value: 2, label: "sparta" },
-    { value: 3, label: "yolo" },
-    { value: 4, label: "yoloooooo" },
-    { value: 5, label: "yola" },
-    { value: 6, label: "yoli" },
-    { value: 7, label: "yolu" },
-    { value: 8, label: "yolp" },
-    { value: 9, label: "yolop" },
-    { value: 10, label: "yolpo" },
-    { value: 11, label: "yolui" },
-    { value: 12, label: "yolqw" },
-    { value: 13, label: "yolxz" },
-    { value: 14, label: "yolcv" },
-    { value: 15, label: "yolbn" }
-  ];
+  // selectData = [
+  //   { value: 0, label: "this" },
+  //   { value: 1, label: "is" },
+  //   { value: 2, label: "sparta" },
+  //   { value: 3, label: "yolo" },
+  //   { value: 4, label: "yoloooooo" },
+  //   { value: 5, label: "yola" },
+  //   { value: 6, label: "yoli" },
+  //   { value: 7, label: "yolu" },
+  //   { value: 8, label: "yolp" },
+  //   { value: 9, label: "yolop" },
+  //   { value: 10, label: "yolpo" },
+  //   { value: 11, label: "yolui" },
+  //   { value: 12, label: "yolqw" },
+  //   { value: 13, label: "yolxz" },
+  //   { value: 14, label: "yolcv" },
+  //   { value: 15, label: "yolbn" }
+  // ];
   columnDefs1: any = [
     //{ field: "WHO", width: 150, editable: true }, //, valueSetter: (params: any) => this.WHOValueSetter(params), },
     {
@@ -96,14 +96,15 @@ export class GoalsComponent {
     },
     { field: "b", width: 50, editable: false },
     {
-      field: "e", width: 50, editable: true, cellEditor: 'agSelectCellEditor',
+      headerName:'E', field: "e", width: 50, editable: true, cellEditor: 'agSelectCellEditor',
       cellEditorParams: {
-        values: PriorityConstant // Dropdown options
+        values: EdConstant // Dropdown options
       }
     },
     {
-      field: "d", width: 55, editable: true, cellEditor: 'agSelectCellEditor', cellEditorParams: {
-        values: PriorityConstant // Dropdown options
+      headerName:'D', field: "d", width: 55, editable: true, cellEditor: 'agSelectCellEditor', 
+      cellEditorParams: {
+        values: EdConstant // Dropdown options
       }
     },
     {
@@ -221,8 +222,6 @@ export class GoalsComponent {
     }
     else if (this.proj != '' && this.proj != undefined) {
       if (this.b != undefined && this.b != ""
-        && this.e != undefined && this.e != ""
-        && this.d != undefined && this.d != ""
         && this.p != undefined && this.p != ""
         && this.proj != undefined && this.proj != ""
         && this.s != undefined && this.s != ""
