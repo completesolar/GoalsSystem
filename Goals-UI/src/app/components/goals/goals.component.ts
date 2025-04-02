@@ -80,38 +80,35 @@ export class GoalsComponent {
       cellEditor: AutocompletecelleditorComponent,
       editable: true,
       width: 150,
-      sortable: true,
-      sort:'asc',
-      sortIndex: 0,
-
+      sortable: true
     },
     {
-      field: "p", width: 50, editable: true
+      field: "p", width: 70, editable: true, sortable: true, sort:'asc', sortIndex: 0,
     },
     {
-      headerName: "PROJ", field: "proj", editable: true, cellEditor: 'agSelectCellEditor', width: 110,
+      headerName: "PROJ", field: "proj", sortable: true, editable: true, cellEditor: 'agSelectCellEditor', width: 110,
       cellEditorParams: {
         values: ProjConstant // Dropdown options
       }
     },
     {
-      headerName: "VP", field: "vp", width: 122, editable: true, cellEditor: VpautocompletecelleditorComponent
+      headerName: "VP", field: "vp", sortable: true, width: 122, editable: true, cellEditor: VpautocompletecelleditorComponent
     },
-    { field: "b", width: 50, editable: false },
+    { field: "b", width: 70, editable: false, sortable: true },
     {
-      headerName:'E', field: "e", width: 50, editable: true, cellEditor: 'agSelectCellEditor',
+      headerName:'E', field: "e", width: 70, sortable: true, editable: true, cellEditor: 'agSelectCellEditor',
       cellEditorParams: {
         values: EdConstant // Dropdown options
       }
     },
     {
-      headerName:'D', field: "d", width: 55, editable: true, cellEditor: 'agSelectCellEditor', 
+      headerName:'D', field: "d", width: 75, sortable: true, editable: true, cellEditor: 'agSelectCellEditor', 
       cellEditorParams: {
         values: EdConstant // Dropdown options
       }
     },
     {
-      field: "s", width: 55, editable: true, cellEditor: 'agSelectCellEditor', cellEditorParams: {
+      field: "s", width: 75, editable: true, sortable: true, cellEditor: 'agSelectCellEditor', cellEditorParams: {
         values: statuslist // Dropdown options
       }
     },
@@ -166,7 +163,7 @@ export class GoalsComponent {
         duration: 2000,
         panelClass: ['red-snackbar']
       });
-    } else if (this.vp != '' && this.vp != undefined && !VPContant.includes(this.vp)) {
+    } else if (this.vp != '' && this.vp != undefined && !WHOConstant.includes(this.vp)) {
       this._snackBar.open('Invalid VP', 'X', {
         duration: 2000,
         panelClass: ['red-snackbar']
@@ -217,7 +214,7 @@ export class GoalsComponent {
         duration: 2000,
         panelClass: ['red-snackbar']
       });
-    } else if (this.vp != '' && this.vp != undefined && !VPContant.includes(this.vp)) {
+    } else if (this.vp != '' && this.vp != undefined && !WHOConstant.includes(this.vp)) {
       this._snackBar.open('Invalid VP', 'X', {
         duration: 2000,
         panelClass: ['red-snackbar']
