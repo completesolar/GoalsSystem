@@ -51,7 +51,7 @@ export class LoginComponent implements OnInit, OnDestroy{
 
   logout() { // Add log out function here
     this.authService.logoutRedirect({
-      postLogoutRedirectUri: 'https://dev-goals.completesolar.com'
+      postLogoutRedirectUri: 'https://uat-goals.completesolar.com'
     });
   }
 
