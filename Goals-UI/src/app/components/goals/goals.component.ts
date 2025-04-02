@@ -80,7 +80,10 @@ export class GoalsComponent {
       cellEditor: AutocompletecelleditorComponent,
       editable: true,
       width: 150,
-      sortable: true
+      sortable: true,
+      sort:'asc',
+      sortIndex: 0,
+
     },
     {
       field: "p", width: 50, editable: true
@@ -332,7 +335,7 @@ export class GoalsComponent {
       ),
     );
 
-  vplist = VPContant;
+  vplist = WHOConstant;
   vpsearch: OperatorFunction<string, readonly string[]> = (text$: Observable<string>) =>
     text$.pipe(
       debounceTime(200),
