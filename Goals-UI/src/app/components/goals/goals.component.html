@@ -22,7 +22,7 @@
 <div style="margin-bottom: 2px;">
   <input type="text" style="width: 143px;height: 28px;" [(ngModel)]="who" maxlength="3" (mouseout)="onChange()"
     placeholder="WHO" [ngbTypeahead]="search">
-  <input type="text" style="width: 43px;height: 28px;" [(ngModel)]="p" (mouseout)="onChange()"
+  <input type="text" style="width: 60px;height: 28px;" [(ngModel)]="p" (mouseout)="onChange()"
     (keypress)="numberOnly($event)" maxlength="2" placeholder="P">
   <!-- <select style="width: 43px;height: 28px;"  [(ngModel)]="p">
       <option value="">P</option>
@@ -39,19 +39,19 @@
       (mouseout)="onChange()" placeholder="B">
     <input type="text" style="width: 43px;height: 28px;" [(ngModel)]="E" (keypress)="numberOnly($event)"
       (mouseout)="onChange()" placeholder="E"> -->
-  <select style="width: 50px;height: 28px;" [(ngModel)]="b">
+  <select style="width: 67px;height: 28px;" [(ngModel)]="b">
     <option value="">B</option>
     <option *ngFor="let b of Blist" [ngValue]="b">{{ b }}</option>
   </select>
-  <select style="width: 50px;height: 28px;height: 28px;" [(ngModel)]="e">
+  <select style="width: 67px;height: 28px;height: 28px;" [(ngModel)]="e">
     <option value="">E</option>
     <option *ngFor="let e of Elist" [ngValue]="e">{{ e }}</option>
   </select>
-  <select style="width: 55px;height: 28px;" [(ngModel)]="d">
+  <select style="width: 72px;height: 28px;" [(ngModel)]="d">
     <option value="">D</option>
     <option *ngFor="let d of Dlist" [ngValue]="d">{{ d }}</option>
   </select>
-  <select style="width: 55px;height: 28px;height: 28px;" [(ngModel)]="s">
+  <select style="width: 72px;height: 28px;height: 28px;" [(ngModel)]="s">
     <option value="">S</option>
     <option *ngFor="let s of Slist" [ngValue]="s">{{ s }}</option>
   </select>
