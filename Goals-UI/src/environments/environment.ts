@@ -1,14 +1,14 @@
 export const environment = {
-    baseURL: 'https://dev-goals.completesolar.com',
+    baseURL: 'http://localhost:8000',
     production: false,
-    serviceURL: "https://dev-goals.completesolar.com",
+    serviceURL: "http://localhost:8000",
     config: {
         auth: {
             "clientId": "1a3f14be-e3aa-453c-ac73-190faf1098ce",
             "authority": "https://login.microsoftonline.com/43754c3b-6e44-4fc9-8b0a-304ac51f69a1",
             "validateAuthority": true,
-            "redirectUri": "https://dev-goals.completesolar.com/ui-goals",
-            "postLogoutRedirectUri": "https://dev-goals.completesolar.com",
+            "redirectUri": "http://localhost:8000/ui-goals",
+            "postLogoutRedirectUri": "http://localhost:8000",
             "navigateToLoginRequestUrl": true
         },
         cache: {
@@ -17,7 +17,7 @@ export const environment = {
 
         resources: {
             "demoApi": {
-                "resourceUri": "https://dev-goals.completesolar.com", // example "http://localhost:4013"
+                "resourceUri": "http://localhost:8000", // example "http://localhost:4013"
                 "resourceScope": "api://1a3f14be-e3aa-453c-ac73-190faf1098ce/User.read", // here use the client id of the Web API you registered
             }
         },
