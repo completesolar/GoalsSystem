@@ -42,10 +42,10 @@ def read_root():
     return {"message": "Welcome to the Goals project!"}
 
 @app.get("/ui-goals/{path:path}")
- async def serve_spa(request: Request, path: str):
-     static_file_path = Path(f"/app/static/{path}")
-     if static_file_path.exists() and static_file_path.is_file():
-         return FileResponse(static_file_path)
- 
-     index_file_path = Path("/app/static/index.html")
-     return FileResponse(index_file_path)    
+async def serve_spa(request: Request, path: str):
+    static_file_path = Path(f"/app/static/{path}")
+    if static_file_path.exists() and static_file_path.is_file():
+        return FileResponse(static_file_path)
+
+    index_file_path = Path("/app/static/index.html")
+    return FileResponse(index_file_path)    
