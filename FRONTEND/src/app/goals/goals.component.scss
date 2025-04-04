@@ -1,0 +1,261 @@
+/* Wraps the table and prevents page overflow */
+.table-container {
+  max-width: 100%;
+  overflow-x: auto;
+  margin-top: 10px;
+}
+
+/* Force the table to take up full width without unnecessary scroll */
+::ng-deep .custom-goal-table table {
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+/* Applies consistent cell sizing and wraps content if needed */
+::ng-deep .custom-goal-table th,
+::ng-deep .custom-goal-table td {
+  white-space: normal !important;
+  word-wrap: break-word;
+  padding: 8px;
+  text-align: left;
+  vertical-align: top;
+  font-size: 14px;
+}
+
+/* Prevent Add button column from shrinking */
+::ng-deep .custom-goal-table td:last-child,
+::ng-deep .custom-goal-table th:last-child {
+  width: 100px;
+  min-width: 100px;
+  text-align: center;
+}
+
+/* Define consistent fixed widths for each column (based on their order) */
+::ng-deep .custom-goal-table th,
+::ng-deep .custom-goal-table td {
+  white-space: normal !important;
+  word-wrap: break-word;
+  padding: 8px;
+  text-align: left;
+
+  vertical-align: top;
+  font-size: 14px;
+}
+
+::ng-deep .custom-goal-table th:nth-child(1),
+::ng-deep .custom-goal-table td:nth-child(1) {
+  width: 120px;
+}
+
+::ng-deep .custom-goal-table th:nth-child(2),
+::ng-deep .custom-goal-table td:nth-child(2),
+::ng-deep .custom-goal-table th:nth-child(5),
+::ng-deep .custom-goal-table td:nth-child(5),
+::ng-deep .custom-goal-table th:nth-child(6),
+::ng-deep .custom-goal-table td:nth-child(6),
+::ng-deep .custom-goal-table th:nth-child(7),
+::ng-deep .custom-goal-table td:nth-child(7) {
+  width: 85px;
+}
+
+::ng-deep .custom-goal-table th:nth-child(3),
+::ng-deep .custom-goal-table td:nth-child(3),
+::ng-deep .custom-goal-table th:nth-child(4),
+::ng-deep .custom-goal-table td:nth-child(4),
+::ng-deep .custom-goal-table th:nth-child(8),
+::ng-deep .custom-goal-table td:nth-child(8) {
+  width: 100px;
+}
+
+::ng-deep .custom-goal-table th:nth-child(9),
+::ng-deep .custom-goal-table td:nth-child(9) {
+  width: 80px;
+}
+
+/* Goal Deliverable Column (assumed 10th column) */
+::ng-deep .custom-goal-table th:nth-child(10),
+::ng-deep .custom-goal-table td:nth-child(10) {
+  white-space: nowrap !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 400px;
+  min-width: 300px;
+  max-width: 400px;
+  text-align: left;
+}
+
+/* For inputs and dropdowns in cells */
+::ng-deep td .p-inputtext,
+::ng-deep td .p-dropdown {
+  height: 32px !important;
+  font-size: 13px;
+  padding: 4px 8px !important;
+  width: 100% !important;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+
+/* Dropdown label spacing */
+::ng-deep .p-dropdown-label {
+  padding: 4px 8px !important;
+  line-height: 1.2;
+}
+
+
+::ng-deep .custom-goal-table th:nth-child(11),
+::ng-deep .custom-goal-table td:nth-child(11) {
+  width: 100px;
+  text-align: center;
+}
+
+/* Set background color for header row */
+::ng-deep .custom-goal-table th {
+  background-color: rgb(226, 239, 218) !important;
+  color: white; /* Optionally set text color */
+}
+
+/* Optionally, you can style the header row further */
+::ng-deep .custom-goal-table .p-d-flex.p-ai-center {
+  background-color: rgb(
+    226,
+    239,
+    218
+  ) !important; /* Set your desired color here */
+  color: white; /* White text for contrast */
+}
+
+::ng-deep .p-inputtext {
+  width: 100% !important;
+  min-width: 60px;
+}
+
+.header-row {
+  background-color: rgb(226, 239, 218);
+}
+
+/* Set a fixed width for the dropdowns */
+::ng-deep .p-dropdown {
+  width: 100% !important; /* Make sure the dropdowns take up the full column width */ /* Set a minimum width to prevent shrinking */
+}
+
+/* Adjust other table elements to ensure consistency */
+::ng-deep .p-dropdown .p-dropdown-label {
+  width: 100% !important; /* Ensure the label area fills the dropdown container */
+}
+
+/* Prevent Add button column from shrinking */
+::ng-deep .custom-goal-table td:last-child,
+::ng-deep .custom-goal-table th:last-child {
+  width: 100px;
+  min-width: 100px;
+  text-align: left;
+}
+
+/* Ensure inputs inside the table cells don't collapse */
+::ng-deep .p-inputtext {
+  width: 100% !important;
+  min-width: 60px;
+}
+
+.fixed-row {
+  position: sticky;
+  top: 22px;
+  z-index: 2;
+}
+
+.saved {
+  border: none;
+  box-shadow: none;
+  background-color: white !important;
+}
+
+::ng-deep .saved .p-select-dropdown {
+  display: none;
+}
+
+.actions {
+  cursor: pointer;
+}
+
+::ng-deep .custom-goal-table .p-datatable-tbody > tr > td,
+::ng-deep .custom-goal-table .p-datatable-thead > tr > th {
+  padding: 4px 8px !important;
+  font-size: 12px !important; /* reduce font size */
+  line-height: 1 !important; /* tighter row spacing */
+}
+
+.logo {
+  width: 120px;
+}
+
+.info-section {
+    background-color: whitesmoke;
+    border-left: 4px solid green;
+    max-width: 95%;
+    margin: 0 auto;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.form-section {
+  display: flex;
+  justify-content: flex-end;
+  max-width: 96%;
+  margin: 0 auto 20px auto;
+}
+.titles {
+  text-align: right;
+}
+
+.main-title {
+  font-size: 21px;
+  font-weight: 700;
+  color: #333;
+}
+
+.sub-title {
+  font-size: 15px;
+  color: #4caf50;
+  margin-top: 4px;
+}
+
+.date {
+  font-size: 10px;
+  color: #777;
+  margin-top: 2px;
+}
+
+::ng-deep .custom-goal-table .p-datatable-wrapper {
+  height: 100%;
+}
+
+::ng-deep .custom-goal-table .p-datatable-scrollable-body {
+  flex: 1 1 auto;
+  overflow-y: auto !important;
+}
+
+::ng-deep .custom-goal-table .p-datatable-scrollable {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Goal Deliverable column in the dialog */
+::ng-deep .goal-history-table th:nth-child(10),
+::ng-deep .goal-history-table td:nth-child(10) {
+  white-space: normal !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 600px;
+  min-width: 400px;
+  max-width: 600px;
+}
+
+.custom-goal-table th:last-child
+{
+  text-align: left;
+}
+::ng-deep .goal-history-table .p-datatable-tbody > tr > td {
+  padding: 6px 10px;
+  font-size: 13px;
+}

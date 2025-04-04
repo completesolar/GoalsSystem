@@ -1,0 +1,353 @@
+<div
+  class="flex align-items-center justify-content-between gap-3 mb-3 p-2 text-white border-round"
+>
+  <img src="assets/logo.png" alt="Complete Solar" class="logo" />
+  <div class="titles">
+    <div class="main-title">Executive Staff Weekly Goals</div>
+    <div class="sub-title">WW6 (Who/P)</div>
+    <div class="date">JYV 02-06-2025</div>
+  </div>
+</div>
+
+<div class="mb-4 px-3 info-section">
+  <p class="my-1">
+    <strong>Key:</strong> WHO=Owner of the goal, P=Priority, PROJ=Project,
+    VP=Boss of Goal Owner, B=WW goal was given, E=WW goal is due
+  </p>
+  <p class="my-1">
+    <strong>S =</strong> N=New, C=Complete, ND=Newly Delinquent, CD=Continuing
+    Delinquent, R=Revised, K=Killed
+  </p>
+  <p class="my-1">
+    <strong>PROJ TYPES:</strong> ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG,
+    FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX,
+    TJRS
+  </p>
+  <p class="my-1"><strong>D:</strong> Delinquent</p>
+</div>
+
+<!-- <div class="flex justify-content-between form-section"> -->
+  <!-- <p-select
+    [options]="years"
+    [(ngModel)]="selectedYear"
+    (onChange)="onYearChange()"
+    optionLabel="name"
+    placeholder="Select a Year"
+  /> -->
+<!-- </div> -->
+  <div class="form-section">
+    <p-button label="Export" (click)="exportData()" severity="success" />
+  </div>
+
+<div class="table-container">
+  <p-table
+  [value]="goal"
+  [paginator]="true"
+  [rows]="10"
+  [showCurrentPageReport]="true"
+  [rowsPerPageOptions]="[10, 20, 50]"
+  currentPageReportTemplate="Showing {first} to {last} of {totalRecords} goals"
+  [paginatorPosition]="'bottom'"
+  responsiveLayout="scroll"
+  scrollable="true"
+  scrollDirection="both"
+  scrollHeight="flex"
+  [style]="{ width: '1800px', height: '500px' }"
+  tableStyleClass="custom-goal-table"
+>
+
+
+    <ng-template pTemplate="header" class="p-d-flex p-ai-center">
+      <tr>
+        <th *ngFor="let col of columns">
+          <b>{{ col.header }}</b>
+        </th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-row let-rowIndex="rowIndex">
+      <tr *ngIf="rowIndex === 0" class="fixed-row">
+        <td>
+          <p-select
+            [options]="whoOptions"
+            [(ngModel)]="newRow.who"
+            placeholder="Select WHO"
+            optionLabel="label"
+            optionValue="value"
+            filter
+            required
+          />
+        </td>
+
+        <td>
+          <p-dropdown
+            [options]="priorityOptions"
+            [(ngModel)]="newRow.p"
+            name="pInput"
+            [filter]="true"
+            required
+          ></p-dropdown>
+        </td>
+        
+        <td>
+          <p-dropdown
+            [options]="projOptions"
+            [(ngModel)]="newRow.proj"
+            placeholder="Select PROJ"
+            optionLabel="label"
+            optionValue="value"
+            [filter]="true"
+          ></p-dropdown>
+        </td>
+        
+
+        <td>
+          <p-select
+            [options]="vpOptions"
+            [(ngModel)]="newRow.vp"
+            placeholder="Select VP"
+            optionLabel="label"
+            optionValue="value"
+            filter
+          />
+        </td>
+
+        <td>
+          <p-dropdown
+          [options]="priorityOptions"
+          [(ngModel)]="newRow.b"
+          name="bInput"
+          [filter]="true"
+          required
+        ></p-dropdown>
+        </td>
+        <td>
+          <p-dropdown
+          [options]="priorityOptions"
+          [(ngModel)]="newRow.e"
+          name="eInput"
+          [filter]="true"
+        ></p-dropdown>
+        </td>
+        <td>
+          <p-dropdown
+          [options]="priorityOptions"
+          [(ngModel)]="newRow.d"
+          name="dInput"
+          [filter]="true"
+        ></p-dropdown>
+        </td>
+
+        <td>
+          <p-select
+            [options]="statusOptions"
+            [(ngModel)]="newRow.s"
+            placeholder="Select S"
+            optionLabel="label"
+            optionValue="value"
+            filter
+          />
+        </td>
+
+        <td>
+          <input pInputText [(ngModel)]="newRow.fiscalyear" name="fiscalYear" />
+        </td>
+
+        <td>
+          <input pInputText [(ngModel)]="newRow.gdb" />
+        </td>
+
+        <td class="align-content-center">
+          <!-- <button
+            pButton
+            type="button"
+            icon="pi pi-plus"
+            label="Add"
+            (click)="addGoal()"
+          ></button> -->
+          <!-- <span (click)="addGoal()" style="cursor: pointer"> -->
+          <i class="pi pi-plus actions" (click)="addGoal()"></i>
+          <!-- </span> -->
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <p-dropdown
+            [ngClass]="{ saved: !row.isEditable }"
+            [disabled]="!row.isEditable"
+            [options]="whoOptions"
+            [(ngModel)]="row.who"
+            placeholder="Select WHO"
+            optionLabel="label"
+            optionValue="value"
+            filter
+          ></p-dropdown>
+        </td>
+        <td>
+          <input
+            [ngClass]="{ saved: !row.isEditable }"
+            [disabled]="!row.isEditable"
+            type="number"
+            pInputText
+            [(ngModel)]="row.p"
+            name="pInput"
+            min="1"
+            max="53"
+            required
+            (input)="onInputChange($event)"
+          />
+        </td>
+        <td>
+          <p-dropdown
+            [ngClass]="{ saved: !row.isEditable }"
+            [disabled]="!row.isEditable"
+            [options]="projOptions"
+            [(ngModel)]="row.proj"
+            placeholder="Select PROJ"
+            optionLabel="label"
+            optionValue="value"
+            filter
+          ></p-dropdown>
+        </td>
+        <td>
+          <p-dropdown
+            [ngClass]="{ saved: !row.isEditable }"
+            [disabled]="!row.isEditable"
+            [options]="vpOptions"
+            [(ngModel)]="row.vp"
+            placeholder="Select VP"
+            optionLabel="label"
+            optionValue="value"
+            filter
+          ></p-dropdown>
+        </td>
+        <td>
+          <input
+            [ngClass]="{ saved: !row.isEditable }"
+            [disabled]="!row.isEditable"
+            type="number"
+            pInputText
+            [(ngModel)]="row.b"
+            name="bInput"
+            min="1"
+            max="53"
+            required
+            (input)="onInputChange($event)"
+          />
+        </td>
+        <td>
+          <input
+            [ngClass]="{ saved: !row.isEditable }"
+            [disabled]="!row.isEditable"
+            type="number"
+            pInputText
+            [(ngModel)]="row.e"
+            name="eInput"
+            min="1"
+            max="53"
+            required
+            (input)="onInputChange($event)"
+          />
+        </td>
+        <td>
+          <input
+            [ngClass]="{ saved: !row.isEditable }"
+            [disabled]="!row.isEditable"
+            type="number"
+            pInputText
+            [(ngModel)]="row.d"
+            name="dInput"
+            min="1"
+            max="53"
+            required
+            (input)="onInputChange($event)"
+          />
+        </td>
+        <td>
+          <p-dropdown
+            [ngClass]="{ saved: !row.isEditable }"
+            [disabled]="!row.isEditable"
+            [options]="statusOptions"
+            [(ngModel)]="row.s"
+            placeholder="Select S"
+            optionLabel="label"
+            optionValue="value"
+            filter
+          ></p-dropdown>
+        </td>
+        <td>
+          <input
+            pInputText
+            [(ngModel)]="row.fiscalyear"
+            name="fiscalYear"
+            [ngClass]="{ saved: !row.isEditable }"
+            [disabled]="!row.isEditable"
+          />
+        </td>
+        <td>
+          <input
+            pInputText
+            [(ngModel)]="row.gdb"
+            [ngClass]="{ saved: !row.isEditable }"
+            [disabled]="!row.isEditable"
+          />
+        </td>
+        <td class="align-content-center">
+          <i
+            [ngClass]="
+              row.isEditable ? 'pi pi-save actions' : 'pi pi-pencil actions'
+            "
+            (click)="row.isEditable ? updateGoal(row) : enableEdit(row)"
+          ></i>
+          <i
+            class="pi pi-history actions ml-3"
+            (click)="historyDialog(row.goalid)"
+          ></i>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- <p-button (click)="showDialog()" label="Show" /> -->
+  <p-dialog
+  header="Goals History"
+  [(visible)]="display"
+  [modal]="true"
+  [style]="{ width: '90vw', height: '380px' }"
+  [contentStyle]="{ 'max-height': '70vh', overflow: 'auto' }"
+>
+
+<p-table
+  [value]="goalHistory"
+  tableStyleClass="custom-goal-table goal-history-table"
+  scrollable="true"
+  scrollHeight="400px"
+>
+      <ng-template pTemplate="header">
+        <tr>
+          <th *ngFor="let col of dialogcolumns">
+            <b>{{ col.header }}</b>
+          </th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-row let-rowIndex="rowIndex">
+        <tr>
+          <td>{{ row.who }}</td>
+          <td>{{ row.p }}</td>
+          <td>{{ row.proj }}</td>
+          <td>{{ row.vp }}</td>
+          <td>{{ row.b }}</td>
+          <td>{{ row.e }}</td>
+          <td>{{ row.d }}</td>
+          <td>{{ row.s }}</td>
+          <td>{{ row.fiscalyear }}</td>
+          <td>
+            <b>{{ row.gdb }}</b>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-dialog>
+</div>
