@@ -80,7 +80,10 @@ export class GoalsComponent {
       cellEditor: AutocompletecelleditorComponent,
       editable: true,
       width: 150,
-      sortable: true
+      sortable: true,
+      sort:'asc',
+      sortIndex: 0,
+
     },
     {
       field: "p", width: 70, editable: true, sortable: true, sort: 'asc', sortIndex: 0,
