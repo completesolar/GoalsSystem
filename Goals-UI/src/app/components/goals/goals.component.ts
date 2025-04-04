@@ -7,7 +7,7 @@ import {
   GridOptions,
   ModuleRegistry
 } from "ag-grid-community";
-import { PriorityConstant, ProjConstant, statuslist, VPContant, WHOConstant,EdConstant } from '../../common/common';
+import { PriorityConstant, ProjConstant, statuslist, VPContant, WHOConstant, EdConstant } from '../../common/common';
 // import AutocompleteSelectCellEditor from 'ag-grid-autocomplete-editor/types/ag-grid-autocomplete-editor';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AutocompleteSelectCellEditor } from 'ag-grid-autocomplete-editor';
@@ -83,7 +83,7 @@ export class GoalsComponent {
       sortable: true
     },
     {
-      field: "p", width: 70, editable: true, sortable: true, sort:'asc', sortIndex: 0,
+      field: "p", width: 70, editable: true, sortable: true, sort: 'asc', sortIndex: 0,
     },
     {
       headerName: "PROJ", field: "proj", sortable: true, editable: true, cellEditor: 'agSelectCellEditor', width: 110,
@@ -96,13 +96,13 @@ export class GoalsComponent {
     },
     { field: "b", width: 70, editable: false, sortable: true },
     {
-      headerName:'E', field: "e", width: 70, sortable: true, editable: true, cellEditor: 'agSelectCellEditor',
+      headerName: 'E', field: "e", width: 70, sortable: true, editable: true, cellEditor: 'agSelectCellEditor',
       cellEditorParams: {
         values: EdConstant // Dropdown options
       }
     },
     {
-      headerName:'D', field: "d", width: 75, sortable: true, editable: true, cellEditor: 'agSelectCellEditor', 
+      headerName: 'D', field: "d", width: 75, sortable: true, editable: true, cellEditor: 'agSelectCellEditor',
       cellEditorParams: {
         values: EdConstant // Dropdown options
       }
@@ -207,8 +207,12 @@ export class GoalsComponent {
   //     });
   //   }
   // }
-
+  checkNullFieldsInObject(obj: any): string[] {
+    return Object.keys(obj).filter(key => obj[key] === null || obj[key] === undefined || obj[key] === '');
+  }
   onChange() {
+    const finalobj = { who: this.who, p: this.p, proj: this.proj, vp: this.vp, b: this.b, s: this.s, gdb: this.gdb, fiscalyear:this.FiscalYear }
+    const nullFields = this.checkNullFieldsInObject(finalobj);
     if (this.who != '' && this.who != undefined && !WHOConstant.includes(this.who)) {
       this._snackBar.open('Invalid WHO', 'X', {
         duration: 2000,
@@ -220,38 +224,70 @@ export class GoalsComponent {
         panelClass: ['red-snackbar']
       });
     }
-    else if (this.proj != '' && this.proj != undefined) {
-      if (this.b != undefined && this.b != ""
-        && this.p != undefined && this.p != ""
-        && this.proj != undefined && this.proj != ""
-        && this.s != undefined && this.s != ""
-        && this.vp != undefined && this.vp != ""
-        && this.who != undefined && this.who != ""
-        && this.gdb != undefined && this.gdb != ""
-        && this.FiscalYear != undefined && this.FiscalYear != "") {
-        //this.rowData1 = [{ who: this.who, p: this.p, proj: this.proj, vp: this.vp, B: this.b, e: this.e, d: this.d, s: this.s, gdb: this.gdb }, ...this.rowData1];
-        this.goalsService.createGoal({ who: this.who, p: this.p, proj: this.proj, vp: this.vp, b: this.b, e: this.e, d: this.d, s: this.s, gdb: this.gdb, fiscalyear: this.FiscalYear, updateBy: 'Sumit' }).subscribe((data: any) => {
-          console.log(data)
-          this.getgoals();
-        });
-        // Optionally, refresh the grid
-        //this.gridApi.setRowData(this.rowData1);
-        this.who = '';
-        this.p = '';
-        this.proj = '';
-        this.vp = '';
-        this.b = '';
-        this.e = '';
-        this.d = '';
-        this.s = '';
-        this.gdb = '';
-
-        this._snackBar.open('Saved Successfully', 'X', {
-          duration: 1000,
-          panelClass: ['green-snackbar']
-        });
-      }
+    else if (nullFields.length > 0) {
+      this._snackBar.open(nullFields[0] + ' can not be null', 'X', {
+        duration: 2000,
+        panelClass: ['red-snackbar']
+      });
     }
+    else {
+      //this.rowData1 = [{ who: this.who, p: this.p, proj: this.proj, vp: this.vp, B: this.b, e: this.e, d: this.d, s: this.s, gdb: this.gdb }, ...this.rowData1];
+      this.goalsService.createGoal({ who: this.who, p: this.p, proj: this.proj, vp: this.vp, b: this.b, e: this.e, d: this.d, s: this.s, gdb: this.gdb, fiscalyear: this.FiscalYear, updateBy: 'Sumit' }).subscribe((data: any) => {
+        console.log(data)
+        this.getgoals();
+      });
+      // Optionally, refresh the grid
+      //this.gridApi.setRowData(this.rowData1);
+      this.who = '';
+      this.p = '';
+      this.proj = '';
+      this.vp = '';
+      this.b = '';
+      this.e = '';
+      this.d = '';
+      this.s = '';
+      this.gdb = '';
+      this.FiscalYear = '';
+
+      this._snackBar.open('Saved Successfully', 'X', {
+        duration: 1000,
+        panelClass: ['green-snackbar']
+      });
+
+    }
+    // else if (this.proj != '' && this.proj != undefined) {
+    //   if (this.b != undefined && this.b != ""
+    //     && this.p != undefined && this.p != ""
+    //     && this.proj != undefined && this.proj != ""
+    //     && this.s != undefined && this.s != ""
+    //     && this.vp != undefined && this.vp != ""
+    //     && this.who != undefined && this.who != ""
+    //     && this.gdb != undefined && this.gdb != ""
+    //     && this.FiscalYear != undefined && this.FiscalYear != "") {
+    //     //this.rowData1 = [{ who: this.who, p: this.p, proj: this.proj, vp: this.vp, B: this.b, e: this.e, d: this.d, s: this.s, gdb: this.gdb }, ...this.rowData1];
+    //     this.goalsService.createGoal({ who: this.who, p: this.p, proj: this.proj, vp: this.vp, b: this.b, e: this.e, d: this.d, s: this.s, gdb: this.gdb, fiscalyear: this.FiscalYear, updateBy: 'Sumit' }).subscribe((data: any) => {
+    //       console.log(data)
+    //       this.getgoals();
+    //     });
+    //     // Optionally, refresh the grid
+    //     //this.gridApi.setRowData(this.rowData1);
+    //     this.who = '';
+    //     this.p = '';
+    //     this.proj = '';
+    //     this.vp = '';
+    //     this.b = '';
+    //     this.e = '';
+    //     this.d = '';
+    //     this.s = '';
+    //     this.gdb = '';
+    //     this.FiscalYear = '';
+
+    //     this._snackBar.open('Saved Successfully', 'X', {
+    //       duration: 1000,
+    //       panelClass: ['green-snackbar']
+    //     });
+    //   }
+    // }
   }
   emailValidator(params: any) {
     const newValue = params.newValue;
