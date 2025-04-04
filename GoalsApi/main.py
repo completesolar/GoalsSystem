@@ -1,9 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse
 from controllers.goals import router
 from database import engine
 from models.models import Base
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -12,7 +14,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-app.mount("/ui-goals", StaticFiles(directory="/app/static", html=True), name="static")
+app.mount("/ui-goals/static", StaticFiles(directory="/app/static"), name="static")
 
 origins = [
     "http://localhost",
@@ -38,3 +40,12 @@ app.include_router(router)
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Goals project!"}
+
+@app.get("/ui-goals/{path:path}")
+async def serve_spa(request: Request, path: str):
+    static_file_path = Path(f"/app/static/{path}")
+    if static_file_path.exists() and static_file_path.is_file():
+        return FileResponse(static_file_path)
+
+    index_file_path = Path("/app/static/index.html")
+    return FileResponse(index_file_path)
