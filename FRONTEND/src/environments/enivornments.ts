@@ -1,6 +1,5 @@
 export const environment = {
-    // baseURL: 'http://localhost:600/api',
-    baseURL: 'https://dev-goals.completesolar.com',
+    baseURL: 'http://localhost:600/api',
     production: false,
     serviceURL: "http://localhost:4200",
     config: {

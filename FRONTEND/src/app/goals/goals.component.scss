@@ -162,6 +162,11 @@
   top: 22px;
   z-index: 2;
 }
+::ng-deep .p-sortable-column-icon {
+  height: 10px;  /* Adjust as needed */
+  vertical-align: middle;
+}
+
 
 .saved {
   border: none;
@@ -185,7 +190,7 @@
 }
 
 .logo {
-  width: 120px;
+  width: 175px;
 }
 
 .info-section {
@@ -251,11 +256,14 @@
   max-width: 600px;
 }
 
+::ng-deep .goal-history-table th:nth-child(11),
+::ng-deep .goal-history-table td:nth-child(11) {
+  width: 150px;
+  min-width: 150px;
+  max-width: 200px;
+}
+
 .custom-goal-table th:last-child
 {
   text-align: left;
-}
-::ng-deep .goal-history-table .p-datatable-tbody > tr > td {
-  padding: 6px 10px;
-  font-size: 13px;
 }

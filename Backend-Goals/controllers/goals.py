@@ -3,6 +3,13 @@ from sqlalchemy.orm import Session
 from schemas.schema import Goals, GoalsResponse, GoalsUpdate
 from schemas.goalshistory import goalshistory, goalhistoryResponse
 from schemas.who import WhoResponse
+from schemas.status import StatusResponse
+from schemas.proj import ProjResponse
+from schemas.vp import VPResponse
+from schemas.p import PResponse
+from schemas.b import BResponse
+from schemas.e import EResponse
+from schemas.d import DResponse
 from database import get_db
 from crud import (
     create_goal,
@@ -11,17 +18,51 @@ from crud import (
     update_goal,
     get_all_goals_history,
     get_goalshistory_by_id,
-    get_all_who
+    get_all_who,
+    get_all_status,
+    get_all_proj,
+    get_all_vp,
+    get_all_p,
+    get_all_b,
+    get_all_e,
+    get_all_d
+
 )
 from typing import Annotated
 
 router = APIRouter()
 
+@router.get("/api/b/", response_model=list[BResponse])
+def read_b(db: Session = Depends(get_db)):
+    return get_all_b(db)
+
+@router.get("/api/e/", response_model=list[EResponse])
+def read_e(db: Session = Depends(get_db)):
+    return get_all_e(db)
+
+@router.get("/api/d/", response_model=list[DResponse])
+def read_d(db: Session = Depends(get_db)):
+    return get_all_d(db)
+
+@router.get("/api/p/", response_model=list[PResponse])
+def read_p(db: Session = Depends(get_db)):
+    return get_all_p(db)
+
+@router.get("/api/vp/", response_model=list[VPResponse])
+def read_vp(db: Session = Depends(get_db)):
+    return get_all_vp(db)
+
+@router.get("/api/proj/", response_model=list[ProjResponse])
+def read_proj(db: Session = Depends(get_db)):
+    return get_all_proj(db)
+
+@router.get("/api/status/", response_model=list[StatusResponse])
+def read_status(db: Session = Depends(get_db)):
+    return get_all_status(db)
 
 @router.get("/api/who/", response_model=list[WhoResponse])
 def read_who(db: Session = Depends(get_db)):
     return get_all_who(db)
-
 
 @router.post("/api/goals/", response_model=GoalsResponse)
 def create_goals(goal: Goals, db: Session = Depends(get_db)):

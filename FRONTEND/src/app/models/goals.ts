@@ -1,6 +1,6 @@
 export interface Goals {
   who: string;
-  p: number;
+  p: number | null;
   proj: string;
   vp: string;
   b: number;

@@ -7,6 +7,14 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { GoalsService } from '../services/goals.service';
 import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import moment from 'moment-timezone';
+import * as FileSaver from 'file-saver';
+import ExcelJS from 'exceljs';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
+
 
 import {
   WHOConstant,
@@ -27,7 +35,8 @@ interface Year {
 @Component({
   selector: 'app-goals',
   standalone: true,
-  imports: [TableModule,
+  imports: [
+    TableModule,
     ButtonModule,
     DialogModule,
     InputTextModule,
@@ -35,11 +44,14 @@ interface Year {
     ReactiveFormsModule,
     CommonModule,
     DropdownModule,
-    SelectModule],
-
+    SelectModule,
+    ToastModule
+  ],
+  providers: [MessageService], // ✅ Add this line to fix the injector error
   templateUrl: './goals.component.html',
   styleUrl: './goals.component.scss'
 })
+
 export class GoalsComponent {
   goal: any = [];
   goalHistory: any = [];
@@ -49,11 +61,13 @@ export class GoalsComponent {
   currentDate = new Date().getFullYear();
   selectedYear: Year = { name: this.currentDate, code: this.currentDate };
   display = false;
+  whoOptions: any[] = [];
 
-  whoOptions = WHOConstant.map(value => ({ label: value, value }));
+  //whoOptions = WHOConstant.map(value => ({ label: value, value }));
   vpOptions = VPContant.map(value => ({ label: value, value }));
   projOptions = ProjConstant.map(value => ({ label: value, value }));
   priorityOptions = PriorityConstant.map(value => ({ label: value, value }));
+  priorityOptionseb =  PriorityConstant.map(value => ({ label: value.toString(), value: value.toString() }));
   statusOptions = statuslist.map(value => ({ label: value, value }));
 
 
@@ -81,11 +95,12 @@ export class GoalsComponent {
     { field: 's', header: 'S' },
     { field: 'year', header: 'Year' },
     { field: 'goal', header: 'GOAL DELIVERABLE' },
+    { field: 'createdAt', header: 'Created Time' },
   ];
 
   newRow: Goals = {
     who: '',
-    p: 1,
+    p: null,
     proj: '',
     vp: '',
     b: this.getCurrentWeekNumber(),
@@ -100,14 +115,27 @@ export class GoalsComponent {
     description: '',
   };
 
-  constructor(private goalsService: GoalsService) {
+  constructor(private goalsService: GoalsService,private messageService: MessageService) {
 
   }
 
   ngOnInit() {
     this.loadGoals();
+    this.loadWhoOptions();
     // this.getYearsList();
   }
+
+  loadWhoOptions(): void {
+    this.goalsService.getWhoOptions().subscribe({
+      next: (data) => {
+        this.whoOptions = data;
+      },
+      error: (err) => {
+        console.error('Failed to load WHO options:', err);
+      }
+    });
+  }
+  
 
 
   // addGoal() {
@@ -166,11 +194,7 @@ export class GoalsComponent {
   }
 
   loadGoals(): void {
-    // Ensure the goals are filtered by the selected year
     this.goalsService.getGoals().subscribe((goals: Goals[]) => {
-      // const currentData = goals.filter(
-      //   (g: any) => g.fiscalyear === this.selectedYear.code // Filter by the selected year
-      // );
       this.goal = goals;
       console.log('Fetched Goalsssssssss:', this.goal);
       this.goal = this.goal.map((goal: any) => ({
@@ -184,16 +208,19 @@ export class GoalsComponent {
   loadGoalsHistory(id: number) {
     this.goalsService.getGoalHistory(id).subscribe(
       (goalsHistory) => {
-        this.goalHistory = goalsHistory;
-        console.log('Fetched Goals History:', this.goalHistory);
+        // Sort by createddate in descending order (latest first)
+        this.goalHistory = (goalsHistory as any[]).sort((a, b) => {
+          return new Date(b.createddate).getTime() - new Date(a.createddate).getTime();
+        });  
+        console.log('Fetched Goals History (Sorted):', this.goalHistory);
       },
       (error) => {
         console.error('Error fetching goal history:', error);
       }
     );
   }
+  
 
-  // Call this method whenever the year is changed
   onYearChange() {
     this.loadGoals();  // Refresh the goals based on the selected year
   }
@@ -233,19 +260,155 @@ export class GoalsComponent {
     };
   }
   addGoal() {
-    debugger;
-    if (this.isValidGoalData(this.newRow)) {
-      this.newRow.e = this.newRow.e.toString();
-      this.newRow.d = this.newRow.d.toString();
-      this.goalsService.createGoal(this.newRow).subscribe((response) => {
-        if (response) {
-          this.selectedYear = { name: Number(this.newRow.fiscalyear), code: Number(this.newRow.fiscalyear) };
-          this.loadGoals();
-          this.addNewRow();
-        }
+ 
+    if (!this.isValidGoalData(this.newRow)) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Missing or Invalid Data',
+        detail: 'Please fill in all required fields before adding a goal.'
       });
+      return;
     }
+  
+    this.newRow.e = this.newRow.e.toString();
+    this.newRow.d = this.newRow.d.toString();
+  
+    this.goalsService.createGoal(this.newRow).subscribe((response) => {
+      if (response) {
+        this.selectedYear = { name: Number(this.newRow.fiscalyear), code: Number(this.newRow.fiscalyear) };
+        this.loadGoals();
+        this.addNewRow();
+  
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Goal Added',
+          detail: 'New goal has been added successfully.'
+        });
+      }
+    });
   }
+  
+
+  exportExcelData(): void {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Goals');
+    const imageUrl = 'assets/logo.png';
+
+    fetch(imageUrl)
+      .then(response => response.blob())
+      .then(blob => blob.arrayBuffer())
+      .then(buffer => {
+        const imageId = workbook.addImage({
+          buffer: buffer,
+          extension: 'png',
+        });
+
+        worksheet.addImage(imageId, {
+          tl: { col: 0, row: 0 },
+          ext: { width: 200, height: 80 },
+        });
+
+        const titleCell = worksheet.getCell('F3');
+        titleCell.value = 'Goal Report';
+        titleCell.font = { size: 18, bold: true };
+        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        const columns = [
+          { header: 'WHO', key: 'who' },
+          { header: 'P', key: 'p' },
+          { header: 'PROJ', key: 'proj' },
+          { header: 'VP', key: 'vp' },
+          { header: 'B', key: 'b' },
+          { header: 'E', key: 'e' },
+          { header: 'D', key: 'd' },
+          { header: 'S', key: 's' },
+          { header: 'Year', key: 'fiscalyear' },
+          { header: 'GOAL DELIVERABLE', key: 'gdb' },
+        ];
+
+        const dateTime = new Date().toLocaleString();
+        const dateCell = worksheet.getCell('A7');
+        dateCell.value = `Report generated on: ${dateTime}`;
+        dateCell.font = { italic: true, size: 11 };
+        dateCell.alignment = { horizontal: 'left', vertical: 'middle' };
+        worksheet.mergeCells(`A7:K7`);
+        const headerRowIndex = 8;
+        const headerRow = worksheet.getRow(headerRowIndex);
+        columns.forEach((col, index) => {
+          const cell = headerRow.getCell(index + 1);
+          cell.value = col.header;
+          cell.font = { bold: true };
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'E2EFDA' },
+          };
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          worksheet.getColumn(index + 1).width = Math.max(15, col.header.length + 5);
+        });
+
+        this.goal.forEach((item: any, index: number) => {
+          const rowValues = columns.map(col => item[col.key]);
+          worksheet.insertRow(headerRowIndex + 1 + index, rowValues);
+        });
+
+        workbook.xlsx.writeBuffer().then((data: ArrayBuffer) => {
+          const blob = new Blob([data], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          });
+          const fileName = `Goals_${new Date().getFullYear()}.xlsx`;
+          FileSaver.saveAs(blob, fileName);
+        });
+      });
+  }
+
+  exportPdfData(): void {
+    const doc = new jsPDF();
+
+    const logo = new Image();
+    logo.src = 'assets/logo.png';
+
+    logo.onload = () => {
+      doc.addImage(logo, 'PNG', 10, 10, 50, 30);
+      doc.setFontSize(18);
+      doc.text('Goals Report ', 70, 30);
+      const currentISTTime = moment().tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
+      doc.setFontSize(11);
+      doc.text(`Reported Date & time: ${currentISTTime} (IST)`, 70, 38);
+
+      const columns = ["Who", "P", "Proj", "VP", "B", "E", "D", "S", "Year", "Goal Delivarable"];
+      const rows = this.goal.map((goal: any) => [
+        goal.who,
+        goal.p,
+        goal.proj,
+        goal.vp,
+        goal.b,
+        goal.e,
+        goal.d,
+        goal.s,
+        goal.fiscalyear,
+        goal.gdb
+      ]);
+
+      autoTable(doc, {
+        startY: 50,
+        head: [columns],
+        body: rows,
+        theme: 'striped',
+        headStyles: {
+          fillColor: [226, 239, 218],
+          textColor: [0, 0, 0]
+        },
+        bodyStyles: {
+          textColor: [0, 0, 0]
+        },
+        margin: { top: 10 },
+      });
+      const fileName = `Goals_${new Date().getFullYear()}.pdf`;
+      doc.save(fileName);
+    };
+  }
+
+ 
 
   enableEdit(row: any): void {
     row.isEditable = true;

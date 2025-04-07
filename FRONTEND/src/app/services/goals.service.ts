@@ -2,6 +2,10 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/enivornments';
 import { Goals } from '../models/goals';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+
 
 @Injectable({
   providedIn: 'root'
@@ -29,4 +33,16 @@ export class GoalsService {
   login() {
     return this.http.get(`${this.baseURL}/login`);
   }
+  getWhoOptions(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseURL}/who`).pipe(
+      map(data =>
+        data
+          .filter(item => item.decoder && item.first_name && item.last_name)
+          .map(item => ({
+            label: `${item.decoder} (${item.last_name}, ${item.first_name} )`,
+            value: item.decoder
+          }))
+      )
+    );
+}
 }

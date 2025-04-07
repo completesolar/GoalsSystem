@@ -3,8 +3,8 @@ from typing import List, Optional
 
 class WhoBase(BaseModel):
     id: int
-    slno: int
-    ee_id: int
+    slno: Optional[int]
+    ee_id: Optional[int]
     last_name: str
     first_name: str
     middle_name: Optional[str] = None

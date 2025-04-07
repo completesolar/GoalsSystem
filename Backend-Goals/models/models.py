@@ -3,6 +3,28 @@ from sqlalchemy.orm import relationship
 from database import Base
 from datetime import datetime
 
+class B(Base):
+    __tablename__ = "b"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    b = Column(Integer, unique=True, index=True)
+
+
+class E(Base):
+    __tablename__ = "e"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    e = Column(Integer, unique=True, index=True)
+
+
+class D(Base):
+    __tablename__ = "d"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    d = Column(Integer, unique=True, index=True)
+
+
+class P(Base):
+    __tablename__ = "p"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    p = Column(Integer, unique=True, index=True)
 
 class Goals(Base):
     __tablename__ = "goals"
@@ -25,6 +47,11 @@ class Goals(Base):
     )  # Auto-update on row update
     description = Column(Text, nullable=True)  # Allows long text descriptions
 
+class Status(Base):
+    __tablename__ = 'status'
+    id = Column(Integer, primary_key=True, index=True)
+    status = Column(String, unique=True, index=True)
+    description = Column(String, nullable=True)
 
 class Who(Base):
     __tablename__ = "who"
@@ -45,16 +72,10 @@ class Proj(Base):
     proj = Column(String, unique=True, index=True)
 
 
-class Vp(Base):
+class VP(Base):
     __tablename__ = "vp"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     vp = Column(String, unique=True, index=True)
-
-
-class Status(Base):
-    __tablename__ = "status"
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    status = Column(String, unique=True, index=True)
 
 
 class goalshistory(Base):

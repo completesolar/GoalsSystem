@@ -2,19 +2,19 @@ from pydantic import BaseModel
 from typing import Optional
 
 # Base schema shared by create & update
-class ProjBase(BaseModel):
-    proj: Optional[str] = None
+class PBase(BaseModel):
+    p: Optional[int] = None
 
 # Create schema
-class ProjCreate(ProjBase):
+class PCreate(PBase):
     pass
 
 # Update schema
-class ProjUpdate(ProjBase):
+class PUpdate(PBase):
     pass
 
 # Schema used when returning data (e.g. from the DB)
-class ProjResponse(ProjBase):
+class PResponse(PBase):
     id: int
 
     class Config:
