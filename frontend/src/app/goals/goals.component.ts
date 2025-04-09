@@ -632,7 +632,7 @@ export class GoalsComponent {
     console.log("logout")
     if (isPlatformBrowser(this.platform)) {
       this.msalService.logoutRedirect({
-        postLogoutRedirectUri: 'http://localhost:4200/login'
+        postLogoutRedirectUri: 'https://dev-goals.completesolar.com/login'
       });
     }
   }
