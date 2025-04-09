@@ -1,0 +1,135 @@
+<!-- Header Section -->
+<div class="flex align-items-center gap-3 mb-3 p-2 text-white border-round">
+  <img
+    src="assets/logo.png"
+    alt="Complete Solar"
+    class="border-circle"
+    style="width: 50px"
+  />
+  <div>
+    <div class="text-xl font-bold">Executive Staff Weekly Goals</div>
+    <div class="text-sm">WW6 (Who/P)</div>
+    <div class="text-sm">JYV {{ today | date : "dd-MM-yyyy" }}</div>
+  </div>
+</div>
+
+<!-- Info Section -->
+<div class="mb-4 px-3">
+  <p class="my-1">
+    <strong>Key:</strong> WHO=Owner of the goal, P=Priority, PROJ=Project,
+    VP=Boss of Goal Owner, B=WW goal was given, E=WW goal is due
+  </p>
+  <p class="my-1">
+    <strong>S =</strong> N=New, C=Complete, ND=Newly Delinquent, CD=Continuing
+    Delinquent, R=Revised, K=Killed
+  </p>
+  <p class="my-1">
+    <strong>PROJ TYPES:</strong> ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG,
+    FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX,
+    TJRS
+  </p>
+  <p class="my-1"><strong>D:</strong> Delinquent</p>
+</div>
+
+<p-table
+  [value]="goal"
+  [paginator]="true"
+  [rows]="10"
+  [showCurrentPageReport]="true"
+  [rowsPerPageOptions]="[10, 20, 50]"
+  currentPageReportTemplate="Showing {first} to {last} of {totalRecords} goals"
+  [paginatorPosition]="'bottom'"
+  responsiveLayout="scroll"
+  [style]="{ width: '100%' }"
+>
+  <ng-template pTemplate="header">
+    <tr>
+      <th *ngFor="let col of columns">
+        <b>{{ col.header }}</b>
+      </th>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-row let-rowIndex="rowIndex">
+    <tr *ngIf="rowIndex === 0">
+      <td><input pInputText [(ngModel)]="newRow.who" /></td>
+      <td><input type="number" pInputText [(ngModel)]="newRow.p" /></td>
+      <td><input pInputText [(ngModel)]="newRow.proj" /></td>
+      <td><input pInputText [(ngModel)]="newRow.vp" /></td>
+      <td><input type="number" pInputText [(ngModel)]="newRow.b" /></td>
+      <td><input type="number" pInputText [(ngModel)]="newRow.e" /></td>
+      <td><input type="number" pInputText [(ngModel)]="newRow.d" /></td>
+      <td><input pInputText [(ngModel)]="newRow.s" /></td>
+      <td><input pInputText [(ngModel)]="newRow.goal" /></td>
+      <td>
+        <button
+          pButton
+          type="button"
+          icon="pi pi-plus"
+          label="Add"
+          (click)="addGoal()"
+        ></button>
+      </td>
+    </tr>
+
+    <tr>
+      <td>{{ row.who }}</td>
+      <td>{{ row.p }}</td>
+      <td>{{ row.proj }}</td>
+      <td>{{ row.vp }}</td>
+      <td>{{ row.b }}</td>
+      <td>{{ row.e }}</td>
+      <td>{{ row.d }}</td>
+      <td>{{ row.s }}</td>
+      <td>
+        <b>{{ row.goal }}</b>
+      </td>
+      <td>
+        <button
+          pButton
+          type="button"
+          icon="pi pi-pencil"
+          class="p-button-text"
+        ></button>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<!--
+<p-table
+  [value]="rowData1"
+  [paginator]="true"
+  [rows]="10"
+  [responsive]="true"
+  (onRowEditSave)="onCellValueChanged($event)"
+  [autoLayout]="true"
+  [scrollable]="true"
+  scrollHeight="400px"
+  editable="true"
+>
+  <ng-template pTemplate="header">
+    <tr>
+      <th *ngFor="let col of columns">{{ col.header }}</th>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-rowData let-i="rowIndex">
+    <tr>
+      <td *ngFor="let col of columns; let j = index">
+        <ng-container *ngIf="i === 0">
+          <input
+            pInputText
+            [(ngModel)]="rowData[col.field]"
+            *ngIf="col.field !== 'Action'"
+          />
+          <button *ngIf="col.field === 'Action'" (click)="addRow()">Add</button>
+        </ng-container>
+
+        <ng-container *ngIf="i !== 0">
+          {{ rowData[col.field] }}
+        </ng-container>
+      </td>
+    </tr>
+  </ng-template>
+</p-table> -->
