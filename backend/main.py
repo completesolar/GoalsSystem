@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.responses import FileResponse
 from controllers.goals import router
 from database import engine
@@ -46,6 +46,9 @@ async def serve_spa(request: Request, path: str):
     static_file_path = Path(f"/app/static/{path}")
     if static_file_path.exists() and static_file_path.is_file():
         return FileResponse(static_file_path)
+
+    if Path(path).suffix in [".ico", ".png", ".jpg", ".css", ".js", ".map", ".json"]:
+         return Response(status_code=404)
 
     index_file_path = Path("/app/static/ui-goals/index.html")
     return FileResponse(index_file_path)
