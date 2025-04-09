@@ -1,0 +1,10 @@
+services:
+  backend:
+    build: .
+    container_name: goalsapp
+    image: goalsappimage
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
