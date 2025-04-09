@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from database import Base
 from datetime import datetime
 
+
 class B(Base):
     __tablename__ = "b"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -26,6 +27,7 @@ class P(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     p = Column(Integer, unique=True, index=True)
 
+
 class Goals(Base):
     __tablename__ = "goals"
 
@@ -45,13 +47,15 @@ class Goals(Base):
     updateddatetime = Column(
         DateTime, default=func.now(), onupdate=func.now()
     )  # Auto-update on row update
-    description = Column(Text, nullable=True)  # Allows long text descriptions
+    description = Column(Text, nullable=True)
+
 
 class Status(Base):
-    __tablename__ = 'status'
+    __tablename__ = "status"
     id = Column(Integer, primary_key=True, index=True)
     status = Column(String, unique=True, index=True)
     description = Column(String, nullable=True)
+
 
 class Who(Base):
     __tablename__ = "who"
@@ -65,6 +69,7 @@ class Who(Base):
     mobile = Column(String(20), nullable=True)
     work_email = Column(String(255), unique=True, nullable=True)
     title = Column(String(255), nullable=True)
+
 
 class Proj(Base):
     __tablename__ = "proj"
@@ -97,9 +102,12 @@ class goalshistory(Base):
     fiscalyear = Column(Integer, nullable=True)
     updateBy = Column(String, nullable=True)
     description = Column(Text, nullable=True)
+
     class Config:
         orm_mode = True
-        
+
     table_goal = relationship("Goals", back_populates="table_history_items")
 
-    Goals.table_history_items = relationship("goalshistory", back_populates="table_goal")
+    Goals.table_history_items = relationship(
+        "goalshistory", back_populates="table_goal"
+    )

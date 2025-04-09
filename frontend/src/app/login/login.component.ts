@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
-import { Router, RouterConfigOptions } from '@angular/router';
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
+import { Router } from '@angular/router';
 import { MsalService, MsalBroadcastService, MSAL_GUARD_CONFIG, MsalGuardConfiguration } from '@azure/msal-angular';
 import { InteractionStatus, RedirectRequest } from '@azure/msal-browser';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
-import { GoalsService } from '../services/goals.service'
+import { GoalsService } from '../services/goals.service';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-login',
@@ -18,48 +19,78 @@ export class LoginComponent implements OnInit, OnDestroy {
   private readonly _destroying$ = new Subject<void>();
 
   constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
     @Inject(MSAL_GUARD_CONFIG) private msalGuardConfig: MsalGuardConfiguration,
     private router: Router,
-    private goalService: GoalsService,
+    private goalsService: GoalsService,
     private broadcastService: MsalBroadcastService,
-    private authService: MsalService) { }
+    private authService: MsalService
+  ) { }
 
   ngOnInit() {
-    this.isIframe = window !== window.parent && !window.opener;
+    if (isPlatformBrowser(this.platformId)) {
+      this.isIframe = window !== window.parent && !window.opener;
 
-    this.broadcastService.inProgress$
-      .pipe(
-        filter((status: InteractionStatus) => status === InteractionStatus.None),
-        takeUntil(this._destroying$)
-      )
-      .subscribe(() => {
-        this.setLoginDisplay();
-      })
+      // Ensure that MSAL is initialized before any authentication request
+      this.authService.instance.initialize().then(() => {
+        this.broadcastService.inProgress$
+          .pipe(
+            filter((status: InteractionStatus) => status === InteractionStatus.None),
+            takeUntil(this._destroying$)
+          )
+          .subscribe(() => {
+            this.setLoginDisplay();
+          });
+        
+        // Ensure that any redirect handling is processed before continuing
+        this.authService.instance.handleRedirectPromise().then(() => {
+          console.log('MSAL redirect promise handled');
+        }).catch((error) => {
+          console.error('Error handling redirect promise:', error);
+        });
+      }).catch((error) => {
+        console.error('Error initializing MSAL instance: ', error);
+      });
+    }
   }
 
   login() {
-    if (this.msalGuardConfig.authRequest) {
-      this.authService.loginPopup({ ...this.msalGuardConfig.authRequest } as RedirectRequest).subscribe({
-        next: () => {
-          this.router.navigate(['goals'])
-        }
-      });
-    } else {
-      this.authService.loginRedirect();
+    if (isPlatformBrowser(this.platformId)) {
+      if (this.msalGuardConfig.authRequest) {
+        // Ensure the MSAL instance is initialized before calling loginPopup
+        this.authService.loginPopup({ ...this.msalGuardConfig.authRequest } as RedirectRequest).subscribe({
+          next: () => {
+            this.router.navigate(['goals']);
+          },
+          error: (err) => {
+            console.error('Login Popup Error: ', err);
+          }
+        });
+      } else {
+        this.authService.loginRedirect().subscribe({
+          next: () => {
+            this.router.navigate(['goals']);
+          },
+          error: (err) => {
+            console.error('Login Redirect Error: ', err);
+          }
+        });
+      }
     }
   }
 
   login1() {
-    this.goalService.login().subscribe((data: any) => {
+    this.goalsService.login().subscribe((data: any) => {
       console.log(data);
-    }
-    );
+    });
   }
 
-  logout() { // Add log out function here
-    this.authService.logoutRedirect({
-      postLogoutRedirectUri: 'http://localhost:4200'
-    });
+  logout() {
+    if (isPlatformBrowser(this.platformId)) {
+      this.authService.logoutRedirect({
+        postLogoutRedirectUri: 'http://localhost:4200'
+      });
+    }
   }
 
   setLoginDisplay() {

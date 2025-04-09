@@ -101,7 +101,6 @@
   line-height: 1.2;
 }
 
-
 ::ng-deep .custom-goal-table th:nth-child(11),
 ::ng-deep .custom-goal-table td:nth-child(11) {
   width: 100px;
@@ -112,6 +111,7 @@
 ::ng-deep .custom-goal-table th {
   background-color: rgb(226, 239, 218) !important;
   color: white; /* Optionally set text color */
+  height: 40px;
 }
 
 /* Optionally, you can style the header row further */
@@ -163,10 +163,9 @@
   z-index: 2;
 }
 ::ng-deep .p-sortable-column-icon {
-  height: 10px;  /* Adjust as needed */
+  height: 10px; /* Adjust as needed */
   vertical-align: middle;
 }
-
 
 .saved {
   border: none;
@@ -194,19 +193,40 @@
 }
 
 .info-section {
-    background-color: whitesmoke;
-    border-left: 4px solid green;
-    max-width: 95%;
-    margin: 0 auto;
-    border-radius: 10px;
-    padding: 10px;
+  background-color: whitesmoke;
+  border-left: 4px solid green;
+  max-width: 95%;
+  margin: 0 auto;
+  border-radius: 10px;
+  padding: 5px 10px 5px 10px;
+  border: 2px solid #333;
+  border-radius: 5px;
+}
+
+.title-section {
+  background-color: whitesmoke;
+  max-width: 95%;
+  margin: 0 auto;
+  border-radius: 10px;
+}
+.body {
+  background-color: whitesmoke;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+}
+.logo-section {
+  background-color: #fff;
+  max-width: 95%;
+  margin: 0 auto;
+  border-radius: 10px;
+  padding: 6px;
 }
 
 .form-section {
   display: flex;
   justify-content: flex-end;
   max-width: 96%;
-  margin: 0 auto 20px auto;
+  // margin: 0 auto 20px auto;
 }
 .titles {
   text-align: right;
@@ -219,8 +239,8 @@
 }
 
 .sub-title {
-  font-size: 15px;
-  color: #4caf50;
+  font-size: 12px;
+  // color: #4caf50;
   margin-top: 4px;
 }
 
@@ -263,7 +283,82 @@
   max-width: 200px;
 }
 
-.custom-goal-table th:last-child
-{
+.custom-goal-table th:last-child {
   text-align: left;
+}
+
+::ng-deep .p-datatable-table-container {
+  border-radius: 20px 20px;
+}
+
+.settingSelect {
+  background: none !important;
+  box-shadow: none;
+  border: none;
+  // width: 40% !important;
+}
+
+.settingSelect:hover {
+  background: none !important;
+}
+
+.settings-icon {
+  width: 19px;
+  margin-right: 5px;
+}
+
+.settingSelect ::ng-deep.p-placeholder {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.goalsClass {
+  color: #19582e;
+  border-radius: 23px;
+  background-color: #dbedcb;
+  width: 75px;
+  padding: 0 0 0 6px;
+}
+::ng-deep .custom-goal-table tbody tr:nth-child(even) {
+  background-color: rgb(226, 239, 218) !important;
+}
+
+::ng-deep .custom-goal-table tbody tr:nth-child(odd) {
+  background-color: rgb(255, 255, 255) !important;
+}
+
+/* Ensure inputs and dropdowns inside the row inherit background */
+::ng-deep .custom-goal-table tbody tr:nth-child(even) input,
+::ng-deep .custom-goal-table tbody tr:nth-child(even) .p-inputtext,
+::ng-deep .custom-goal-table tbody tr:nth-child(even) .p-dropdown,
+::ng-deep .custom-goal-table tbody tr:nth-child(even) .p-select {
+  background-color: rgb(226, 239, 218) !important;
+}
+
+::ng-deep .custom-goal-table tbody tr:nth-child(odd) input,
+::ng-deep .custom-goal-table tbody tr:nth-child(odd) .p-inputtext,
+::ng-deep .custom-goal-table tbody tr:nth-child(odd) .p-dropdown,
+::ng-deep .custom-goal-table tbody tr:nth-child(odd) .p-select {
+  background-color: rgb(255, 255, 255) !important;
+}
+
+:host ::ng-deep .custom-select-width {
+  width: 8rem !important;
+}
+::ng-deep .p-paginator-rpp-dropdown,
+::ng-deep .p-paginator-rpp-dropdown > ::ng-deep .p-select-label {
+  width: 5rem !important;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+/* Add space between the calendar icon and the date */
+.calendar-icon {
+  margin-right: 5px; /* Adds 10px space to the right of the icon */
+}
+
+/* Optional: If you want more space between icon and date, you can adjust the margin */
+.sub-title {
+  margin-left: 2px; /* Adds left margin if needed */
 }

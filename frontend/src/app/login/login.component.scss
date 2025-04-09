@@ -1,14 +1,56 @@
-.header-bar {
-  width: 100%;
-  height: 60px;
-  background-color: darkgrey;
-  color: white;
+/* Center the entire page using Flexbox */
+.login-page {
   display: flex;
+  justify-content: center;
   align-items: center;
+  height: 100vh;  /* Full viewport height */
+  background-color: #f4f4f4;  /* Light gray background */
+}
 
-  .title {
-    font-size: x-large;
-    font-weight: bold;
-    margin-left: 10px;
-  }
+/* Styling for the login container */
+.login-container {
+  text-align: center;  /* Center the text inside the container */
+  background-color: white;  /* White background for the login box */
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  /* Slight shadow for the container */
+  width: 100%;
+  max-width: 400px;  /* Limit the width for better design */
+}
+
+/* Logo styling */
+.login-logo {
+  width: 150px;  /* Set a fixed size for the logo */
+  margin-bottom: 20px;  /* Space between logo and title */
+}
+
+/* Title styling */
+.login-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;  /* Dark gray color for the title */
+  margin-bottom: 30px;  /* Space between title and button */
+}
+
+/* Styling for the login button */
+.login-button {
+  background-color: #0078d4;  /* Microsoft blue */
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 5px;
+  width: 100%;  /* Make the button full width */
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.login-button:hover {
+  background-color: #005a8a;  /* Darker blue on hover */
+  transform: scale(1.05);  /* Slight scale effect for hover */
+}
+
+.login-button:focus {
+  outline: none;  /* Remove the default focus outline */
 }

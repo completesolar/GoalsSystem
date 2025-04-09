@@ -45,4 +45,27 @@ export class GoalsService {
       )
     );
 }
+
+getStatus() {
+  return this.http.get(`${this.baseURL}/status`);
+}
+getD() {
+  return this.http.get(`${this.baseURL}/d`);
+}
+getP() {
+  return this.http.get(`${this.baseURL}/p`);
+}
+getVP() {
+  return this.http.get(`${this.baseURL}/vp`);
+}
+getProj() {
+  return this.http.get(`${this.baseURL}/proj`);
+}
+getB() {
+  return this.http.get(`${this.baseURL}/b`);
+}
+getE() {
+  return this.http.get(`${this.baseURL}/b`);
+}
+
 }

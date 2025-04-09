@@ -25,47 +25,56 @@ from crud import (
     get_all_p,
     get_all_b,
     get_all_e,
-    get_all_d
-
+    get_all_d,
 )
 from typing import Annotated
 
 router = APIRouter()
 
-@router.get("/api/b/", response_model=list[BResponse])
+
+@router.get("/api/b", response_model=list[BResponse])
 def read_b(db: Session = Depends(get_db)):
     return get_all_b(db)
 
-@router.get("/api/e/", response_model=list[EResponse])
+
+@router.get("/api/e", response_model=list[EResponse])
 def read_e(db: Session = Depends(get_db)):
     return get_all_e(db)
 
-@router.get("/api/d/", response_model=list[DResponse])
+
+@router.get("/api/d", response_model=list[DResponse])
 def read_d(db: Session = Depends(get_db)):
     return get_all_d(db)
 
-@router.get("/api/p/", response_model=list[PResponse])
+
+@router.get("/api/p", response_model=list[PResponse])
 def read_p(db: Session = Depends(get_db)):
     return get_all_p(db)
 
-@router.get("/api/vp/", response_model=list[VPResponse])
+
+@router.get("/api/vp", response_model=list[VPResponse])
 def read_vp(db: Session = Depends(get_db)):
     return get_all_vp(db)
 
-@router.get("/api/proj/", response_model=list[ProjResponse])
+
+@router.get("/api/proj", response_model=list[ProjResponse])
 def read_proj(db: Session = Depends(get_db)):
     return get_all_proj(db)
 
-@router.get("/api/status/", response_model=list[StatusResponse])
+
+@router.get("/api/status", response_model=list[StatusResponse])
 def read_status(db: Session = Depends(get_db)):
     return get_all_status(db)
 
-@router.get("/api/who/", response_model=list[WhoResponse])
+
+@router.get("/api/who", response_model=list[WhoResponse])
 def read_who(db: Session = Depends(get_db)):
     return get_all_who(db)
 
-@router.post("/api/goals/", response_model=GoalsResponse)
+
+@router.post("/api/goals", response_model=GoalsResponse)
 def create_goals(goal: Goals, db: Session = Depends(get_db)):
+    # print("goal", goal)
     return create_goal(db=db, goal=goal)
 
 
@@ -80,15 +89,20 @@ def read_goal(goalid: int, db: Session = Depends(get_db)):
 @router.get("/api/goalshistory/{goalid}", response_model=list[goalhistoryResponse])
 async def get_goalshistory(goalid: int, db: Session = Depends(get_db)):
     records = get_goalshistory_by_id(db, goalid=goalid)
-    return [goalhistoryResponse.model_validate(record).model_dump() for record in records]
+    return [
+        goalhistoryResponse.model_validate(record).model_dump() for record in records
+    ]
 
-@router.get("/api/goals/", response_model=list[GoalsResponse])
+
+@router.get("/api/goals", response_model=list[GoalsResponse])
 def read_goals(db: Session = Depends(get_db)):
     return get_all_goals(db)
 
-@router.get("/api/goalshistory/", response_model=list[goalhistoryResponse])
+
+@router.get("/api/goalshistory", response_model=list[goalhistoryResponse])
 def read_goals_history(db: Session = Depends(get_db)):
     return get_all_goals_history(db)
+
 
 @router.put("/api/goals/{goalid}", response_model=GoalsUpdate)
 def update_goals(goalid: int, goal_update: GoalsUpdate, db: Session = Depends(get_db)):

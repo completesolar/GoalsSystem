@@ -23,37 +23,46 @@ from copy import deepcopy
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 def get_all_b(db: Session, response_model=list[BResponse]):
     db_b = db.query(B).order_by(B.id.desc()).all()
     return jsonable_encoder(db_b)
+
 
 def get_all_e(db: Session, response_model=list[EResponse]):
     db_e = db.query(E).order_by(E.id.desc()).all()
     return jsonable_encoder(db_e)
 
+
 def get_all_d(db: Session, response_model=list[DResponse]):
     db_d = db.query(D).order_by(D.id.desc()).all()
     return jsonable_encoder(db_d)
+
 
 def get_all_p(db: Session, response_model=list[PResponse]):
     db_p = db.query(P).order_by(P.id.desc()).all()
     return jsonable_encoder(db_p)
 
+
 def get_all_vp(db: Session, response_model=list[VPResponse]):
     db_vp = db.query(VP).order_by(VP.id.desc()).all()
     return jsonable_encoder(db_vp)
+
 
 def get_all_proj(db: Session, response_model=list[ProjResponse]):
     db_proj = db.query(Proj).order_by(Proj.id.desc()).all()
     return jsonable_encoder(db_proj)
 
+
 def get_all_status(db: Session, response_model=list[StatusResponse]):
     db_status = db.query(Status).order_by(Status.id.desc()).all()
     return jsonable_encoder(db_status)
 
+
 def get_all_who(db: Session, response_model=list[WhoResponse]):
     db_who = db.query(Who).order_by(Who.id.desc()).all()
     return jsonable_encoder(db_who)
+
 
 def create_goal(db: Session, goal: Goals):
     currentdate = datetime.now()
@@ -122,12 +131,15 @@ def add_to_history(
 def get_goals_by_id(db: Session, goalid: int):
     return db.query(Goals).filter(Goals.goalid == goalid).first()
 
+
 def get_goalshistory_by_id(db: Session, goalid: int):
     return db.query(goalshistory).filter(goalshistory.goalid == goalid).all()
+
 
 def get_all_goals(db: Session, response_model=list[GoalsResponse]):
     db_goals = db.query(Goals).order_by(Goals.goalid.desc()).all()
     return jsonable_encoder(db_goals)
+
 
 def get_all_goals_history(db: Session, response_model=list[goalhistoryResponse]):
     db_goalshistory = db.query(goalshistory).order_by(goalshistory.goalid.desc()).all()
@@ -207,7 +219,7 @@ def update_goal(db: Session, goal_id: int, goal_update: GoalsUpdate):
         gdb=goal_update.gdb,
         fiscalyear=goal_update.fiscalyear,
         updateBy=goal_update.updateBy,
-        description=goal_update.description
+        description=goal_update.description,
     )
 
     db.add(db_goalhistory)
