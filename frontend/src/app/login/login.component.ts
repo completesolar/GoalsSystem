@@ -31,28 +31,34 @@ export class LoginComponent implements OnInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) {
       this.isIframe = window !== window.parent && !window.opener;
 
-      // Ensure that MSAL is initialized before any authentication request
-      this.authService.instance.initialize().then(() => {
-        this.broadcastService.inProgress$
-          .pipe(
-            filter((status: InteractionStatus) => status === InteractionStatus.None),
-            takeUntil(this._destroying$)
-          )
-          .subscribe(() => {
-            this.setLoginDisplay();
-          });
-        
-        // Ensure that any redirect handling is processed before continuing
-        this.authService.instance.handleRedirectPromise().then(() => {
-          console.log('MSAL redirect promise handled');
-        }).catch((error) => {
-          console.error('Error handling redirect promise:', error);
+      // Ensure MSAL is initialized before any authentication request
+      this.authService.instance
+        .initialize()
+        .then(() => {
+          console.log('MSAL Initialized');
+          this.broadcastService.inProgress$
+            .pipe(
+              filter((status: InteractionStatus) => status === InteractionStatus.None),
+              takeUntil(this._destroying$)
+            )
+            .subscribe(() => {
+              this.setLoginDisplay();
+            });
+
+          this.authService.instance.handleRedirectPromise()
+            .then(() => {
+              console.log('MSAL redirect promise handled');
+            })
+            .catch((error) => {
+              console.error('Error handling redirect promise:', error);
+            });
+        })
+        .catch((error) => {
+          console.error('Error initializing MSAL instance:', error);
         });
-      }).catch((error) => {
-        console.error('Error initializing MSAL instance: ', error);
-      });
     }
-  }
+}
+
 
   login() {
     if (isPlatformBrowser(this.platformId)) {
