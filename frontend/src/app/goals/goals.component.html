@@ -254,7 +254,9 @@
             ></p-select>
           </td>
           <td><input pInputText [(ngModel)]="newRow.fiscalyear" filter /></td>
-          <td><input pInputText [(ngModel)]="newRow.gdb" /></td>
+          <td>
+            <input pInputText [(ngModel)]="newRow.gdb" maxlength="100" />
+          </td>
           <td class="align-content-center">
             <p-button
               label="New Goal"
@@ -271,123 +273,197 @@
         <!--  Actual data rows -->
         <tr *ngIf="goal.length">
           <td>
-            <p-select
-              [options]="whoOptions"
-              [(ngModel)]="row.who"
-              [disabled]="!row.isEditable"
-              optionLabel="label"
-              optionValue="value"
-              filter
-              [ngClass]="{ saved: !row.isEditable }"
+            <div
+              [pTooltip]="getLabelFromValue(row.who, whoOptions)"
+              tooltipPosition="top"
+              style="width: 100%"
             >
-              <!-- Show label in select menu -->
-              <ng-template let-option pTemplate="item">
-                {{ option.label }}
-              </ng-template>
-
-              <!-- Show value (code) when selected -->
-              <ng-template let-selectedOption pTemplate="selectedItem">
-                {{
-                  row.isEditable ? selectedOption?.label : selectedOption?.value
-                }}
-              </ng-template>
-            </p-select>
+              <p-select
+                [options]="whoOptions"
+                [(ngModel)]="row.who"
+                [disabled]="!row.isEditable"
+                optionLabel="label"
+                optionValue="value"
+                filter
+                [ngClass]="{ saved: !row.isEditable }"
+                [pTooltip]="getLabelFromValue(row.who, whoOptions)"
+                tooltipPosition="top"
+              >
+                <ng-template let-option pTemplate="item">
+                  {{ option.label }}
+                </ng-template>
+                <ng-template let-selectedOption pTemplate="selectedItem">
+                  {{
+                    row.isEditable
+                      ? selectedOption?.label
+                      : selectedOption?.value
+                  }}
+                </ng-template>
+              </p-select>
+            </div>
           </td>
 
           <td>
-            <p-select
-              [options]="priorityOptions"
-              [(ngModel)]="row.p"
-              [disabled]="!row.isEditable"
-              optionLabel="label"
-              optionValue="value"
-              filter
-              [ngClass]="{ saved: !row.isEditable }"
-            ></p-select>
+            <div
+              [pTooltip]="getLabelFromValue(row.p, priorityOptions)"
+              tooltipPosition="top"
+              style="width: 100%"
+            >
+              <p-select
+                [options]="priorityOptions"
+                [(ngModel)]="row.p"
+                [disabled]="!row.isEditable"
+                optionLabel="label"
+                optionValue="value"
+                filter
+                [ngClass]="{ saved: !row.isEditable }"
+                [pTooltip]="getLabelFromValue(row.p, priorityOptions)"
+                tooltipPosition="top"
+              ></p-select>
+            </div>
           </td>
+
+          <!-- Repeat for other p-selects -->
           <td>
-            <p-select
-              [options]="projOptions"
-              [(ngModel)]="row.proj"
-              [disabled]="!row.isEditable"
-              optionLabel="label"
-              optionValue="value"
-              filter
-              [ngClass]="{ saved: !row.isEditable }"
-            ></p-select>
+            <div
+              [pTooltip]="getLabelFromValue(row.proj, projOptions)"
+              tooltipPosition="top"
+              style="width: 100%"
+            >
+              <p-select
+                [options]="projOptions"
+                [(ngModel)]="row.proj"
+                [disabled]="!row.isEditable"
+                optionLabel="label"
+                optionValue="value"
+                filter
+                [ngClass]="{ saved: !row.isEditable }"
+                [pTooltip]="getLabelFromValue(row.proj, projOptions)"
+                tooltipPosition="top"
+              ></p-select>
+            </div>
           </td>
+
           <td>
-            <p-select
-              [options]="vpOptions"
-              [(ngModel)]="row.vp"
-              [disabled]="!row.isEditable"
-              optionLabel="label"
-              optionValue="value"
-              filter
-              [ngClass]="{ saved: !row.isEditable }"
-            ></p-select>
+            <div
+              [pTooltip]="getLabelFromValue(row.vp, vpOptions)"
+              tooltipPosition="top"
+              style="width: 100%"
+            >
+              <p-select
+                [options]="vpOptions"
+                [(ngModel)]="row.vp"
+                [disabled]="!row.isEditable"
+                optionLabel="label"
+                optionValue="value"
+                filter
+                [ngClass]="{ saved: !row.isEditable }"
+                [pTooltip]="getLabelFromValue(row.vp, vpOptions)"
+                tooltipPosition="top"
+              ></p-select>
+            </div>
           </td>
+
           <td>
-            <p-select
-              [options]="weekOptions"
-              [(ngModel)]="row.b"
-              [disabled]="!row.isEditable"
-              optionLabel="label"
-              optionValue="value"
-              filter
-              [ngClass]="{ saved: !row.isEditable }"
-            ></p-select>
-            <!-- change datatype -->
+            <div
+              [pTooltip]="getLabelFromValue(row.b, weekOptions)"
+              tooltipPosition="top"
+              style="width: 100%"
+            >
+              <p-select
+                [options]="weekOptions"
+                [(ngModel)]="row.b"
+                [disabled]="!row.isEditable"
+                optionLabel="label"
+                optionValue="value"
+                filter
+                [ngClass]="{ saved: !row.isEditable }"
+                [pTooltip]="getLabelFromValue(row.b, weekOptions)"
+                tooltipPosition="top"
+              ></p-select>
+            </div>
           </td>
+
           <td>
-            <p-select
-              [options]="priorityOptionseb"
-              [(ngModel)]="row.e"
-              [disabled]="!row.isEditable"
-              optionLabel="label"
-              optionValue="value"
-              filter
-              [ngClass]="{ saved: !row.isEditable }"
-            ></p-select>
+            <div
+              [pTooltip]="getLabelFromValue(row.e, priorityOptionseb)"
+              tooltipPosition="top"
+              style="width: 100%"
+            >
+              <p-select
+                [options]="priorityOptionseb"
+                [(ngModel)]="row.e"
+                [disabled]="!row.isEditable"
+                optionLabel="label"
+                optionValue="value"
+                filter
+                [ngClass]="{ saved: !row.isEditable }"
+                [pTooltip]="getLabelFromValue(row.e, priorityOptionseb)"
+                tooltipPosition="top"
+              ></p-select>
+            </div>
           </td>
+
           <td>
-            <p-select
-              [options]="priorityOptionseb"
-              [(ngModel)]="row.d"
-              [disabled]="!row.isEditable"
-              optionLabel="label"
-              optionValue="value"
-              filter
-              [ngClass]="{ saved: !row.isEditable }"
-            ></p-select>
+            <div
+              [pTooltip]="getLabelFromValue(row.d, priorityOptionseb)"
+              tooltipPosition="top"
+              style="width: 100%"
+            >
+              <p-select
+                [options]="priorityOptionseb"
+                [(ngModel)]="row.d"
+                [disabled]="!row.isEditable"
+                optionLabel="label"
+                optionValue="value"
+                filter
+                [ngClass]="{ saved: !row.isEditable }"
+                [pTooltip]="getLabelFromValue(row.d, priorityOptionseb)"
+                tooltipPosition="top"
+              ></p-select>
+            </div>
           </td>
+
           <td>
-            <p-select
-              [options]="statusOptions"
-              [(ngModel)]="row.s"
-              [disabled]="!row.isEditable"
-              optionLabel="label"
-              optionValue="value"
-              filter
-              [ngClass]="{ saved: !row.isEditable }"
-            ></p-select>
+            <div
+              [pTooltip]="getLabelFromValue(row.s, statusOptions)"
+              tooltipPosition="top"
+              style="width: 100%"
+            >
+              <p-select
+                [options]="statusOptions"
+                [(ngModel)]="row.s"
+                [disabled]="!row.isEditable"
+                optionLabel="label"
+                optionValue="value"
+                filter
+                [ngClass]="{ saved: !row.isEditable }"
+              ></p-select>
+            </div>
           </td>
+
           <td>
             <input
               pInputText
               [(ngModel)]="row.fiscalyear"
               [disabled]="!row.isEditable"
               [ngClass]="{ saved: !row.isEditable }"
+              [pTooltip]="row.fiscalyear"
+              tooltipPosition="top"
             />
           </td>
+
           <td>
             <input
               pInputText
               [(ngModel)]="row.gdb"
               [disabled]="!row.isEditable"
               [ngClass]="{ saved: !row.isEditable }"
+              [pTooltip]="row.gdb"
+              tooltipPosition="top"
             />
           </td>
+
           <td class="align-content-center">
             <i
               [ngClass]="

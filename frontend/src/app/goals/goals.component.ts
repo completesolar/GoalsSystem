@@ -162,28 +162,28 @@ export class GoalsComponent {
 
   ngOnInit() {
     this.today = new Date();
-    this.loadGoals();
-    this.loadWhoOptions();
     if (isPlatformBrowser(this.platform)) {
-      // Ensure MSAL is initialized before using any MSAL APIs like login or logout
+      // Ensure MSAL is initialized before using any MSAL APIs
       this.msalService.instance
-        .handleRedirectPromise()
+        .initialize()
         .then(() => {
-          // MSAL is initialized after handling any redirects
           console.log('MSAL Initialized');
+          return this.msalService.instance.handleRedirectPromise();
+        })
+        .then(() => {
+          console.log('Redirect promise handled successfully');
+          this.loadGoals(); // Proceed with loading goals only after MSAL is initialized and redirect is handled.
+          this.loadWhoOptions(); // Proceed with other initializations after MSAL is ready.
         })
         .catch((error) => {
           console.error('Error initializing MSAL instance:', error);
         });
     }
     this.getStatus();
-    this.getProj()
-    this.getNumData()
-    this.getVp()
-    this.getPriority()
-    this.getProj()
-
-    // this.getYearsList();
+    this.getProj();
+    this.getNumData();
+    this.getVp();
+    this.getPriority();
   }
 
   loadWhoOptions(): void {
@@ -646,4 +646,11 @@ export class GoalsComponent {
     this._destroying$.next(undefined);
     this._destroying$.complete();
   }
+
+  getLabelFromValue(value: any, options: any[]): string {
+    const match = options.find(opt => opt.value === value);
+    return match ? match.label : value;
+
+  }
+ 
 }
