@@ -2,11 +2,11 @@ FROM node:22.14.0 AS frontend-build
 
 WORKDIR /app
 
-COPY FRONTEND/package.json ./
+COPY frontend/package.json ./
 
 RUN npm install
 
-COPY FRONTEND/ ./
+COPY frontend/ ./
 
 RUN npm run build
 
@@ -14,11 +14,11 @@ FROM python:3.13.2-slim-bookworm AS backend-build
 
 WORKDIR /app
 
-COPY Backend-Goals/requirements.txt ./
+COPY backend/requirements.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY Backend-Goals/ ./
+COPY backend/ ./
 
 COPY --from=frontend-build /app/dist/complete-solar-fe/browser /app/static
 
