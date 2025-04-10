@@ -76,6 +76,7 @@ export class GoalsComponent {
   whoOptions: any[] = [];
   private readonly _destroying$ = new Subject<void>();
   selectedSettings: string | undefined;
+  isLegendVisible = false;
   //whoOptions = WHOConstant.map(value => ({ label: value, value }));
   vpOptions = VPContant.map(value => ({ label: value, value }));
   // projOptions = ProjConstant.map(value => ({ label: value, value }));
@@ -93,10 +94,10 @@ export class GoalsComponent {
   projOptions: { label: string; value: string }[] = [];
 
   exportOptions = [
-    { label: 'Export Excel', value: 'excel' },
-    { label: 'Export PDF', value: 'pdf' }
+    { label: 'Excel', value: 'excel' },
+    { label: 'PDF', value: 'pdf' }
   ];
-  Settings = [
+  Admin = [
     { name: 'Priority' },
     { name: 'Project' },
     { name: 'Beginning Week' },
@@ -105,18 +106,20 @@ export class GoalsComponent {
     { name: 'Status' }
   ];
   columns = [
-    { field: 'who', header: 'WHO' },
-    { field: 'p', header: 'P' },
-    { field: 'proj', header: 'PROJ' },
-    { field: 'vp', header: 'VP' },
-    { field: 'b', header: 'B' },
-    { field: 'e', header: 'E' },
-    { field: 'd', header: 'D' },
-    { field: 's', header: 'S' },
-    { field: 'fiscalyear', header: 'Year' },
-    { field: 'gdb', header: 'GOAL DELIVERABLE' },
-    { field: 'action', header: 'ACTION' }
+    { field: 'who', header: 'WHO', tooltip: "Owner of the goal" },
+    { field: 'p', header: 'P', tooltip: "Priority" },
+    { field: 'proj', header: 'PROJ', tooltip: "Project" },
+    { field: 'vp', header: 'VP', tooltip: "Boss of Goal Owner" },
+    { field: 'b', header: 'B', tooltip: "WW goal was given" },
+    { field: 'e', header: 'E', tooltip: "WW goal is due" },
+    { field: 'd', header: 'D', tooltip: "" },
+    { field: 's', header: 'S', tooltip: "" },
+    { field: 'fiscalyear', header: 'Year', tooltip: "" },
+    { field: 'gdb', header: 'GOAL DELIVERABLE', tooltip: "" },
+    { field: 'action', header: 'ACTION', tooltip: "" }
   ];
+
+
   dialogcolumns = [
     { field: 'who', header: 'WHO' },
     { field: 'p', header: 'P' },
@@ -217,7 +220,6 @@ export class GoalsComponent {
     const now = new Date();
     const utcDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
-    // Set to nearest Thursday: current date + 4 - current day number (Monday=1, Sunday=7)
     const dayNum = utcDate.getUTCDay() || 7;
     utcDate.setUTCDate(utcDate.getUTCDate() + 4 - dayNum);
 
@@ -309,17 +311,15 @@ export class GoalsComponent {
   }
 
   onWhoSelected() {
+    const currentWeek = this.getCurrentWeekNumber();
     this.newRow.p = 99;
-    this.newRow.b = this.getCurrentWeekNumber();
-    console.log('WHO selected → P:', this.newRow.p, 'B:', this.newRow.b);
+    this.newRow.b = currentWeek;
+    this.newRow.e = ((currentWeek === 53) ? 1 : currentWeek + 1).toString();
   }
-
-
 
   loadGoalsHistory(id: number) {
     this.goalsService.getGoalHistory(id).subscribe(
       (goalsHistory) => {
-        // Sort by createddate in descending order (latest first)
         this.goalHistory = (goalsHistory as any[]).sort((a, b) => {
           return new Date(b.createddate).getTime() - new Date(a.createddate).getTime();
         });
@@ -397,11 +397,10 @@ export class GoalsComponent {
     });
   }
 
-
   exportExcelData(): void {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Goals');
-    const imageUrl = 'assets/logo.png';
+    const imageUrl = 'assets/cslr-logo 1.png';
 
     fetch(imageUrl)
       .then(response => response.blob())
@@ -421,6 +420,7 @@ export class GoalsComponent {
         titleCell.value = 'Goal Report';
         titleCell.font = { size: 18, bold: true };
         titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
         const columns = [
           { header: 'WHO', key: 'who' },
           { header: 'P', key: 'p' },
@@ -434,12 +434,25 @@ export class GoalsComponent {
           { header: 'GOAL DELIVERABLE', key: 'gdb' },
         ];
 
-        const dateTime = new Date().toLocaleString();
+        // Format the date to MMDDYYYY with MST time zone
+        const date = new Date();
+        const options: Intl.DateTimeFormatOptions = {
+          timeZone: 'America/Denver',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        };
+
+        const formattedDate = new Date().toLocaleString('en-US', options).replace(/[\s,]/g, '').replace('MST', '');
         const dateCell = worksheet.getCell('A7');
-        dateCell.value = `Report generated on: ${dateTime}`;
+        dateCell.value = `Report generated on: ${formattedDate}`;
         dateCell.font = { italic: true, size: 11 };
         dateCell.alignment = { horizontal: 'left', vertical: 'middle' };
         worksheet.mergeCells(`A7:K7`);
+
         const headerRowIndex = 8;
         const headerRow = worksheet.getRow(headerRowIndex);
         columns.forEach((col, index) => {
@@ -455,36 +468,88 @@ export class GoalsComponent {
           worksheet.getColumn(index + 1).width = Math.max(15, col.header.length + 5);
         });
 
+        // Inserting data rows
         this.goal.forEach((item: any, index: number) => {
           const rowValues = columns.map(col => item[col.key]);
-          worksheet.insertRow(headerRowIndex + 1 + index, rowValues);
+          const row = worksheet.insertRow(headerRowIndex + 1 + index, rowValues);
+
+          // Alternate row colors (green and white)
+          row.eachCell((cell, colNumber) => {
+            const isEvenRow = (headerRowIndex + 1 + index) % 2 === 0;
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: isEvenRow ? 'E2EFDA' : 'FFFFFF' }, // Green for even, white for odd
+            };
+          });
         });
+
+        // Add Key Section at the end with merged cells and green background
+        const keyStartRow = headerRowIndex + this.goal.length + 2; // Start key section after data rows
+        const keyText = [
+          'Key:',
+          'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
+          'S = N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed',
+          'PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS',
+          'D = Delinquent',
+        ];
+
+        keyText.forEach((line, index) => {
+          const keyRow = worksheet.getRow(keyStartRow + index);
+          keyRow.getCell(1).value = line;
+          keyRow.getCell(1).font = { bold: true };
+          keyRow.getCell(1).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'E2EFDA' }, // Green background for the key section
+          };
+          keyRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'left' };
+
+          // Merge cells for the key section
+          worksheet.mergeCells(keyRow.number, 1, keyRow.number, columns.length); // Merging across all columns
+        });
+
+        // Rename the Excel file with formatted date and MST time
+        const fileName = `Goals_${formattedDate.replace(':', '').replace(' ', '_').replace('/', '').replace('/', '')}_MST.xlsx`;
 
         workbook.xlsx.writeBuffer().then((data: ArrayBuffer) => {
           const blob = new Blob([data], {
             type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           });
-          const fileName = `Goals_${new Date().getFullYear()}.xlsx`;
           FileSaver.saveAs(blob, fileName);
         });
       });
   }
 
+
   exportPdfData(): void {
-    const doc = new jsPDF();
+    const doc = new jsPDF('landscape');
 
     const logo = new Image();
-    logo.src = 'assets/logo.png';
+    logo.src = 'assets/cslr-logo 1.png';
 
     logo.onload = () => {
       doc.addImage(logo, 'PNG', 10, 10, 50, 30);
-      doc.setFontSize(18);
-      doc.text('Goals Report ', 70, 30);
-      const currentISTTime = moment().tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
-      doc.setFontSize(11);
-      doc.text(`Reported Date & time: ${currentISTTime} (IST)`, 70, 38);
 
-      const columns = ["Who", "P", "Proj", "VP", "B", "E", "D", "S", "Year", "Goal Delivarable"];
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      const title = 'Goals Report';
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const textWidth = doc.getTextWidth(title);
+      const x = (pageWidth - textWidth) / 2;
+      doc.text(title, x, 25);
+
+      const currentMSTTime = moment().tz("America/Denver");
+      const reportedDate = currentMSTTime.format("MM-DD-YYYY");
+      const fileNameDate = currentMSTTime.format("MM-DD-YY");
+      const formattedTime = currentMSTTime.format("hh-mm-ss A");
+      const displayTime = currentMSTTime.format("MM-DD-YYYY hh:mm:ss A");
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.text(`Reported Date & time: ${displayTime} (MST)`, 14, 43);
+
+      const columns = ["Who", "P", "Proj", "VP", "B", "E", "D", "S", "Year", "Goal Deliverable"];
       const rows = this.goal.map((goal: any) => [
         goal.who,
         goal.p,
@@ -511,13 +576,29 @@ export class GoalsComponent {
           textColor: [0, 0, 0]
         },
         margin: { top: 10 },
+        didDrawPage: (data) => {
+          if (data.cursor) {
+            const finalY = data.cursor.y + 10;
+            doc.setFontSize(10);
+            const keyText = [
+              "Key:",
+              "WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due",
+              "S = N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed",
+              "PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS",
+              "D = Delinquent"
+            ];
+
+            keyText.forEach((line, index) => {
+              doc.text(line, 14, finalY + index * 6);
+            });
+          }
+        }
       });
-      const fileName = `Goals_${new Date().getFullYear()}.pdf`;
+
+      const fileName = `Goals_${fileNameDate}_${formattedTime}.pdf`;
       doc.save(fileName);
     };
   }
-
-
 
   enableEdit(row: any): void {
     row.isEditable = true;
@@ -554,7 +635,7 @@ export class GoalsComponent {
     this.goalsService.getStatus().subscribe({
       next: (response) => {
         const statusList = response as Array<{ status: string; description: string; id: number }>;
-        console.log("statusList", statusList)
+        // console.log("statusList", statusList)
         this.statusOptions = statusList.map(item => ({
           label: item.status,
           value: item.status
@@ -569,7 +650,7 @@ export class GoalsComponent {
     this.goalsService.getP().subscribe({
       next: (response) => {
         const priority = response as Array<{ p: number; id: number }>;
-        console.log("priority", priority)
+        // console.log("priority", priority)
         this.priorityOptions = priority.map(item => ({
           label: item.p,
           value: item.p
@@ -584,7 +665,7 @@ export class GoalsComponent {
     this.goalsService.getVP().subscribe({
       next: (response) => {
         const vp = response as Array<{ vp: string; id: number }>;
-        console.log("vp", vp)
+        // console.log("vp", vp)
         this.vpOptions = vp.map(item => ({
           label: item.vp,
           value: item.vp
@@ -599,7 +680,7 @@ export class GoalsComponent {
     this.goalsService.getProj().subscribe({
       next: (response) => {
         const proj = response as Array<{ proj: string; id: number }>;
-        console.log("proj", proj)
+        // console.log("proj", proj)
         this.projOptions = proj.map(item => ({
           label: item.proj,
           value: item.proj
@@ -614,7 +695,7 @@ export class GoalsComponent {
     this.goalsService.getD().subscribe({
       next: (response) => {
         const numData = response as Array<{ d: string; id: number }>;
-        console.log("D data", numData)
+        // console.log("D data", numData)
         this.priorityOptionseb = numData.map(item => ({
           label: item.d,
           value: item.d
@@ -629,10 +710,10 @@ export class GoalsComponent {
 
 
   logout() {
-    console.log("logout")
+    // console.log("logout")
     if (isPlatformBrowser(this.platform)) {
       this.msalService.logoutRedirect({
-        postLogoutRedirectUri: 'https://dev-goals.completesolar.com/ui-goals/'
+        postLogoutRedirectUri: 'http://localhost:4200/login'
       });
     }
   }
@@ -652,5 +733,17 @@ export class GoalsComponent {
     return match ? match.label : value;
 
   }
- 
+
+  getTooltipText(...fields: string[]): string {
+    return fields
+      .map(field => {
+        const col = this.columns.find(c => c.field === field);
+        return col && col.tooltip ? `${col.header}: ${col.tooltip}` : '';
+      })
+      .filter(Boolean)
+      .join(' | ');
+  }
+  toggleLegend() {
+    this.isLegendVisible = !this.isLegendVisible;
+  }
 }

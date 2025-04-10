@@ -199,7 +199,7 @@
   margin: 0 auto;
   border-radius: 10px;
   padding: 5px 10px 5px 10px;
-  border: 2px solid #333;
+  // border: 2px solid #333;
   border-radius: 5px;
 }
 
@@ -208,6 +208,10 @@
   max-width: 95%;
   margin: 0 auto;
   border-radius: 10px;
+}
+.legend-sec {
+  max-width: 95%;
+  margin: 0 auto;
 }
 .body {
   background-color: whitesmoke;
@@ -361,4 +365,23 @@
 /* Optional: If you want more space between icon and date, you can adjust the margin */
 .sub-title {
   margin-left: 2px; /* Adds left margin if needed */
+}
+
+.legend-toggle {
+  background-color: transparent;
+  color: #4caf50;
+  border: none; /* Removes the border */
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.legend-toggle i {
+  margin-right: 5px; /* Space between the arrow and the label */
+}
+
+.legend-toggle:hover {
+  color: #45a049;
+  background-color: transparent; /* Ensures no background color when hovered */
 }

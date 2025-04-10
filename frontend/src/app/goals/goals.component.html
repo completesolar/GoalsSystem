@@ -6,35 +6,30 @@
     <img src="assets/cslr-logo 1.svg" alt="Complete Solar" class="logo h-10" />
 
     <div class="flex items-center gap-4 flex-wrap md:flex-nowrap">
-      <div class="flex goalsClass">
-        <img src="assets/Goals.svg" alt="Calendar Icon" class="settings-icon" />
-        <p>Goals</p>
-      </div>
-
-      <div class="flex align-items-center">
+      <!-- <div class="flex align-items-center">
         <img
           src="assets/lsicon_setting-outline.svg"
           alt="Calendar Icon"
           class="settings-icon"
         />
         <p-select
-          placeholder="Settings"
-          [options]="Settings"
+          placeholder="Admin"
+          [options]="Admin"
           [(ngModel)]="selectedSettings"
           variant="filled"
           optionLabel="name"
           class="w-full md:w-56 settingSelect"
         >
         </p-select>
-      </div>
+      </div> -->
 
-      <i class="pi pi-bell text-2xl" pBadge value="2"></i>
+      <!-- <i class="pi pi-bell text-2xl" pBadge value="2"></i> -->
       <div class="flex align-items-center">
         <p-select
           [options]="[{ label: 'Logout', value: 'logout' }]"
           [filter]="false"
           [style]="{ width: '14rem' }"
-          placeholder="WW{{ getCurrentWeekNumber() }} (Who/P)"
+          placeholder="WW {{ getCurrentWeekNumber() }} (Who/P)"
           appendTo="body"
           (onChange)="onLogoutChange($event)"
           [showClear]="false"
@@ -50,6 +45,8 @@
             <span
               class="sub-title text-sm font-small ml-2"
               style="font-size: 2rem"
+              pTooltip="{{ getTooltipText('who', 'p') }}"
+              tooltipPosition="top"
             >
               WW{{ getCurrentWeekNumber() }} (Who/P)
             </span>
@@ -62,33 +59,42 @@
   <div
     class="mb-4 px-3 title-section flex items-center justify-content-between"
   >
-    <div class="main-title">Executive Staff Weekly Goals</div>
+    <div class="main-title">Goal System</div>
     <div class="flex justify-content-end flex-wrap">
       <img
         src="assets/solar_calendar-linear.svg"
         alt="Calendar Icon"
         class="w-[10px] h-[10px] calendar-icon"
       />
-      <div class="sub-title">{{ today | date : "dd-MM-yyyy" }}</div>
+      <div class="sub-title">{{ today | date : "MM-dd-yyyy" }}</div>
     </div>
   </div>
   <p-toast position="top-right"></p-toast>
 
   <div class="mb-4 px-3 info-section">
-    <p class="my-1">
-      <strong>Key:</strong> WHO=Owner of the goal, P=Priority, PROJ=Project,
-      VP=Boss of Goal Owner, B=WW goal was given, E=WW goal is due
-    </p>
-    <p class="my-1">
-      <strong>S =</strong> N=New, C=Complete, ND=Newly Delinquent, CD=Continuing
-      Delinquent, R=Revised, K=Killed
-    </p>
-    <p class="my-1">
-      <strong>PROJ TYPES:</strong> ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST,
-      ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA,
-      SALES, SOX, TJRS
-    </p>
-    <p class="my-1"><strong>D:</strong> Delinquent</p>
+    <button class="legend-toggle" (click)="toggleLegend()">
+      <i
+        class="fa"
+        [ngClass]="isLegendVisible ? 'fa-arrow-down' : 'fa-arrow-right'"
+      ></i>
+      <span>Legend</span>
+    </button>
+    <div *ngIf="isLegendVisible" class="legend-content">
+      <p class="my-1">
+        <strong>Key:</strong> WHO=Owner of the goal, P=Priority, PROJ=Project,
+        VP=Boss of Goal Owner, B=WW goal was given, E=WW goal is due
+      </p>
+      <p class="my-1">
+        <strong>S =</strong> N=New, C=Complete, ND=Newly Delinquent,
+        CD=Continuing Delinquent, R=Revised, K=Killed
+      </p>
+      <p class="my-1">
+        <strong>PROJ TYPES:</strong> ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST,
+        ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA,
+        SALES, SOX, TJRS
+      </p>
+      <p class="my-1"><strong>D:</strong> Delinquent</p>
+    </div>
   </div>
 
   <div
@@ -106,7 +112,7 @@
       />
     </div>
     <div class="">
-      <span class="mr-2">Select a format</span>
+      <span class="mr-2">Export to</span>
       <p-select
         class="custom-select-width"
         [options]="exportOptions"
@@ -137,7 +143,7 @@
     >
       <ng-template pTemplate="header">
         <tr>
-          <th *ngFor="let col of columns">
+          <th *ngFor="let col of columns" [pTooltip]="col.tooltip">
             <ng-container *ngIf="col.field !== 'action'; else noSort">
               <div [pSortableColumn]="col.field">
                 <b>{{ col.header }}</b>
@@ -273,173 +279,116 @@
         <!--  Actual data rows -->
         <tr *ngIf="goal.length">
           <td>
-            <div
-              [pTooltip]="getLabelFromValue(row.who, whoOptions)"
+            <p-select
+              [options]="whoOptions"
+              [(ngModel)]="row.who"
+              [disabled]="!row.isEditable"
+              optionLabel="label"
+              optionValue="value"
+              filter
+              [ngClass]="{ saved: !row.isEditable }"
               tooltipPosition="top"
-              style="width: 100%"
             >
-              <p-select
-                [options]="whoOptions"
-                [(ngModel)]="row.who"
-                [disabled]="!row.isEditable"
-                optionLabel="label"
-                optionValue="value"
-                filter
-                [ngClass]="{ saved: !row.isEditable }"
-                [pTooltip]="getLabelFromValue(row.who, whoOptions)"
-                tooltipPosition="top"
-              >
-                <ng-template let-option pTemplate="item">
-                  {{ option.label }}
-                </ng-template>
-                <ng-template let-selectedOption pTemplate="selectedItem">
-                  {{
-                    row.isEditable
-                      ? selectedOption?.label
-                      : selectedOption?.value
-                  }}
-                </ng-template>
-              </p-select>
-            </div>
+              <ng-template let-option pTemplate="item">
+                {{ option.label }}
+              </ng-template>
+              <ng-template let-selectedOption pTemplate="selectedItem">
+                {{
+                  row.isEditable ? selectedOption?.label : selectedOption?.value
+                }}
+              </ng-template>
+            </p-select>
           </td>
 
           <td>
-            <div
-              [pTooltip]="getLabelFromValue(row.p, priorityOptions)"
+            <p-select
+              [options]="priorityOptions"
+              [(ngModel)]="row.p"
+              [disabled]="!row.isEditable"
+              optionLabel="label"
+              optionValue="value"
+              filter
+              [ngClass]="{ saved: !row.isEditable }"
               tooltipPosition="top"
-              style="width: 100%"
-            >
-              <p-select
-                [options]="priorityOptions"
-                [(ngModel)]="row.p"
-                [disabled]="!row.isEditable"
-                optionLabel="label"
-                optionValue="value"
-                filter
-                [ngClass]="{ saved: !row.isEditable }"
-                [pTooltip]="getLabelFromValue(row.p, priorityOptions)"
-                tooltipPosition="top"
-              ></p-select>
-            </div>
+            ></p-select>
           </td>
 
           <!-- Repeat for other p-selects -->
           <td>
-            <div
-              [pTooltip]="getLabelFromValue(row.proj, projOptions)"
+            <p-select
+              [options]="projOptions"
+              [(ngModel)]="row.proj"
+              [disabled]="!row.isEditable"
+              optionLabel="label"
+              optionValue="value"
+              filter
+              [ngClass]="{ saved: !row.isEditable }"
               tooltipPosition="top"
-              style="width: 100%"
-            >
-              <p-select
-                [options]="projOptions"
-                [(ngModel)]="row.proj"
-                [disabled]="!row.isEditable"
-                optionLabel="label"
-                optionValue="value"
-                filter
-                [ngClass]="{ saved: !row.isEditable }"
-                [pTooltip]="getLabelFromValue(row.proj, projOptions)"
-                tooltipPosition="top"
-              ></p-select>
-            </div>
+            ></p-select>
           </td>
 
           <td>
-            <div
-              [pTooltip]="getLabelFromValue(row.vp, vpOptions)"
+            <p-select
+              [options]="vpOptions"
+              [(ngModel)]="row.vp"
+              [disabled]="!row.isEditable"
+              optionLabel="label"
+              optionValue="value"
+              filter
+              [ngClass]="{ saved: !row.isEditable }"
               tooltipPosition="top"
-              style="width: 100%"
-            >
-              <p-select
-                [options]="vpOptions"
-                [(ngModel)]="row.vp"
-                [disabled]="!row.isEditable"
-                optionLabel="label"
-                optionValue="value"
-                filter
-                [ngClass]="{ saved: !row.isEditable }"
-                [pTooltip]="getLabelFromValue(row.vp, vpOptions)"
-                tooltipPosition="top"
-              ></p-select>
-            </div>
+            ></p-select>
           </td>
 
           <td>
-            <div
-              [pTooltip]="getLabelFromValue(row.b, weekOptions)"
+            <p-select
+              [options]="weekOptions"
+              [(ngModel)]="row.b"
+              [disabled]="!row.isEditable"
+              optionLabel="label"
+              optionValue="value"
+              filter
+              [ngClass]="{ saved: !row.isEditable }"
               tooltipPosition="top"
-              style="width: 100%"
-            >
-              <p-select
-                [options]="weekOptions"
-                [(ngModel)]="row.b"
-                [disabled]="!row.isEditable"
-                optionLabel="label"
-                optionValue="value"
-                filter
-                [ngClass]="{ saved: !row.isEditable }"
-                [pTooltip]="getLabelFromValue(row.b, weekOptions)"
-                tooltipPosition="top"
-              ></p-select>
-            </div>
+            ></p-select>
           </td>
 
           <td>
-            <div
-              [pTooltip]="getLabelFromValue(row.e, priorityOptionseb)"
+            <p-select
+              [options]="priorityOptionseb"
+              [(ngModel)]="row.e"
+              [disabled]="!row.isEditable"
+              optionLabel="label"
+              optionValue="value"
+              filter
+              [ngClass]="{ saved: !row.isEditable }"
               tooltipPosition="top"
-              style="width: 100%"
-            >
-              <p-select
-                [options]="priorityOptionseb"
-                [(ngModel)]="row.e"
-                [disabled]="!row.isEditable"
-                optionLabel="label"
-                optionValue="value"
-                filter
-                [ngClass]="{ saved: !row.isEditable }"
-                [pTooltip]="getLabelFromValue(row.e, priorityOptionseb)"
-                tooltipPosition="top"
-              ></p-select>
-            </div>
+            ></p-select>
           </td>
 
           <td>
-            <div
-              [pTooltip]="getLabelFromValue(row.d, priorityOptionseb)"
+            <p-select
+              [options]="priorityOptionseb"
+              [(ngModel)]="row.d"
+              [disabled]="!row.isEditable"
+              optionLabel="label"
+              optionValue="value"
+              filter
+              [ngClass]="{ saved: !row.isEditable }"
               tooltipPosition="top"
-              style="width: 100%"
-            >
-              <p-select
-                [options]="priorityOptionseb"
-                [(ngModel)]="row.d"
-                [disabled]="!row.isEditable"
-                optionLabel="label"
-                optionValue="value"
-                filter
-                [ngClass]="{ saved: !row.isEditable }"
-                [pTooltip]="getLabelFromValue(row.d, priorityOptionseb)"
-                tooltipPosition="top"
-              ></p-select>
-            </div>
+            ></p-select>
           </td>
 
           <td>
-            <div
-              [pTooltip]="getLabelFromValue(row.s, statusOptions)"
-              tooltipPosition="top"
-              style="width: 100%"
-            >
-              <p-select
-                [options]="statusOptions"
-                [(ngModel)]="row.s"
-                [disabled]="!row.isEditable"
-                optionLabel="label"
-                optionValue="value"
-                filter
-                [ngClass]="{ saved: !row.isEditable }"
-              ></p-select>
-            </div>
+            <p-select
+              [options]="statusOptions"
+              [(ngModel)]="row.s"
+              [disabled]="!row.isEditable"
+              optionLabel="label"
+              optionValue="value"
+              filter
+              [ngClass]="{ saved: !row.isEditable }"
+            ></p-select>
           </td>
 
           <td>
@@ -448,7 +397,7 @@
               [(ngModel)]="row.fiscalyear"
               [disabled]="!row.isEditable"
               [ngClass]="{ saved: !row.isEditable }"
-              [pTooltip]="row.fiscalyear"
+              s
               tooltipPosition="top"
             />
           </td>
