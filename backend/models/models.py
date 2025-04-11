@@ -3,7 +3,6 @@ from sqlalchemy.orm import relationship
 from database import Base
 from datetime import datetime
 
-
 class B(Base):
     __tablename__ = "b"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -11,7 +10,7 @@ class B(Base):
 
 
 class E(Base):
-    __tablename__ = "e"
+    __tablename__ = "e" 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     e = Column(Integer, unique=True, index=True)
 
@@ -27,7 +26,6 @@ class P(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     p = Column(Integer, unique=True, index=True)
 
-
 class Goals(Base):
     __tablename__ = "goals"
 
@@ -40,22 +38,22 @@ class Goals(Base):
     e = Column(String)
     d = Column(String)
     s = Column(String)
-    gdb = Column(String)
+    action = Column(String)  # renamed from gdb
+    memo = Column(String)    # new field
+    description = Column(String)  # Allows long text descriptions
     fiscalyear = Column(Integer)
     updateBy = Column(String)
     createddatetime = Column(DateTime, default=func.now())  # Auto-set on insert
     updateddatetime = Column(
         DateTime, default=func.now(), onupdate=func.now()
     )  # Auto-update on row update
-    description = Column(Text, nullable=True)
-
+    
 
 class Status(Base):
-    __tablename__ = "status"
+    __tablename__ = 'status'
     id = Column(Integer, primary_key=True, index=True)
     status = Column(String, unique=True, index=True)
     description = Column(String, nullable=True)
-
 
 class Who(Base):
     __tablename__ = "who"
@@ -70,17 +68,17 @@ class Who(Base):
     work_email = Column(String(255), unique=True, nullable=True)
     title = Column(String(255), nullable=True)
 
-
 class Proj(Base):
     __tablename__ = "proj"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     proj = Column(String, unique=True, index=True)
 
-
 class VP(Base):
     __tablename__ = "vp"
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    vp = Column(String, unique=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
+    last_name = Column(String, index=True)
+    first_name = Column(String, index=True)
+    decoder = Column(String, nullable=True) 
 
 
 class goalshistory(Base):
@@ -98,16 +96,14 @@ class goalshistory(Base):
     e = Column(String, nullable=True)
     d = Column(String, nullable=True)
     s = Column(String, nullable=True)
-    gdb = Column(String, nullable=True)
+    action = Column(String, nullable=True)
+    memo = Column(String, nullable=True)
     fiscalyear = Column(Integer, nullable=True)
     updateBy = Column(String, nullable=True)
-    description = Column(Text, nullable=True)
-
+    description = Column(String, nullable=True)
     class Config:
         orm_mode = True
-
+        
     table_goal = relationship("Goals", back_populates="table_history_items")
 
-    Goals.table_history_items = relationship(
-        "goalshistory", back_populates="table_goal"
-    )
+    Goals.table_history_items = relationship("goalshistory", back_populates="table_goal")
