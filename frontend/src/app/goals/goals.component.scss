@@ -2,7 +2,15 @@
 .table-container {
   max-width: 100%;
   overflow-x: auto;
-  margin-top: 10px;
+  margin-top: 5px;
+}
+
+.legend-content {
+  padding: 2px;
+  background: #fff;
+  border-radius: 5px;
+  border: 1px solid gainsboro;
+  width: 99%;
 }
 
 /* Force the table to take up full width without unnecessary scroll */
@@ -44,7 +52,7 @@
 
 ::ng-deep .custom-goal-table th:nth-child(1),
 ::ng-deep .custom-goal-table td:nth-child(1) {
-  width: 120px;
+  width: 80px;
 }
 
 ::ng-deep .custom-goal-table th:nth-child(2),
@@ -55,7 +63,7 @@
 ::ng-deep .custom-goal-table td:nth-child(6),
 ::ng-deep .custom-goal-table th:nth-child(7),
 ::ng-deep .custom-goal-table td:nth-child(7) {
-  width: 85px;
+  width: 75px;
 }
 
 ::ng-deep .custom-goal-table th:nth-child(3),
@@ -69,18 +77,18 @@
 
 ::ng-deep .custom-goal-table th:nth-child(9),
 ::ng-deep .custom-goal-table td:nth-child(9) {
-  width: 80px;
+  width: 35px;
 }
 
 /* Goal Deliverable Column (assumed 10th column) */
-::ng-deep .custom-goal-table th:nth-child(10),
-::ng-deep .custom-goal-table td:nth-child(10) {
+::ng-deep .custom-goal-table th:nth-child(9),
+::ng-deep .custom-goal-table td:nth-child(9) {
   white-space: nowrap !important;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: 400px;
-  min-width: 300px;
-  max-width: 400px;
+  width: 70px;
+  min-width: 70px;
+  max-width: 70px;
   text-align: left;
 }
 
@@ -170,7 +178,7 @@
 .saved {
   border: none;
   box-shadow: none;
-  background-color: white !important;
+  // background-color: white !important;
 }
 
 ::ng-deep .saved .p-select-dropdown {
@@ -183,9 +191,10 @@
 
 ::ng-deep .custom-goal-table .p-datatable-tbody > tr > td,
 ::ng-deep .custom-goal-table .p-datatable-thead > tr > th {
-  padding: 4px 8px !important;
+  padding: 2px 8px !important;
   font-size: 12px !important; /* reduce font size */
-  line-height: 1 !important; /* tighter row spacing */
+  line-height: 1 !important;
+  height: 28px !important; /* tighter row spacing */
 }
 
 .logo {
@@ -204,8 +213,8 @@
 }
 
 .title-section {
-  background-color: whitesmoke;
-  max-width: 95%;
+  //background-color: whitesmoke;
+  max-width: 99%;
   margin: 0 auto;
   border-radius: 10px;
 }
@@ -220,9 +229,6 @@
 }
 .logo-section {
   background-color: #fff;
-  max-width: 95%;
-  margin: 0 auto;
-  border-radius: 10px;
   padding: 6px;
 }
 
@@ -237,16 +243,17 @@
 }
 
 .main-title {
-  font-size: 21px;
+  font-size: 17px;
   font-weight: 700;
   color: #333;
+  letter-spacing: 1px;
 }
 
-.sub-title {
-  font-size: 12px;
-  // color: #4caf50;
-  margin-top: 4px;
-}
+// .sub-title {
+//   font-size: 12px;
+//   // color: #4caf50;
+//   margin-top: 4px;
+// }
 
 .date {
   font-size: 10px;
@@ -275,9 +282,9 @@
   white-space: normal !important;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: 600px;
-  min-width: 400px;
-  max-width: 600px;
+  width: 100px;
+  // min-width: 400px;
+  // max-width: 600px;
 }
 
 ::ng-deep .goal-history-table th:nth-child(11),
@@ -292,7 +299,7 @@
 }
 
 ::ng-deep .p-datatable-table-container {
-  border-radius: 20px 20px;
+  border-radius: 5px;
 }
 
 .settingSelect {
@@ -363,15 +370,15 @@
 }
 
 /* Optional: If you want more space between icon and date, you can adjust the margin */
-.sub-title {
-  margin-left: 2px; /* Adds left margin if needed */
-}
+// .sub-title {
+//   margin-left: 2px; /* Adds left margin if needed */
+// }
 
 .legend-toggle {
   background-color: transparent;
   color: #4caf50;
   border: none; /* Removes the border */
-  font-size: 16px;
+  font-size: 13px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -384,4 +391,31 @@
 .legend-toggle:hover {
   color: #45a049;
   background-color: transparent; /* Ensures no background color when hovered */
+}
+// ::ng-deep .filter-dropdown-wrapper {
+//   position: absolute;
+//   z-index: 999;
+//   background: white;
+//   border: 1px solid #ccc;
+//   padding: 0.5rem;
+//   border-radius: 4px;
+//   left: auto;
+//   right: 100%; /* Push it to the left of the icon */
+//   margin-right: 10px;
+// }
+
+::ng-deep .custom-goal-table .p-datatable-tbody > tr:nth-child(1) {
+  background-color: rgb(139, 139, 212) !important;
+}
+.test {
+  align-items: center;
+  display: flex;
+}
+
+.calendar-icon {
+  vertical-align: middle;
+  margin-bottom: 1px; /* optional fine-tuning */
+}
+.settingSelect .p-dropdown-label {
+  vertical-align: middle;
 }

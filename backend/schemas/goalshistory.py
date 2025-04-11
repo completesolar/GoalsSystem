@@ -19,7 +19,8 @@ class goalshistory(BaseModel):
     e: Optional[str] = None
     d: Optional[str] = None
     s: Optional[str] = None
-    gdb: Optional[str] = None
+    action: Optional[str] = None
+    memo: Optional[str] = None
     fiscalyear: Optional[int] = None
     updateBy: Optional[str] = None
     description: Optional[str] = None

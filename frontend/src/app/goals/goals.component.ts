@@ -19,6 +19,7 @@ import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { Subject } from 'rxjs';
 import { TooltipModule } from 'primeng/tooltip';
+import { MultiSelectModule } from 'primeng/multiselect';
 
 import {
   VPContant,
@@ -55,7 +56,8 @@ interface Year {
     ToastModule,
     BadgeModule,
     OverlayBadgeModule,
-    TooltipModule
+    TooltipModule,
+    MultiSelectModule
 
 
   ],
@@ -74,11 +76,13 @@ export class GoalsComponent {
   selectedYear: Year = { name: this.currentDate, code: this.currentDate };
   display = false;
   whoOptions: any[] = [];
+  vpOptions: any[] = [];
+
   private readonly _destroying$ = new Subject<void>();
   selectedSettings: string | undefined;
   isLegendVisible = false;
   //whoOptions = WHOConstant.map(value => ({ label: value, value }));
-  vpOptions = VPContant.map(value => ({ label: value, value }));
+  //vpOptions = VPContant.map(value => ({ label: value, value }));
   // projOptions = ProjConstant.map(value => ({ label: value, value }));
   // priorityOptions = PriorityConstant.map(value => ({ label: value, value }));
   weekOptions = weekConstant.map(value => ({ label: value.toString(), value }));
@@ -92,7 +96,8 @@ export class GoalsComponent {
   priorityOptionseb: { label: string; value: string }[] = [];
   // vpOptions: { label: string; value: string }[] = [];
   projOptions: { label: string; value: string }[] = [];
-
+  filterOpenField: string | null = null;
+  //selectedFilters: any = [];
   exportOptions = [
     { label: 'Excel', value: 'excel' },
     { label: 'PDF', value: 'pdf' }
@@ -114,7 +119,7 @@ export class GoalsComponent {
     { field: 'e', header: 'E', tooltip: "WW goal is due" },
     { field: 'd', header: 'D', tooltip: "" },
     { field: 's', header: 'S', tooltip: "" },
-    { field: 'fiscalyear', header: 'Year', tooltip: "" },
+    { field: 'fiscalyear', header: 'Year' },
     { field: 'gdb', header: 'GOAL DELIVERABLE', tooltip: "" },
     { field: 'action', header: 'ACTION', tooltip: "" }
   ];
@@ -140,7 +145,7 @@ export class GoalsComponent {
     proj: '',
     vp: '',
     b: null,
-    e: '',
+    e: null,
     d: '',
     s: '',
     fiscalyear: this.selectedYear.code,
@@ -149,8 +154,12 @@ export class GoalsComponent {
     createddatetime: new Date(),
     updateddatetime: new Date(),
     description: '',
+    action:'',
+    memo:''
   };
   selectedExport: string | null = null;
+  filteredGoals: any;
+  allGoals: any = [];
 
   constructor(
     @Inject(PLATFORM_ID) private platform: Object,
@@ -164,28 +173,39 @@ export class GoalsComponent {
   }
 
   ngOnInit() {
+
+    //console.log("selectedFilters", this.selectedFilters)
     this.today = new Date();
     if (isPlatformBrowser(this.platform)) {
       // Ensure MSAL is initialized before using any MSAL APIs
       this.msalService.instance
         .initialize()
         .then(() => {
-          console.log('MSAL Initialized');
+          //console.log('MSAL Initialized');
           return this.msalService.instance.handleRedirectPromise();
         })
         .then(() => {
-          console.log('Redirect promise handled successfully');
+          //console.log('Redirect promise handled successfully');
           this.loadGoals(); // Proceed with loading goals only after MSAL is initialized and redirect is handled.
           this.loadWhoOptions(); // Proceed with other initializations after MSAL is ready.
+          this.loadInitialData();
         })
         .catch((error) => {
           console.error('Error initializing MSAL instance:', error);
         });
+
     }
+
+  }
+
+  loadInitialData() {
+
+    this.loadGoals();
+    this.loadWhoOptions();
     this.getStatus();
     this.getProj();
     this.getNumData();
-    this.getVp();
+    this.loadVpOptions();
     this.getPriority();
   }
 
@@ -199,6 +219,18 @@ export class GoalsComponent {
       }
     });
   }
+
+  loadVpOptions(): void {
+    this.goalsService.getVP().subscribe({
+      next: (data) => {
+        this.vpOptions = data;
+      },
+      error: (err) => {
+        console.error('Failed to load VP options:', err);
+      }
+    });
+  }
+
 
 
 
@@ -278,9 +310,9 @@ export class GoalsComponent {
 
 
   loadGoals(): void {
-    this.goalsService.getGoals().subscribe((goals: Goals[]) => {
-      this.goal = goals
-        .filter((g: Goals) => +g.fiscalyear === this.selectedYear.code)
+    this.goalsService.getGoals().subscribe((goals: any[]) => {
+      const filteredGoals = goals
+        .filter((g: any) => +g.fiscalyear === this.selectedYear.code)
         .map(g => ({
           ...g,
           e: g.e ? +g.e : '',
@@ -296,7 +328,6 @@ export class GoalsComponent {
         .sort((a, b) => {
           const whoA = a.who.toLowerCase();
           const whoB = b.who.toLowerCase();
-
           if (whoA < whoB) return -1;
           if (whoA > whoB) return 1;
 
@@ -304,51 +335,65 @@ export class GoalsComponent {
           const priorityB = isNaN(+b.p) ? Number.MAX_SAFE_INTEGER : +b.p;
           return priorityA - priorityB;
         });
-      if (this.years.length === 0) this.getYearsList(goals);
+      //console.log("getGoals", goals)
 
-      console.log('Loaded goals:', this.goal);
+      this.allGoals = filteredGoals; // Set the original goals
+      this.goal = [...filteredGoals]; // Update the visible goals based on filters
     });
   }
+
 
   onWhoSelected() {
     const currentWeek = this.getCurrentWeekNumber();
     this.newRow.p = 99;
     this.newRow.b = currentWeek;
-    this.newRow.e = ((currentWeek === 53) ? 1 : currentWeek + 1).toString();
+    this.newRow.e = ((currentWeek === 53) ? 1 : currentWeek + 1);
+    //console.log(this.newRow.e)
   }
 
   loadGoalsHistory(id: number) {
+    //console.log('Calling getGoalHistory with ID:', id);  // ✅ Log the input value
+  
     this.goalsService.getGoalHistory(id).subscribe(
       (goalsHistory) => {
+        //console.log('Raw response from getGoalHistory:', goalsHistory);  // ✅ Log raw response before sorting
+  
         this.goalHistory = (goalsHistory as any[]).sort((a, b) => {
           return new Date(b.createddate).getTime() - new Date(a.createddate).getTime();
         });
-        console.log('Fetched Goals History (Sorted):', this.goalHistory);
+  
+        //console.log('Fetched Goals History (Sorted):', this.goalHistory);  // ✅ Log the final sorted data
       },
       (error) => {
-        console.error('Error fetching goal history:', error);
+        console.error('Error fetching goal history for ID:', id);  // ✅ Include the ID in error log
+        console.error(error);
       }
     );
   }
+  
 
 
   onYearChange() {
     this.loadGoals();
   }
 
-  isValidGoalData(goal: Goals) {
-    return (
-      goal.who &&
-      goal.p &&
-      goal.proj &&
-      goal.vp &&
-      goal.b &&
-      goal.s &&
-      goal.gdb &&
-      goal.fiscalyear
-    );
-  }
 
+  isValidGoalData(goal: Goals): string[] {
+    const missingFields: string[] = [];
+
+    if (!goal.who) missingFields.push('WHO');
+    if (!goal.p) missingFields.push('Priority');
+    if (!goal.proj) missingFields.push('Project');
+    if (!goal.vp) missingFields.push('VP');
+    if (!goal.b) missingFields.push('B');
+    if (!goal.s) missingFields.push('Status');
+    if (!goal.description) missingFields.push('GOAL DELIVERABLE');
+    if (!goal.action) missingFields.push('GOAL DELIVERABLE');
+    if (!goal.memo) missingFields.push('GOAL DELIVERABLE');
+    if (!goal.fiscalyear) missingFields.push('Year');
+
+    return missingFields;
+  }
 
   addNewRow() {
     this.newRow = {
@@ -357,46 +402,63 @@ export class GoalsComponent {
       proj: '',
       vp: '',
       b: null,
-      e: '',
+      e: null,
       d: '',
       s: '',
-      fiscalyear: this.selectedYear.code,
-      gdb: '',
+      fiscalyear: this.currentYear,
+      memo: '',
       updateBy: 'Admin',
       createddatetime: new Date(),
       updateddatetime: new Date(),
       description: '',
+      action:''
+
     };
   }
   addGoal() {
-
-    if (!this.isValidGoalData(this.newRow)) {
+    const missingFields = this.isValidGoalData(this.newRow);
+    if (missingFields.length > 0) {
       this.messageService.add({
         severity: 'warn',
-        summary: 'Missing or Invalid Data',
-        detail: 'Please fill in all required fields before adding a goal.'
+        summary: 'Please Add the below fields for the new goal',
+        detail: `${missingFields.join(', ')}: Please fill in the following required field(s).`
       });
       return;
     }
-
-    this.newRow.e = this.newRow.e.toString();
+  
+    this.newRow.e = this.newRow.e;
     this.newRow.d = this.newRow.d.toString();
-
-    this.goalsService.createGoal(this.newRow).subscribe((response) => {
-      if (response) {
-        this.selectedYear = { name: Number(this.newRow.fiscalyear), code: Number(this.newRow.fiscalyear) };
-        this.loadGoals();
+  
+    this.goalsService.createGoal(this.newRow).subscribe((response: any) => {
+      if (response && response.goalid) {
+        const newGoal = {
+          ...this.newRow,
+          goalid: response.goalid, 
+          createddatetime: new Date(),
+          isEditable: false
+        };
+  
+        this.goal.unshift(newGoal);
+        this.goal.sort((a: Goals, b: Goals) =>
+          new Date(b.createddatetime).getTime() - new Date(a.createddatetime).getTime()
+        );
+  
+        this.loadGoalsHistory(response.goalid);   // ✅ load history for the new goal
+  
         this.addNewRow();
-
+  
         this.messageService.add({
           severity: 'success',
           summary: 'Goal Added',
           detail: 'New goal has been added successfully.'
         });
+      } else {
+        console.warn('createGoal response missing goalid:', response);
       }
     });
   }
-
+  
+  
   exportExcelData(): void {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Goals');
@@ -434,7 +496,7 @@ export class GoalsComponent {
           { header: 'GOAL DELIVERABLE', key: 'gdb' },
         ];
 
-        // Format the date to MMDDYYYY with MST time zone
+        // Format the date
         const date = new Date();
         const options: Intl.DateTimeFormatOptions = {
           timeZone: 'America/Denver',
@@ -445,15 +507,37 @@ export class GoalsComponent {
           minute: '2-digit',
           second: '2-digit'
         };
-
         const formattedDate = new Date().toLocaleString('en-US', options).replace(/[\s,]/g, '').replace('MST', '');
+
         const dateCell = worksheet.getCell('A7');
         dateCell.value = `Report generated on: ${formattedDate}`;
-        dateCell.font = { italic: true, size: 11 };
+        dateCell.font = { italic: false, size: 12 };
         dateCell.alignment = { horizontal: 'left', vertical: 'middle' };
         worksheet.mergeCells(`A7:K7`);
 
-        const headerRowIndex = 8;
+        const keyText = [
+          'Key:',
+          'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
+          'S = N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed',
+          'PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS',
+          'D = Delinquent',
+        ];
+
+        const keyStartRow = 9;
+        keyText.forEach((line, index) => {
+          const keyRow = worksheet.getRow(keyStartRow + index);
+          keyRow.getCell(1).value = line;
+          keyRow.getCell(1).font = { bold: true };
+          keyRow.getCell(1).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'E2EFDA' },
+          };
+          keyRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'left' };
+          worksheet.mergeCells(keyRow.number, 1, keyRow.number, columns.length);
+        });
+
+        const headerRowIndex = keyStartRow + keyText.length + 1;
         const headerRow = worksheet.getRow(headerRowIndex);
         columns.forEach((col, index) => {
           const cell = headerRow.getCell(index + 1);
@@ -468,48 +552,33 @@ export class GoalsComponent {
           worksheet.getColumn(index + 1).width = Math.max(15, col.header.length + 5);
         });
 
-        // Inserting data rows
+        // ✅ Add filters to header row
+        worksheet.autoFilter = {
+          from: {
+            row: headerRowIndex,
+            column: 1,
+          },
+          to: {
+            row: headerRowIndex,
+            column: columns.length,
+          },
+        };
+
+        // Data rows
         this.goal.forEach((item: any, index: number) => {
           const rowValues = columns.map(col => item[col.key]);
           const row = worksheet.insertRow(headerRowIndex + 1 + index, rowValues);
 
-          // Alternate row colors (green and white)
           row.eachCell((cell, colNumber) => {
             const isEvenRow = (headerRowIndex + 1 + index) % 2 === 0;
             cell.fill = {
               type: 'pattern',
               pattern: 'solid',
-              fgColor: { argb: isEvenRow ? 'E2EFDA' : 'FFFFFF' }, // Green for even, white for odd
+              fgColor: { argb: isEvenRow ? 'E2EFDA' : 'FFFFFF' },
             };
           });
         });
 
-        // Add Key Section at the end with merged cells and green background
-        const keyStartRow = headerRowIndex + this.goal.length + 2; // Start key section after data rows
-        const keyText = [
-          'Key:',
-          'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
-          'S = N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed',
-          'PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS',
-          'D = Delinquent',
-        ];
-
-        keyText.forEach((line, index) => {
-          const keyRow = worksheet.getRow(keyStartRow + index);
-          keyRow.getCell(1).value = line;
-          keyRow.getCell(1).font = { bold: true };
-          keyRow.getCell(1).fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'E2EFDA' }, // Green background for the key section
-          };
-          keyRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'left' };
-
-          // Merge cells for the key section
-          worksheet.mergeCells(keyRow.number, 1, keyRow.number, columns.length); // Merging across all columns
-        });
-
-        // Rename the Excel file with formatted date and MST time
         const fileName = `Goals_${formattedDate.replace(':', '').replace(' ', '_').replace('/', '').replace('/', '')}_MST.xlsx`;
 
         workbook.xlsx.writeBuffer().then((data: ArrayBuffer) => {
@@ -540,16 +609,47 @@ export class GoalsComponent {
       doc.text(title, x, 25);
 
       const currentMSTTime = moment().tz("America/Denver");
-      const reportedDate = currentMSTTime.format("MM-DD-YYYY");
       const fileNameDate = currentMSTTime.format("MM-DD-YY");
       const formattedTime = currentMSTTime.format("hh-mm-ss A");
       const displayTime = currentMSTTime.format("MM-DD-YYYY hh:mm:ss A");
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(11);
+      doc.setTextColor(0, 0, 0); // Set text color to black
       doc.text(`Reported Date & time: ${displayTime} (MST)`, 14, 43);
 
+      // Define and render Key Text with background color
+      const keyText = [
+        "Key:",
+        "WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due",
+        "S = N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed",
+        "PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS",
+        "D = Delinquent"
+      ];
+   
+
+      let keyStartY = 50;
+      const lineHeight = 6;
+      const rectX = 10;
+      const rectWidth = pageWidth - 20;
+      doc.setFontSize(10);
+
+      keyText.forEach((line) => {
+        const wrappedLines: string[] = doc.splitTextToSize(line, rectWidth - 8);
+        wrappedLines.forEach((subLine: string) => {
+          doc.setFillColor(226, 239, 218);
+          doc.rect(rectX, keyStartY - 4, rectWidth, lineHeight, 'F');
+          doc.setTextColor(0, 0, 0);
+          doc.text(subLine, 14, keyStartY);
+          keyStartY += lineHeight;
+        });
+      });
+      
+      const tableStartY = keyStartY + 4;
+      
+
       const columns = ["Who", "P", "Proj", "VP", "B", "E", "D", "S", "Year", "Goal Deliverable"];
+
       const rows = this.goal.map((goal: any) => [
         goal.who,
         goal.p,
@@ -560,45 +660,38 @@ export class GoalsComponent {
         goal.d,
         goal.s,
         goal.fiscalyear,
-        goal.gdb
+        `${goal.action ?? ''} ${goal.description ?? ''} ${goal.memo ?? ''}`.trim()
       ]);
+      
 
       autoTable(doc, {
-        startY: 50,
+        startY: tableStartY,
         head: [columns],
         body: rows,
         theme: 'striped',
         headStyles: {
           fillColor: [226, 239, 218],
-          textColor: [0, 0, 0]
+          textColor: [0, 0, 0],
         },
         bodyStyles: {
-          textColor: [0, 0, 0]
+          textColor: [0, 0, 0],
+          fontSize: 10
+        },
+        columnStyles: {
+          8: { cellWidth: 20, halign: 'center' },   // Year
+          9: { cellWidth: 120 }                     // Goal Deliverable
         },
         margin: { top: 10 },
-        didDrawPage: (data) => {
-          if (data.cursor) {
-            const finalY = data.cursor.y + 10;
-            doc.setFontSize(10);
-            const keyText = [
-              "Key:",
-              "WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due",
-              "S = N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed",
-              "PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS",
-              "D = Delinquent"
-            ];
-
-            keyText.forEach((line, index) => {
-              doc.text(line, 14, finalY + index * 6);
-            });
-          }
-        }
       });
+      
 
       const fileName = `Goals_${fileNameDate}_${formattedTime}.pdf`;
       doc.save(fileName);
     };
   }
+
+
+
 
   enableEdit(row: any): void {
     row.isEditable = true;
@@ -619,6 +712,7 @@ export class GoalsComponent {
   }
   historyDialog(goalId: number) {
     this.display = true;
+    //console.log('goalid',goalId);
     this.loadGoalsHistory(goalId);
   }
 
@@ -635,7 +729,7 @@ export class GoalsComponent {
     this.goalsService.getStatus().subscribe({
       next: (response) => {
         const statusList = response as Array<{ status: string; description: string; id: number }>;
-        // console.log("statusList", statusList)
+        //console.log("statusList", statusList)
         this.statusOptions = statusList.map(item => ({
           label: item.status,
           value: item.status
@@ -650,7 +744,7 @@ export class GoalsComponent {
     this.goalsService.getP().subscribe({
       next: (response) => {
         const priority = response as Array<{ p: number; id: number }>;
-        // console.log("priority", priority)
+        //console.log("priority", priority)
         this.priorityOptions = priority.map(item => ({
           label: item.p,
           value: item.p
@@ -665,7 +759,7 @@ export class GoalsComponent {
     this.goalsService.getVP().subscribe({
       next: (response) => {
         const vp = response as Array<{ vp: string; id: number }>;
-        // console.log("vp", vp)
+        //console.log("vp", vp)
         this.vpOptions = vp.map(item => ({
           label: item.vp,
           value: item.vp
@@ -713,7 +807,7 @@ export class GoalsComponent {
     // console.log("logout")
     if (isPlatformBrowser(this.platform)) {
       this.msalService.logoutRedirect({
-        postLogoutRedirectUri: 'http://localhost:4200/login'
+        postLogoutRedirectUri: 'https://dev-goals.completesolar.com/ui-goals/login'
       });
     }
   }
@@ -746,4 +840,40 @@ export class GoalsComponent {
   toggleLegend() {
     this.isLegendVisible = !this.isLegendVisible;
   }
+
+
+  // getFilterOptions(field: string): any[] {
+  //   const uniqueValues = [
+  //     ...new Set(this.allGoals.map((row: any) => row[field] ?? ''))
+  //   ];
+
+  //   return uniqueValues.map(val => ({
+  //     label: val === '' ? 'Empty' : val,
+  //     value: val
+  //   }));
+  // }
+  // onFilterChange(field: string): void {
+  //   this.applyFilters(field);
+  // }
+
+
+  // applyFilters(field: string): void {
+  //   this.goal = this.allGoals.filter((row: any) => {
+  //     return Object.entries(this.selectedFilters).every(([filterField, selectedValues]: any) => {
+  //       if (!selectedValues || selectedValues.length === 0) return true;
+  //       const includedValues = selectedValues.map((option: any) => option.value);
+
+  //       return includedValues.includes(row[filterField]);
+  //     });
+  //   });
+  //   console.log("Filtered results:", this.goal.length);
+  // }
+
+
+  // clearFilter(field: string) {
+  //   this.selectedFilters = [];
+  //   console.log(`Cleared filter for ${field}`);
+  //   this.onFilterChange(field); // Optionally trigger filter after clearing
+  // }
+
 }

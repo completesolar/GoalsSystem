@@ -55,9 +55,19 @@ getD() {
 getP() {
   return this.http.get(`${this.baseURL}/p`);
 }
-getVP() {
-  return this.http.get(`${this.baseURL}/vp`);
+getVP(): Observable<any[]> {
+  return this.http.get<any[]>(`${this.baseURL}/vp`).pipe(
+    map(data =>
+      data
+        .filter(item => item.decoder && item.first_name && item.last_name)
+        .map(item => ({
+          label: `${item.decoder} (${item.last_name}, ${item.first_name})`,
+          value: item.decoder
+        }))
+    )
+  );
 }
+
 getProj() {
   return this.http.get(`${this.baseURL}/proj`);
 }
