@@ -359,7 +359,7 @@ export class GoalsComponent {
     if (!goal.b) missingFields.push('B');
     if (!goal.s) missingFields.push('Status');
     if (!goal.description) missingFields.push('GOAL DELIVERABLE');
-    if (!goal.action) missingFields.push('GOAL DELIVERABLE Action');
+    if (!goal.action) missingFields.push('Action');
     //if (!goal.fiscalyear) missingFields.push('Year');
 
     return missingFields;
@@ -896,4 +896,5 @@ export class GoalsComponent {
     //console.log(`Cleared filter for ${field}`);
     this.onFilterChange(field); // Optionally trigger filter after clearing
   }
+
 }
