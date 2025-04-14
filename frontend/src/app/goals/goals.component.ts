@@ -323,6 +323,7 @@ export class GoalsComponent {
     this.newRow.p = 99;
     this.newRow.b = currentWeek;
     this.newRow.e = ((currentWeek === 53) ? 1 : currentWeek + 1);
+    this.newRow.s = 'N';
   }
 
   loadGoalsHistory(id: number) {
@@ -358,9 +359,8 @@ export class GoalsComponent {
     if (!goal.b) missingFields.push('B');
     if (!goal.s) missingFields.push('Status');
     if (!goal.description) missingFields.push('GOAL DELIVERABLE');
-    if (!goal.action) missingFields.push('GOAL DELIVERABLE');
-    if (!goal.memo) missingFields.push('GOAL DELIVERABLE');
-    if (!goal.fiscalyear) missingFields.push('Year');
+    if (!goal.action) missingFields.push('GOAL DELIVERABLE Action');
+    //if (!goal.fiscalyear) missingFields.push('Year');
 
     return missingFields;
   }
@@ -397,7 +397,7 @@ export class GoalsComponent {
     }
 
     this.newRow.e = this.newRow.e;
-    this.newRow.d = this.newRow.d.toString();
+    this.newRow.d = this.newRow.d;
 
     this.goalsService.createGoal(this.newRow).subscribe((response: any) => {
       if (response && response.goalid) {
