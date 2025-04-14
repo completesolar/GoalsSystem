@@ -397,7 +397,7 @@ export class GoalsComponent {
     }
 
     this.newRow.e = this.newRow.e;
-    this.newRow.d = this.newRow.d;
+    this.newRow.d = this.newRow.d.toString();
 
     this.goalsService.createGoal(this.newRow).subscribe((response: any) => {
       if (response && response.goalid) {
