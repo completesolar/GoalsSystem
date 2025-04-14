@@ -97,7 +97,7 @@ export class GoalsComponent {
   // vpOptions: { label: string; value: string }[] = [];
   projOptions: { label: string; value: string }[] = [];
   filterOpenField: string | null = null;
-  //selectedFilters: any = [];
+  selectedFilters: any = [];
   exportOptions = [
     { label: 'Excel', value: 'excel' },
     { label: 'PDF', value: 'pdf' }
@@ -119,7 +119,7 @@ export class GoalsComponent {
     { field: 'e', header: 'E', tooltip: "WW goal is due" },
     { field: 'd', header: 'D', tooltip: "" },
     { field: 's', header: 'S', tooltip: "" },
-    { field: 'fiscalyear', header: 'Year' },
+    // { field: 'fiscalyear', header: 'Year' },
     { field: 'gdb', header: 'GOAL DELIVERABLE', tooltip: "" },
     { field: 'action', header: 'ACTION', tooltip: "" }
   ];
@@ -134,7 +134,7 @@ export class GoalsComponent {
     { field: 'e', header: 'E' },
     { field: 'd', header: 'D' },
     { field: 's', header: 'S' },
-    { field: 'fiscalyear', header: 'Year' },
+    // { field: 'fiscalyear', header: 'Year' },
     { field: 'gdb', header: 'GOAL DELIVERABLE' },
     { field: 'createdAt', header: 'Created Time' },
   ];
@@ -148,15 +148,16 @@ export class GoalsComponent {
     e: null,
     d: '',
     s: '',
-    fiscalyear: this.selectedYear.code,
+    fiscalyear: this.currentYear,
     gdb: '',
     updateBy: 'Admin',
     createddatetime: new Date(),
     updateddatetime: new Date(),
     description: '',
-    action:'',
-    memo:''
+    action: '',
+    memo: ''
   };
+
   selectedExport: string | null = null;
   filteredGoals: any;
   allGoals: any = [];
@@ -174,20 +175,17 @@ export class GoalsComponent {
 
   ngOnInit() {
 
-    //console.log("selectedFilters", this.selectedFilters)
+    //console.log("currentYear", this.currentYear)
     this.today = new Date();
     if (isPlatformBrowser(this.platform)) {
-      // Ensure MSAL is initialized before using any MSAL APIs
       this.msalService.instance
         .initialize()
         .then(() => {
-          //console.log('MSAL Initialized');
           return this.msalService.instance.handleRedirectPromise();
         })
         .then(() => {
-          //console.log('Redirect promise handled successfully');
-          this.loadGoals(); // Proceed with loading goals only after MSAL is initialized and redirect is handled.
-          this.loadWhoOptions(); // Proceed with other initializations after MSAL is ready.
+          this.loadGoals();
+          this.loadWhoOptions();
           this.loadInitialData();
         })
         .catch((error) => {
@@ -286,35 +284,13 @@ export class GoalsComponent {
     XLSX.writeFile(wb, fileName);
   }
 
-  // loadGoals(): void {
-  //   this.goalsService.getGoals().subscribe((goals: Goals[]) => {
-  //     this.goal = goals
-  //       .filter((g: Goals) => +g.fiscalyear === this.selectedYear.code)
-  //       .map(g => ({
-  //         ...g,
-  //         e: g.e ? +g.e : '',
-  //         d: g.d ? +g.d : '',
-  //         s: g.s ?? '',
-  //         proj: g.proj ? g.proj.toUpperCase() : '',
-  //         vp: g.vp ? g.vp.toUpperCase() : '',
-  //         who: g.who ?? '',
-  //         gdb: g.gdb ?? '',
-  //         isEditable: false
-  //       }));
-
-  //     if (this.years.length === 0) this.getYearsList(goals);
-
-  //     console.log('Loaded goals:', this.goal);
-  //   });
-  // }
-
-
   loadGoals(): void {
     this.goalsService.getGoals().subscribe((goals: any[]) => {
       const filteredGoals = goals
         .filter((g: any) => +g.fiscalyear === this.selectedYear.code)
         .map(g => ({
           ...g,
+          goalid: g.goalid,
           e: g.e ? +g.e : '',
           d: g.d ? +g.d : '',
           s: g.s ?? '',
@@ -335,10 +311,9 @@ export class GoalsComponent {
           const priorityB = isNaN(+b.p) ? Number.MAX_SAFE_INTEGER : +b.p;
           return priorityA - priorityB;
         });
-      //console.log("getGoals", goals)
 
-      this.allGoals = filteredGoals; // Set the original goals
-      this.goal = [...filteredGoals]; // Update the visible goals based on filters
+      this.allGoals = filteredGoals;
+      this.goal = [...filteredGoals];
     });
   }
 
@@ -348,29 +323,24 @@ export class GoalsComponent {
     this.newRow.p = 99;
     this.newRow.b = currentWeek;
     this.newRow.e = ((currentWeek === 53) ? 1 : currentWeek + 1);
-    //console.log(this.newRow.e)
   }
 
   loadGoalsHistory(id: number) {
-    //console.log('Calling getGoalHistory with ID:', id);  // ✅ Log the input value
-  
     this.goalsService.getGoalHistory(id).subscribe(
       (goalsHistory) => {
-        //console.log('Raw response from getGoalHistory:', goalsHistory);  // ✅ Log raw response before sorting
-  
+
         this.goalHistory = (goalsHistory as any[]).sort((a, b) => {
           return new Date(b.createddate).getTime() - new Date(a.createddate).getTime();
         });
-  
-        //console.log('Fetched Goals History (Sorted):', this.goalHistory);  // ✅ Log the final sorted data
+
       },
       (error) => {
-        console.error('Error fetching goal history for ID:', id);  // ✅ Include the ID in error log
+        console.error('Error fetching goal history for ID:', id);
         console.error(error);
       }
     );
   }
-  
+
 
 
   onYearChange() {
@@ -411,7 +381,7 @@ export class GoalsComponent {
       createddatetime: new Date(),
       updateddatetime: new Date(),
       description: '',
-      action:''
+      action: ''
 
     };
   }
@@ -425,28 +395,24 @@ export class GoalsComponent {
       });
       return;
     }
-  
+
     this.newRow.e = this.newRow.e;
     this.newRow.d = this.newRow.d.toString();
-  
+
     this.goalsService.createGoal(this.newRow).subscribe((response: any) => {
       if (response && response.goalid) {
-        const newGoal = {
+        const newGoal: Goals = {
           ...this.newRow,
-          goalid: response.goalid, 
+          goalid: response.goalid,
           createddatetime: new Date(),
           isEditable: false
         };
-  
-        this.goal.unshift(newGoal);
-        this.goal.sort((a: Goals, b: Goals) =>
-          new Date(b.createddatetime).getTime() - new Date(a.createddatetime).getTime()
-        );
-  
-        this.loadGoalsHistory(response.goalid);   // ✅ load history for the new goal
-  
+
+        this.goal = [newGoal, ...this.goal.filter((g: Goals) => g.goalid !== newGoal.goalid)];
+
+        this.loadGoalsHistory(response.goalid);
         this.addNewRow();
-  
+
         this.messageService.add({
           severity: 'success',
           summary: 'Goal Added',
@@ -457,8 +423,8 @@ export class GoalsComponent {
       }
     });
   }
-  
-  
+
+
   exportExcelData(): void {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Goals');
@@ -626,7 +592,7 @@ export class GoalsComponent {
         "PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS",
         "D = Delinquent"
       ];
-   
+
 
       let keyStartY = 50;
       const lineHeight = 6;
@@ -644,9 +610,9 @@ export class GoalsComponent {
           keyStartY += lineHeight;
         });
       });
-      
-      const tableStartY = keyStartY + 4;
-      
+
+      const tableStartY = keyStartY + 4; // ← Use this final position!
+
 
       const columns = ["Who", "P", "Proj", "VP", "B", "E", "D", "S", "Year", "Goal Deliverable"];
 
@@ -662,7 +628,7 @@ export class GoalsComponent {
         goal.fiscalyear,
         `${goal.action ?? ''} ${goal.description ?? ''} ${goal.memo ?? ''}`.trim()
       ]);
-      
+
 
       autoTable(doc, {
         startY: tableStartY,
@@ -683,7 +649,7 @@ export class GoalsComponent {
         },
         margin: { top: 10 },
       });
-      
+
 
       const fileName = `Goals_${fileNameDate}_${formattedTime}.pdf`;
       doc.save(fileName);
@@ -697,22 +663,55 @@ export class GoalsComponent {
     row.isEditable = true;
   }
 
-  updateGoal(row: any): void {
-    if (this.isValidGoalData(row)) {
-      row.e = row.e.toString();
-      row.d = row.d.toString();
-      delete row.isEditable;
-      this.goalsService.updateGoal(row).subscribe((response) => {
-        if (response) {
-          console.log('Goal updated successfully:', response);
-        }
-        this.loadGoals();
+  updateGoal(row: Goals): void {
+    const missingFields = this.isValidGoalData(row);
+    if (missingFields.length > 0) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Validation Error',
+        detail: `${missingFields.join(', ')} are required`
       });
+      return;
     }
+
+    row.e = row.e;
+    row.d = row.d.toString();
+    const goalid = row.goalid;
+    const updatedGoal: Goals = {
+      ...row,
+      isEditable: false
+    };
+
+    this.goalsService.updateGoal(updatedGoal).subscribe((response) => {
+      if (response) {
+        const updatedGoals = this.goal.map((g: Goals) =>
+          g.goalid === goalid ? updatedGoal : g
+        );
+
+        const newTopGoal = updatedGoals.find((g: Goals) => g.goalid === goalid);
+        const restGoals = updatedGoals.filter((g: Goals) => g.goalid !== goalid);
+        this.goal = newTopGoal ? [newTopGoal, ...restGoals] : updatedGoals;
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Goal Updated',
+          detail: 'Goal updated successfully.'
+        });
+
+        if (goalid) {
+          this.loadGoalsHistory(goalid);
+        }
+      }
+    });
   }
+
   historyDialog(goalId: number) {
+    if (!goalId) {
+      console.warn('No goalid found for history view');
+      return;
+    }
+
     this.display = true;
-    //console.log('goalid',goalId);
     this.loadGoalsHistory(goalId);
   }
 
@@ -807,7 +806,7 @@ export class GoalsComponent {
     // console.log("logout")
     if (isPlatformBrowser(this.platform)) {
       this.msalService.logoutRedirect({
-        postLogoutRedirectUri: 'https://dev-goals.completesolar.com/ui-goals/login'
+        postLogoutRedirectUri: 'http://localhost:4200/login'
       });
     }
   }
@@ -842,38 +841,59 @@ export class GoalsComponent {
   }
 
 
-  // getFilterOptions(field: string): any[] {
-  //   const uniqueValues = [
-  //     ...new Set(this.allGoals.map((row: any) => row[field] ?? ''))
-  //   ];
+  getFilterOptions(field: string): any[] {
+    const uniqueValues = [
+      ...new Set(this.allGoals.map((row: any) => row[field] ?? ''))
+    ];
 
-  //   return uniqueValues.map(val => ({
-  //     label: val === '' ? 'Empty' : val,
-  //     value: val
-  //   }));
-  // }
+    return uniqueValues.map(val => ({
+      label: val === '' ? 'Empty' : val,
+      value: val
+    }));
+  }
   // onFilterChange(field: string): void {
-  //   this.applyFilters(field);
-  // }
-
-
-  // applyFilters(field: string): void {
   //   this.goal = this.allGoals.filter((row: any) => {
   //     return Object.entries(this.selectedFilters).every(([filterField, selectedValues]: any) => {
   //       if (!selectedValues || selectedValues.length === 0) return true;
-  //       const includedValues = selectedValues.map((option: any) => option.value);
 
+  //       const includedValues = selectedValues.map((option: any) => option.value);
   //       return includedValues.includes(row[filterField]);
   //     });
   //   });
+
   //   console.log("Filtered results:", this.goal.length);
   // }
 
+  onFilterChange(field: string): void {
+    this.goal = this.allGoals.filter((row: any) => {
+      return Object.entries(this.selectedFilters).every(([filterField, selectedValues]: any) => {
+        if (!selectedValues || selectedValues.length === 0) return true;
 
-  // clearFilter(field: string) {
-  //   this.selectedFilters = [];
-  //   console.log(`Cleared filter for ${field}`);
-  //   this.onFilterChange(field); // Optionally trigger filter after clearing
-  // }
+        const includedValues = selectedValues.map((option: any) => option.value);
+        return includedValues.includes(row[filterField]);
+      });
+    });
 
+    // console.log("Filtered results:", this.goal.length);
+  }
+
+
+  applyFilters(field: string): void {
+    this.goal = this.allGoals.filter((row: any) => {
+      return Object.entries(this.selectedFilters).every(([filterField, selectedValues]: any) => {
+        if (!selectedValues || selectedValues.length === 0) return true;
+        const includedValues = selectedValues.map((option: any) => option.value);
+
+        return includedValues.includes(row[filterField]);
+      });
+    });
+    //console.log("Filtered results:", this.goal.length);
+  }
+
+
+  clearFilter(field: string) {
+    this.selectedFilters = [];
+    //console.log(`Cleared filter for ${field}`);
+    this.onFilterChange(field); // Optionally trigger filter after clearing
+  }
 }

@@ -63,7 +63,7 @@
 ::ng-deep .custom-goal-table td:nth-child(6),
 ::ng-deep .custom-goal-table th:nth-child(7),
 ::ng-deep .custom-goal-table td:nth-child(7) {
-  width: 75px;
+  width: 80px;
 }
 
 ::ng-deep .custom-goal-table th:nth-child(3),
@@ -72,17 +72,12 @@
 ::ng-deep .custom-goal-table td:nth-child(4),
 ::ng-deep .custom-goal-table th:nth-child(8),
 ::ng-deep .custom-goal-table td:nth-child(8) {
-  width: 100px;
-}
-
-::ng-deep .custom-goal-table th:nth-child(9),
-::ng-deep .custom-goal-table td:nth-child(9) {
-  width: 35px;
+  width: 80px;
 }
 
 /* Goal Deliverable Column (assumed 10th column) */
-::ng-deep .custom-goal-table th:nth-child(9),
-::ng-deep .custom-goal-table td:nth-child(9) {
+::ng-deep .custom-goal-table th:nth-child(8),
+::ng-deep .custom-goal-table td:nth-child(8) {
   white-space: nowrap !important;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -109,13 +104,11 @@
   line-height: 1.2;
 }
 
-::ng-deep .custom-goal-table th:nth-child(11),
-::ng-deep .custom-goal-table td:nth-child(11) {
-  width: 100px;
-  text-align: center;
-}
-
-/* Set background color for header row */
+// ::ng-deep .custom-goal-table th:nth-child(11),
+// ::ng-deep .custom-goal-table td:nth-child(11) {
+//   width: 100px;
+//   text-align: center;
+// }
 ::ng-deep .custom-goal-table th {
   background-color: rgb(226, 239, 218) !important;
   color: white; /* Optionally set text color */
@@ -243,7 +236,7 @@
 }
 
 .main-title {
-  font-size: 17px;
+  font-size: 22px;
   font-weight: 700;
   color: #333;
   letter-spacing: 1px;
@@ -276,23 +269,23 @@
   height: 100%;
 }
 
-/* Goal Deliverable column in the dialog */
-::ng-deep .goal-history-table th:nth-child(10),
-::ng-deep .goal-history-table td:nth-child(10) {
-  white-space: normal !important;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100px;
-  // min-width: 400px;
-  // max-width: 600px;
-}
+// /* Goal Deliverable column in the dialog */
+// ::ng-deep .goal-history-table th:nth-child(10),
+// ::ng-deep .goal-history-table td:nth-child(10) {
+//   white-space: normal !important;
+//   overflow: hidden;
+//   text-overflow: ellipsis;
+//   width: 100px;
+//   // min-width: 400px;
+//   // max-width: 600px;
+// }
 
-::ng-deep .goal-history-table th:nth-child(11),
-::ng-deep .goal-history-table td:nth-child(11) {
-  width: 150px;
-  min-width: 150px;
-  max-width: 200px;
-}
+// ::ng-deep .goal-history-table th:nth-child(11),
+// ::ng-deep .goal-history-table td:nth-child(11) {
+//   width: 150px;
+//   min-width: 150px;
+//   max-width: 200px;
+// }
 
 .custom-goal-table th:last-child {
   text-align: left;
@@ -404,9 +397,13 @@
 //   margin-right: 10px;
 // }
 
-::ng-deep .custom-goal-table .p-datatable-tbody > tr:nth-child(1) {
+::ng-deep
+  .custom-goal-table
+  .p-datatable-tbody
+  > tr.add-row.head.first-data-row {
   background-color: rgb(139, 139, 212) !important;
 }
+
 .test {
   align-items: center;
   display: flex;
@@ -418,4 +415,12 @@
 }
 .settingSelect .p-dropdown-label {
   vertical-align: middle;
+}
+
+::ng-deep .p-multiselect {
+  min-height: 30px !important;
+}
+
+::ng-deep .p-multiselect-label-container {
+  max-height: 30px;
 }
