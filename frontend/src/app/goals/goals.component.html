@@ -162,13 +162,16 @@
               <ng-template #noSort>
                 <b>{{ col.header }}</b>
               </ng-template>
-
-              <!-- <p-columnFilter
+          
+              <p-columnFilter
+                *ngIf="col.field !== 'action' && col.field !== 'gdb'"
                 [field]="col.field"
                 display="menu"
                 [showMatchModes]="false"
                 [showOperator]="false"
                 [showAddButton]="false"
+                [showApplyButton]="false"
+                [showClearButton]="false"
               >
                 <ng-template pTemplate="filter" let-filter="filterCallback">
                   <p-multiSelect
@@ -184,27 +187,15 @@
                     [maxSelectedLabels]="0"
                   ></p-multiSelect>
                 </ng-template>
-              </p-columnFilter> -->
+              </p-columnFilter>
             </div>
           </th>
+          
         </tr>
       </ng-template>
 
-      <!-- <div *ngIf="isFilterOpen(col.field)">
-              <p-multiSelect
-                [options]="getFilterOptions(col.field)"
-                [(ngModel)]="selectedFilters[col.field]"
-                (onChange)="onFilterChange(col.field)"
-                [filter]="true"
-                optionLabel="label"
-                display="chip"
-                [style]="{ width: '100%' }"
-                panelStyleClass="filter-dropdown-left"
-              ></p-multiSelect>
-            </div> -->
-
       <ng-template pTemplate="body" let-row let-rowIndex="rowIndex">
-        <tr *ngIf="rowIndex === 0" class="add-row">
+        <tr *ngIf="rowIndex === 0" class="add-row head first-data-row">
           <td>
             <p-select
               [options]="whoOptions"
@@ -224,7 +215,7 @@
               </ng-template>
             </p-select>
           </td>
-        
+
           <td>
             <p-select
               [options]="priorityOptions"
@@ -236,7 +227,7 @@
               filter
             ></p-select>
           </td>
-        
+
           <td>
             <p-select
               [options]="projOptions"
@@ -248,7 +239,7 @@
               filter
             ></p-select>
           </td>
-        
+
           <td>
             <p-select
               [options]="vpOptions"
@@ -267,7 +258,7 @@
               </ng-template>
             </p-select>
           </td>
-        
+
           <td>
             <p-select
               [options]="weekOptions"
@@ -279,7 +270,7 @@
               filter
             ></p-select>
           </td>
-        
+
           <td>
             <p-select
               [options]="priorityOptionseb"
@@ -291,7 +282,7 @@
               filter
             ></p-select>
           </td>
-        
+
           <td>
             <p-select
               [options]="priorityOptionseb"
@@ -303,7 +294,7 @@
               filter
             ></p-select>
           </td>
-        
+
           <td>
             <p-select
               [options]="statusOptions"
@@ -315,11 +306,11 @@
               filter
             ></p-select>
           </td>
-        
-          <td>
+
+          <!-- <td>
             <input pInputText [(ngModel)]="newRow.fiscalyear" />
-          </td>
-        
+          </td> -->
+
           <!-- GOAL DELIVERABLE: action + description + memo -->
           <td>
             <div style="display: flex; gap: 6px; flex-wrap: wrap">
@@ -346,7 +337,7 @@
               />
             </div>
           </td>
-        
+
           <!-- ACTION column: save/add button -->
           <td class="align-content-center">
             <p-button
@@ -357,7 +348,6 @@
             ></p-button>
           </td>
         </tr>
-        
 
         <!--  Actual data rows -->
         <tr *ngIf="goal.length">
@@ -420,15 +410,15 @@
               [ngClass]="{ saved: !row.isEditable }"
               tooltipPosition="top"
             >
-            <ng-template let-option pTemplate="item">
-              {{ option.label }}
-            </ng-template>
-            <ng-template let-selectedOption pTemplate="selectedItem">
-              {{
-                row.isEditable ? selectedOption?.label : selectedOption?.value
-              }}
-            </ng-template>
-          </p-select>
+              <ng-template let-option pTemplate="item">
+                {{ option.label }}
+              </ng-template>
+              <ng-template let-selectedOption pTemplate="selectedItem">
+                {{
+                  row.isEditable ? selectedOption?.label : selectedOption?.value
+                }}
+              </ng-template>
+            </p-select>
           </td>
 
           <td>
@@ -481,7 +471,7 @@
               [ngClass]="{ saved: !row.isEditable }"
             ></p-select>
           </td>
-          <td>
+          <!-- <td>
             <input
               pInputText
               [(ngModel)]="row.fiscalyear"
@@ -490,7 +480,7 @@
               s
               tooltipPosition="top"
             />
-          </td>
+          </td> -->
           <!-- <input
               pInputText
               [(ngModel)]="row.gdb"
@@ -597,7 +587,7 @@
             <td>{{ row.e }}</td>
             <td>{{ row.d }}</td>
             <td>{{ row.s }}</td>
-            <td>{{row.fiscalyear}}</td>
+            <!-- <td>{{ row.fiscalyear }}</td> -->
             <td>
               <b>{{ row.action }}</b> {{ row.description }} {{ row.memo }}
             </td>

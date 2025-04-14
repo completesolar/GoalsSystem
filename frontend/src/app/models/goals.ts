@@ -1,4 +1,5 @@
 export interface Goals {
+  goalid?: number;
   who: string;
   p: number | null;
   proj: string;

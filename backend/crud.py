@@ -187,6 +187,71 @@ def create_proj(db: Session, proj: str):
 
 def update_goal(db: Session, goal_id: int, goal_update: GoalsUpdate):
     currentdate = datetime.now()
+
+    # Step 1: Retrieve the goal from the database
+    db_goal = db.query(Goals).filter(Goals.goalid == goal_id).first()
+    if db_goal is None:
+        return "Goal not found"
+
+    # Step 2: Update the goal's fields with the new data
+    if goal_update.who is not None:
+        db_goal.who = goal_update.who
+    if goal_update.p is not None:
+        db_goal.p = goal_update.p
+    if goal_update.proj is not None:
+        db_goal.proj = goal_update.proj
+    if goal_update.vp is not None:
+        db_goal.vp = goal_update.vp
+    if goal_update.b is not None:
+        db_goal.b = goal_update.b
+    if goal_update.e is not None:
+        db_goal.e = goal_update.e
+    if goal_update.d is not None:
+        db_goal.d = goal_update.d
+    if goal_update.s is not None:
+        db_goal.s = goal_update.s
+    if goal_update.action is not None:
+        db_goal.action = goal_update.action
+    if goal_update.memo is not None:
+        db_goal.memo = goal_update.memo
+    if goal_update.description is not None:
+        db_goal.description = goal_update.description
+    if goal_update.fiscalyear is not None:
+        db_goal.fiscalyear = goal_update.fiscalyear
+    if goal_update.updateBy is not None:
+        db_goal.updateBy = goal_update.updateBy
+
+    # Step 3: Commit the changes to the database
+    db.commit()
+    db.refresh(db_goal)
+
+    # Step 4: Insert into goalshistory
+    db_goalhistory = goalshistory(
+        goalid=goal_id,
+        createddate=currentdate,
+        createdby=goal_update.updateBy,
+        who=db_goal.who,
+        p=db_goal.p,
+        proj=db_goal.proj,
+        vp=db_goal.vp,
+        b=db_goal.b,
+        e=db_goal.e,
+        d=db_goal.d,
+        s=db_goal.s,
+        action=db_goal.action,
+        memo=db_goal.memo,
+        fiscalyear=db_goal.fiscalyear,
+        updateBy=db_goal.updateBy,
+        description=db_goal.description
+    )
+
+    db.add(db_goalhistory)
+    db.commit()
+    db.refresh(db_goalhistory)
+
+    return db_goal
+
+    currentdate = datetime.now()
     # Step 1: Retrieve the goal from the database
     db_goal = db.query(Goals).filter(Goals.goalid == goal_id).first()
     old_goal = deepcopy(db_goal)  # Create a copy of the old goal for history
