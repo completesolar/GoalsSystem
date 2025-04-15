@@ -77,6 +77,7 @@ export class GoalsComponent {
   display = false;
   whoOptions: any[] = [];
   vpOptions: any[] = [];
+  fullWhoList: any[] = [];
 
   private readonly _destroying$ = new Subject<void>();
   selectedSettings: string | undefined;
@@ -93,7 +94,8 @@ export class GoalsComponent {
   // statusOptions = statuslist.map(value => ({ label: value, value }));
   statusOptions: { label: string; value: string }[] = [];
   priorityOptions: { label: number; value: number }[] = [];
-  priorityOptionseb: { label: string; value: string }[] = [];
+  priorityOptionsE: { label: string; value: number }[] = [];
+  priorityOptionsD: { label: string; value: string }[] = [];  
   // vpOptions: { label: string; value: string }[] = [];
   projOptions: { label: string; value: string }[] = [];
   filterOpenField: string | null = null;
@@ -210,7 +212,12 @@ export class GoalsComponent {
   loadWhoOptions(): void {
     this.goalsService.getWhoOptions().subscribe({
       next: (data) => {
-        this.whoOptions = data;
+        this.fullWhoList = data;
+  
+        this.whoOptions = data.map(item => ({
+          label: `${item.initials ?? ''} (${item.employee_name ?? ''})`,
+          value: item.initials
+        }));
       },
       error: (err) => {
         console.error('Failed to load WHO options:', err);
@@ -219,7 +226,7 @@ export class GoalsComponent {
   }
 
   loadVpOptions(): void {
-    this.goalsService.getVP().subscribe({
+    this.goalsService.getVpOptions().subscribe({
       next: (data) => {
         this.vpOptions = data;
       },
@@ -324,16 +331,41 @@ export class GoalsComponent {
     this.newRow.b = currentWeek;
     this.newRow.e = ((currentWeek === 53) ? 1 : currentWeek + 1);
     this.newRow.s = 'N';
+  
+    //console.log('Selected WHO initials:', this.newRow.who);
+    const selectedWho = this.fullWhoList.find(who => who.initials === this.newRow.who);
+    //console.log('Matched WHO record:', selectedWho);
+  
+    if (selectedWho && selectedWho.supervisor_name) {
+      //console.log('Looking for supervisor:', selectedWho.supervisor_name);
+        const supervisor = this.fullWhoList.find(who => who.employee_name === selectedWho.supervisor_name);
+      //console.log('Matched Supervisor record:', supervisor);
+  
+      if (supervisor && supervisor.initials) {
+        this.newRow.vp = supervisor.initials;
+        //console.log('Assigned VP (supervisor initials):', this.newRow.vp);
+      } else {
+        console.warn('Supervisor not found or has no initials.');
+      }
+    } else {
+      console.warn('Selected WHO has no supervisor_name.');
+    }
   }
 
   loadGoalsHistory(id: number) {
     this.goalsService.getGoalHistory(id).subscribe(
       (goalsHistory) => {
-
-        this.goalHistory = (goalsHistory as any[]).sort((a, b) => {
-          return new Date(b.createddate).getTime() - new Date(a.createddate).getTime();
-        });
-
+        this.goalHistory = (goalsHistory as any[])
+          .map(g => ({
+            ...g,
+            // Format createddate into MST
+            createddateMST: moment(g.createddate)
+              .tz('America/Denver')
+              .format('MM/DD/YYYY hh:mm:ss A')
+          }))
+          .sort((a, b) => {
+            return new Date(b.createddate).getTime() - new Date(a.createddate).getTime();
+          });
       },
       (error) => {
         console.error('Error fetching goal history for ID:', id);
@@ -754,21 +786,21 @@ export class GoalsComponent {
       }
     });
   }
-  getVp() {
-    this.goalsService.getVP().subscribe({
-      next: (response) => {
-        const vp = response as Array<{ vp: string; id: number }>;
-        //console.log("vp", vp)
-        this.vpOptions = vp.map(item => ({
-          label: item.vp,
-          value: item.vp
-        }));
-      },
-      error: (error) => {
-        console.error('Error fetching status:', error);
-      }
-    });
-  }
+  // getVp() {
+  //   this.goalsService.getVP().subscribe({
+  //     next: (response) => {
+  //       const vp = response as Array<{ vp: string; id: number }>;
+  //       console.log("vp", vp)
+  //       this.vpOptions = vp.map(item => ({
+  //         label: item.vp,
+  //         value: item.vp
+  //       }));
+  //     },
+  //     error: (error) => {
+  //       console.error('Error fetching status:', error);
+  //     }
+  //   });
+  // }
   getProj() {
     this.goalsService.getProj().subscribe({
       next: (response) => {
@@ -788,14 +820,19 @@ export class GoalsComponent {
     this.goalsService.getD().subscribe({
       next: (response) => {
         const numData = response as Array<{ d: string; id: number }>;
-        // console.log("D data", numData)
-        this.priorityOptionseb = numData.map(item => ({
-          label: item.d,
-          value: item.d
+  
+        this.priorityOptionsE = numData.map(item => ({
+          label: item.d.toString(),
+          value: Number(item.d) // for 'e' (number)
+        }));
+  
+        this.priorityOptionsD = numData.map(item => ({
+          label: item.d.toString(),
+          value: item.d.toString() // for 'd' (string)
         }));
       },
       error: (error) => {
-        console.error('Error fetching status:', error);
+        console.error('Error fetching values:', error);
       }
     });
   }
@@ -842,6 +879,14 @@ export class GoalsComponent {
 
 
   getFilterOptions(field: string): any[] {
+    if (field === 'who') {
+      return this.whoOptions;
+    }
+  
+    if (field === 'vp') {
+      return this.vpOptions;
+    }  
+    // Fallback for other fields
     const uniqueValues = [
       ...new Set(this.allGoals.map((row: any) => row[field] ?? ''))
     ];
