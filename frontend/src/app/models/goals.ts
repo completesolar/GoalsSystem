@@ -3,7 +3,7 @@ export interface Goals {
   who: string;
   p: number | null;
   proj: string;
-  vp: string;
+  vp: string | null;
   b: number | null;
   e: number | null;
   d: string;

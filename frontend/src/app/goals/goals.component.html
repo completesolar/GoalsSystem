@@ -183,7 +183,7 @@
                     [style]="{ width: '100%' }"
                     panelStyleClass="filter-dropdown-left"
                     [showToggleAll]="false"
-                    [showClear]="false"
+                    [showToggleAll]="true"
                     [maxSelectedLabels]="0"
                   ></p-multiSelect>
                 </ng-template>
@@ -273,7 +273,7 @@
 
           <td>
             <p-select
-              [options]="priorityOptionseb"
+              [options]="priorityOptionsE"
               [(ngModel)]="newRow.e"
               placeholder="Select E"
               [pTooltip]="'Select E'"
@@ -285,7 +285,7 @@
 
           <td>
             <p-select
-              [options]="priorityOptionseb"
+              [options]="priorityOptionsD"
               [(ngModel)]="newRow.d"
               placeholder="Select D"
               [pTooltip]="'Select D'"
@@ -437,7 +437,7 @@
 
           <td>
             <p-select
-              [options]="priorityOptionseb"
+              [options]="priorityOptionsE"
               [(ngModel)]="row.e"
               [disabled]="!row.isEditable"
               optionLabel="label"
@@ -450,7 +450,7 @@
 
           <td>
             <p-select
-              [options]="priorityOptionseb"
+              [options]="priorityOptionsD"
               [(ngModel)]="row.d"
               [disabled]="!row.isEditable"
               optionLabel="label"
@@ -600,7 +600,7 @@
                 text-overflow: ellipsis;
               "
             >
-              {{ row.createddate | date : "short" }}
+            {{ row.createddateMST }}
             </td>
           </tr>
         </ng-template>

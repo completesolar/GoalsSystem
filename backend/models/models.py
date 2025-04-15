@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text, func
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime,BigInteger,Date,Boolean, Text, func
 from sqlalchemy.orm import relationship
 from database import Base
 from datetime import datetime
@@ -57,16 +57,28 @@ class Status(Base):
 
 class Who(Base):
     __tablename__ = "who"
+
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    slno = Column(Integer, nullable=False)
-    ee_id = Column(Integer, unique=True, nullable=False)
-    last_name = Column(String(255), nullable=False)
-    first_name = Column(String(255), nullable=False)
-    middle_name = Column(String(255), nullable=True)
-    decoder = Column(String(50), nullable=True)
-    mobile = Column(String(20), nullable=True)
-    work_email = Column(String(255), unique=True, nullable=True)
-    title = Column(String(255), nullable=True)
+    employee_id = Column(BigInteger, nullable=True)
+    employee_name = Column(String(255), nullable=True)
+    last_name = Column(String(100), nullable=False)
+    first_name = Column(String(100), nullable=False)
+    initials = Column(String(10), nullable=True)
+    primary_email = Column(String(255), unique=True, nullable=True)
+    employee_status = Column(String(50), nullable=True)
+    client_hire_date = Column(Date, nullable=True)
+    employee_reference_id = Column(BigInteger, nullable=True)
+    job_title = Column(String(255), nullable=True)
+    employee_level = Column(Integer, nullable=True)
+    supervisor_name = Column(String(255), nullable=True)
+    is_manager = Column(Boolean, nullable=True)
+    manager_level = Column(Integer, nullable=True)
+    worksite_state = Column(String(10), nullable=True)
+    division = Column(String(100), nullable=True)
+    manager_level_1 = Column(String(255), nullable=True)
+    manager_level_2 = Column(String(255), nullable=True)
+    manager_level_3 = Column(String(255), nullable=True)
+    manager_level_4 = Column(String(255), nullable=True)
 
 class Proj(Base):
     __tablename__ = "proj"
