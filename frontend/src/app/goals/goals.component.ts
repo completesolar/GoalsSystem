@@ -299,7 +299,7 @@ export class GoalsComponent {
           ...g,
           goalid: g.goalid,
           e: g.e ? +g.e : '',
-          d: g.d ? +g.d : '',
+          d: g.d?.toString() ?? '',
           s: g.s ?? '',
           p: g.p ? g.p : 1,
           proj: g.proj ? g.proj.toUpperCase() : '',
