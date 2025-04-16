@@ -119,6 +119,186 @@
     </div>
   </div>
 
+  <div class="p-2 mx-2 bg-white mb-2 border-round-md border-1 border-green-400">
+    <div class="flex align-items-center justify-content-between mb-1">
+      <div class="text-center mb-2 text-sm font-semibold">Add Goals</div>
+      <div class="align-content-center">
+        <p-button
+          icon="pi pi-plus"
+          (click)="addGoal()"
+          severity="success"
+          size="small"
+          label="Add"
+          [style]="{ height: '24px' }"
+        ></p-button>
+      </div>
+    </div>
+    <div class="mb-2 pl-2 w-full">
+      <div class="flex gap-2 mb-2">
+        <div class="flex-1">
+          <p-select
+            [options]="whoOptions"
+            [(ngModel)]="newRow.who"
+            (onChange)="onWhoSelected()"
+            placeholder="Select WHO"
+            optionLabel="label"
+            optionValue="value"
+            [pTooltip]="'Select WHO'"
+            filter
+            [style]="{ width: '100%' }"
+          >
+            <ng-template let-option pTemplate="item">
+              {{ option.label }}
+            </ng-template>
+            <ng-template let-selectedOption pTemplate="selectedItem">
+              {{ selectedOption?.value }}
+            </ng-template>
+          </p-select>
+        </div>
+
+        <div class="flex-1">
+          <p-select
+            [options]="priorityOptions"
+            [(ngModel)]="newRow.p"
+            placeholder="Select P"
+            [pTooltip]="'Select P'"
+            optionLabel="label"
+            optionValue="value"
+            filter
+            [style]="{ width: '100%' }"
+          ></p-select>
+        </div>
+
+        <div class="flex-1">
+          <p-select
+            [options]="projOptions"
+            [(ngModel)]="newRow.proj"
+            placeholder="Select PROJ"
+            [pTooltip]="'Select Proj'"
+            optionLabel="label"
+            optionValue="value"
+            filter
+            [style]="{ width: '100%' }"
+          ></p-select>
+        </div>
+
+        <div class="flex-1">
+          <p-select
+            [options]="vpOptions"
+            [(ngModel)]="newRow.vp"
+            placeholder="Select VP"
+            optionLabel="label"
+            optionValue="value"
+            [pTooltip]="'Select VP'"
+            filter
+            [style]="{ width: '100%' }"
+          >
+            <ng-template let-option pTemplate="item">
+              {{ option.label }}
+            </ng-template>
+            <ng-template let-selectedOption pTemplate="selectedItem">
+              {{ selectedOption?.value }}
+            </ng-template>
+          </p-select>
+        </div>
+
+        <div class="flex-1">
+          <p-select
+            [options]="weekOptions"
+            [(ngModel)]="newRow.b"
+            placeholder="Select B"
+            [pTooltip]="'Select B'"
+            optionLabel="label"
+            optionValue="value"
+            filter
+            [style]="{ width: '100%' }"
+          ></p-select>
+        </div>
+
+        <div class="flex-1">
+          <p-select
+            [options]="priorityOptionsE"
+            [(ngModel)]="newRow.e"
+            placeholder="Select E"
+            [pTooltip]="'Select E'"
+            optionLabel="label"
+            optionValue="value"
+            filter
+            [style]="{ width: '100%' }"
+          ></p-select>
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <div class="flex-1">
+          <p-select
+            [options]="priorityOptionsD"
+            [(ngModel)]="newRow.d"
+            placeholder="Select D"
+            [pTooltip]="'Select D'"
+            optionLabel="label"
+            optionValue="value"
+            filter
+            [style]="{ width: '100%' }"
+          ></p-select>
+        </div>
+
+        <div class="flex-1">
+          <p-select
+            [options]="statusOptions"
+            [(ngModel)]="newRow.s"
+            placeholder="Select S"
+            [pTooltip]="'Select S'"
+            optionLabel="label"
+            optionValue="value"
+            filter
+            appendTo="body"
+            [style]="{ width: '100%' }"
+          ></p-select>
+        </div>
+
+        <!-- <td>
+          <input pInputText [(ngModel)]="newRow.fiscalyear" />
+        </td> -->
+
+        <!-- GOAL DELIVERABLE: action + description + memo -->
+        <div class="flex-1">
+          <input
+            pInputText
+            [(ngModel)]="newRow.action"
+            maxlength="13"
+            placeholder="Action"
+          />
+        </div>
+
+        <div class="flex-1">
+          <input
+            pInputText
+            [(ngModel)]="newRow.description"
+            maxlength="70"
+            placeholder="Goal Description"
+          />
+        </div>
+
+        <div class="flex-1">
+          <input
+            pInputText
+            [(ngModel)]="newRow.memo"
+            maxlength="17"
+            placeholder="Spec/memo"
+          />
+        </div>
+
+        <div class="flex-1">
+          <input
+            pInputText
+            [(ngModel)]="newRow.fiscalyear"
+            placeholder="Select year"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="table-container pr-3 pl-3">
     <p-table
       [value]="goal"
@@ -128,13 +308,10 @@
       [rowsPerPageOptions]="[10, 20, 50]"
       currentPageReportTemplate="Showing {first} to {last} of {totalRecords} goals"
       [paginatorPosition]="'bottom'"
-      responsiveLayout="scroll"
-      scrollable="true"
       [sortMode]="'multiple'"
-      scrollDirection="both"
-      scrollHeight="flex"
-      [style]="{ width: '1800px', height: '500px' }"
-      tableStyleClass="custom-goal-table"
+      scrollable="false"
+      [style]="{ width: '100%', height: 'auto', tableLayout: 'fixed' }"
+      tableStyleClass="custom-goal-table fixed-table"
     >
       <ng-template pTemplate="header">
         <tr>
@@ -149,7 +326,10 @@
               <b>{{ col.header }}</b>
             </ng-template>
           </th> -->
-          <th *ngFor="let col of columns">
+          <th
+            *ngFor="let col of columns"
+            [hidden]="col.field === 'fiscalyear' && !isAnyRowEditable()"
+          >
             <div class="flex items-center justify-between">
               <div
                 class="test"
@@ -190,166 +370,10 @@
               </p-columnFilter>
             </div>
           </th>
-          
         </tr>
       </ng-template>
 
       <ng-template pTemplate="body" let-row let-rowIndex="rowIndex">
-        <tr *ngIf="rowIndex === 0" class="add-row head first-data-row">
-          <td>
-            <p-select
-              [options]="whoOptions"
-              [(ngModel)]="newRow.who"
-              (onChange)="onWhoSelected()"
-              placeholder="Select WHO"
-              optionLabel="label"
-              optionValue="value"
-              [pTooltip]="'Select WHO'"
-              filter
-            >
-              <ng-template let-option pTemplate="item">
-                {{ option.label }}
-              </ng-template>
-              <ng-template let-selectedOption pTemplate="selectedItem">
-                {{ selectedOption?.value }}
-              </ng-template>
-            </p-select>
-          </td>
-
-          <td>
-            <p-select
-              [options]="priorityOptions"
-              [(ngModel)]="newRow.p"
-              placeholder="Select P"
-              [pTooltip]="'Select P'"
-              optionLabel="label"
-              optionValue="value"
-              filter
-            ></p-select>
-          </td>
-
-          <td>
-            <p-select
-              [options]="projOptions"
-              [(ngModel)]="newRow.proj"
-              placeholder="Select PROJ"
-              [pTooltip]="'Select Proj'"
-              optionLabel="label"
-              optionValue="value"
-              filter
-            ></p-select>
-          </td>
-
-          <td>
-            <p-select
-              [options]="vpOptions"
-              [(ngModel)]="newRow.vp"
-              placeholder="Select VP"
-              optionLabel="label"
-              optionValue="value"
-              [pTooltip]="'Select VP'"
-              filter
-            >
-              <ng-template let-option pTemplate="item">
-                {{ option.label }}
-              </ng-template>
-              <ng-template let-selectedOption pTemplate="selectedItem">
-                {{ selectedOption?.value }}
-              </ng-template>
-            </p-select>
-          </td>
-
-          <td>
-            <p-select
-              [options]="weekOptions"
-              [(ngModel)]="newRow.b"
-              placeholder="Select B"
-              [pTooltip]="'Select B'"
-              optionLabel="label"
-              optionValue="value"
-              filter
-            ></p-select>
-          </td>
-
-          <td>
-            <p-select
-              [options]="priorityOptionsE"
-              [(ngModel)]="newRow.e"
-              placeholder="Select E"
-              [pTooltip]="'Select E'"
-              optionLabel="label"
-              optionValue="value"
-              filter
-            ></p-select>
-          </td>
-
-          <td>
-            <p-select
-              [options]="priorityOptionsD"
-              [(ngModel)]="newRow.d"
-              placeholder="Select D"
-              [pTooltip]="'Select D'"
-              optionLabel="label"
-              optionValue="value"
-              filter
-            ></p-select>
-          </td>
-
-          <td>
-            <p-select
-              [options]="statusOptions"
-              [(ngModel)]="newRow.s"
-              placeholder="Select S"
-              [pTooltip]="'Select S'"
-              optionLabel="label"
-              optionValue="value"
-              filter
-              appendTo="body"  
-            ></p-select>
-          </td>
-
-          <!-- <td>
-            <input pInputText [(ngModel)]="newRow.fiscalyear" />
-          </td> -->
-
-          <!-- GOAL DELIVERABLE: action + description + memo -->
-          <td>
-            <div style="display: flex; gap: 6px; flex-wrap: wrap">
-              <input
-                pInputText
-                [(ngModel)]="newRow.action"
-                maxlength="13"
-                style="flex: 1 1 30%"
-                placeholder="Action"
-              />
-              <input
-                pInputText
-                [(ngModel)]="newRow.description"
-                maxlength="70"
-                style="flex: 1 1 40%"
-                placeholder="Goal Description"
-              />
-              <input
-                pInputText
-                [(ngModel)]="newRow.memo"
-                maxlength="17"
-                style="flex: 1 1 25%"
-                placeholder="Spec/memo"
-              />
-            </div>
-          </td>
-
-          <!-- ACTION column: save/add button -->
-          <td class="align-content-center">
-            <p-button
-              icon="pi pi-plus"
-              (click)="addGoal()"
-              severity="success"
-              size="small"
-            ></p-button>
-          </td>
-        </tr>
-
         <!--  Actual data rows -->
         <tr *ngIf="goal.length">
           <td>
@@ -368,7 +392,7 @@
               </ng-template>
               <ng-template let-selectedOption pTemplate="selectedItem">
                 {{
-                  row.isEditable ? selectedOption?.label : selectedOption?.value
+                  row.isEditable ? selectedOption?.value : selectedOption?.value
                 }}
               </ng-template>
             </p-select>
@@ -416,7 +440,7 @@
               </ng-template>
               <ng-template let-selectedOption pTemplate="selectedItem">
                 {{
-                  row.isEditable ? selectedOption?.label : selectedOption?.value
+                  row.isEditable ? selectedOption?.value : selectedOption?.value
                 }}
               </ng-template>
             </p-select>
@@ -472,36 +496,21 @@
               [ngClass]="{ saved: !row.isEditable }"
             ></p-select>
           </td>
-          <!-- <td>
-            <input
-              pInputText
-              [(ngModel)]="row.fiscalyear"
-              [disabled]="!row.isEditable"
-              [ngClass]="{ saved: !row.isEditable }"
-              s
-              tooltipPosition="top"
-            />
-          </td> -->
-          <!-- <input
-              pInputText
-              [(ngModel)]="row.gdb"
-              [disabled]="!row.isEditable"
-              [ngClass]="{ saved: !row.isEditable }"
-              [pTooltip]="row.gdb"
-              tooltipPosition="top"
-            /> -->
+
           <td>
             <div
               *ngIf="row.isEditable; else viewMode"
               style="display: flex; gap: 6px; flex-wrap: wrap"
             >
-              <input
-                pInputText
+              <p-select
+                [options]="actionOptions"
                 [(ngModel)]="row.action"
                 [disabled]="!row.isEditable"
                 [pTooltip]="row.action"
                 tooltipPosition="top"
-                style="flex: 1 1 30%"
+                placeholder="Select Action"
+                optionLabel="label"
+                optionValue="value"
               />
               <input
                 pInputText
@@ -509,7 +518,7 @@
                 [disabled]="!row.isEditable"
                 [pTooltip]="row.description"
                 tooltipPosition="top"
-                style="flex: 1 1 40%"
+                style="width: 100px !important"
                 placeholder="Goal Description"
               />
               <input
@@ -518,22 +527,34 @@
                 [disabled]="!row.isEditable"
                 [pTooltip]="row.memo"
                 tooltipPosition="top"
-                style="flex: 1 1 25%"
+                style="width: 100px !important"
                 placeholder="Spec/memo"
               />
             </div>
-
             <ng-template #viewMode>
               <div
                 class="saved"
                 [pTooltip]="row.action + ' ' + row.description + ' ' + row.memo"
                 tooltipPosition="top"
               >
-                <b>{{ row.action }}</b> {{ row.description }} {{ row.memo }}
+                <b>{{ row.action }}</b>
+                {{
+                  row.description.length > 10
+                    ? (row.description | slice : 0 : 55) + "..."
+                    : row.description
+                }}
+                {{ row.memo }}
               </div>
             </ng-template>
           </td>
-
+          <td *ngIf="row.isEditable">
+            <input
+              pInputText
+              [(ngModel)]="row.fiscalyear"
+              [disabled]="!row.isEditable"
+              tooltipPosition="top"
+            />
+          </td>
           <td class="align-content-center">
             <i
               [ngClass]="
@@ -600,7 +621,7 @@
                 text-overflow: ellipsis;
               "
             >
-            {{ row.createddateMST }}
+              {{ row.createddateMST }}
             </td>
           </tr>
         </ng-template>

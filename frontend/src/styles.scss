@@ -24,37 +24,31 @@ input,
   font-family: Arial, sans-serif !important;
   font-size: 12px !important;
   color: black !important;
-  height: 32px !important;
-  padding: 3px 8px !important;
   line-height: 1.2 !important;
   box-sizing: border-box;
   vertical-align: middle !important;
-  width: 100% !important;
   height: 28px !important;
 }
 
-
-
 .p-datatable-sortable-column:not(.p-datatable-column-sorted):hover {
-    background: none !important;
+  background: none !important;
 }
 table {
   table-layout: fixed;
 }
-.p-paginator{
+.p-paginator {
   padding: 2px !important;
 }
 .pi {
-font-size: 14px;
+  font-size: 14px;
 }
-
 
 html {
   background-color: whitesmoke;
 }
 
 .p-datatable-flex-scrollable {
-height: 100% !important;
+  height: 100% !important;
 }
 /* Apply to all tooltip positions */
 body .p-tooltip {
@@ -68,8 +62,10 @@ body .p-tooltip {
   }
 }
 
-
-table .p-input, table .p-select{
-padding-top: 0px !important;
-padding-bottom: 0px !important;
+.p-datatable-column-filter-button {
+  justify-content: flex-start;
+  margin-top: -2px;
+}
+.p-iconwrapper svg {
+  width: 11px;
 }
