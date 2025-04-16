@@ -1,8 +1,23 @@
-/* Wraps the table and prevents page overflow */
-.table-container {
-  max-width: 100%;
-  overflow-x: auto;
-  margin-top: 5px;
+// /* Wraps the table and prevents page overflow */
+// .table-container {
+//   max-width: 100%;
+//   overflow-x: auto;
+//   margin-top: 5px;
+// }
+
+/* Set table layout to fixed and cell width to 100px */
+.fixed-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.fixed-table th,
+.fixed-table td {
+  width: 70px;
+  word-wrap: break-word; /* optional: helps break long text */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .legend-content {
@@ -13,87 +28,102 @@
   width: 99%;
 }
 
-/* Force the table to take up full width without unnecessary scroll */
-::ng-deep .custom-goal-table table {
-  width: 100% !important;
-  table-layout: fixed !important;
+::ng-deep .custom-goal-table th:nth-child(9),
+::ng-deep .custom-goal-table td:nth-child(9) {
+  width: 400px;
 }
 
-/* Applies consistent cell sizing and wraps content if needed */
-::ng-deep .custom-goal-table th,
-::ng-deep .custom-goal-table td {
-  white-space: normal !important;
-  word-wrap: break-word;
-  padding: 8px;
-  text-align: left;
-  vertical-align: top;
-  font-size: 14px;
-}
+// /* Force the table to take up full width without unnecessary scroll */
+// ::ng-deep .custom-goal-table table {
+//   width: 100% !important;
+//   table-layout: fixed !important;
+// }
 
-/* Prevent Add button column from shrinking */
-::ng-deep .custom-goal-table td:last-child,
-::ng-deep .custom-goal-table th:last-child {
-  width: 100px;
-  min-width: 100px;
-  text-align: center;
-}
+// /* Applies consistent cell sizing and wraps content if needed */
+// ::ng-deep .custom-goal-table th,
+// ::ng-deep .custom-goal-table td {
+//   white-space: normal !important;
+//   word-wrap: break-word;
+//   padding: 8px;
+//   text-align: left;
+//   vertical-align: top;
+//   font-size: 14px;
+// }
 
-/* Define consistent fixed widths for each column (based on their order) */
-::ng-deep .custom-goal-table th,
-::ng-deep .custom-goal-table td {
-  white-space: normal !important;
-  word-wrap: break-word;
-  padding: 8px;
-  text-align: left;
+// /* Prevent Add button column from shrinking */
+// ::ng-deep .custom-goal-table td:last-child,
+// ::ng-deep .custom-goal-table th:last-child {
+//   width: 100px;
+//   min-width: 100px;
+//   text-align: center;
+// }
 
-  vertical-align: top;
-  font-size: 14px;
-}
+// /* Define consistent fixed widths for each column (based on their order) */
+// ::ng-deep .custom-goal-table th,
+// ::ng-deep .custom-goal-table td {
+//   white-space: normal !important;
+//   word-wrap: break-word;
+//   padding: 8px;
+//   text-align: left;
 
-::ng-deep .custom-goal-table th:nth-child(1),
-::ng-deep .custom-goal-table td:nth-child(1) {
-  width: 80px;
-}
+//   vertical-align: top;
+//   font-size: 14px;
+// }
 
-::ng-deep .custom-goal-table th:nth-child(2),
-::ng-deep .custom-goal-table td:nth-child(2),
-::ng-deep .custom-goal-table th:nth-child(5),
-::ng-deep .custom-goal-table td:nth-child(5),
-::ng-deep .custom-goal-table th:nth-child(6),
-::ng-deep .custom-goal-table td:nth-child(6),
-::ng-deep .custom-goal-table th:nth-child(7),
-::ng-deep .custom-goal-table td:nth-child(7) {
-  width: 80px;
-}
+// ::ng-deep .custom-goal-table th:nth-child(1),
+// ::ng-deep .custom-goal-table td:nth-child(1) {
+//   width: 60px;
+// }
 
-::ng-deep .custom-goal-table th:nth-child(3),
-::ng-deep .custom-goal-table td:nth-child(3),
-::ng-deep .custom-goal-table th:nth-child(4),
-::ng-deep .custom-goal-table td:nth-child(4),
-::ng-deep .custom-goal-table th:nth-child(8),
-::ng-deep .custom-goal-table td:nth-child(8) {
-  width: 80px;
-}
+// ::ng-deep .custom-goal-table th:nth-child(2),
+// ::ng-deep .custom-goal-table td:nth-child(2),
+// ::ng-deep .custom-goal-table th:nth-child(5),
+// ::ng-deep .custom-goal-table td:nth-child(5),
+// ::ng-deep .custom-goal-table th:nth-child(6),
+// ::ng-deep .custom-goal-table td:nth-child(6),
+// ::ng-deep .custom-goal-table th:nth-child(7),
+// ::ng-deep .custom-goal-table td:nth-child(7) {
+//   width: 60px;
+// }
 
-/* Goal Deliverable Column (assumed 10th column) */
-::ng-deep .custom-goal-table th:nth-child(8),
-::ng-deep .custom-goal-table td:nth-child(8) {
-  white-space: nowrap !important;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 70px;
-  min-width: 70px;
-  max-width: 70px;
-  text-align: left;
-}
+// ::ng-deep .custom-goal-table th:nth-child(3),
+// ::ng-deep .custom-goal-table td:nth-child(3),
+// ::ng-deep .custom-goal-table th:nth-child(4),
+// ::ng-deep .custom-goal-table td:nth-child(4),
+// ::ng-deep .custom-goal-table th:nth-child(8),
+// ::ng-deep .custom-goal-table td:nth-child(8) {
+//   width: 60px;
+// }
+
+// ::ng-deep .custom-goal-table th:nth-child(9),
+// ::ng-deep .custom-goal-table td:nth-child(9) {
+//   width: 185px;
+// }
+
+// ::ng-deep .custom-goal-table th:nth-child(10),
+// ::ng-deep .custom-goal-table td:nth-child(10) {
+//   width: 55px;
+//   text-align: left;
+// }
+
+// /* Goal Deliverable Column (assumed 10th column) */
+// ::ng-deep .custom-goal-table th:nth-child(8),
+// ::ng-deep .custom-goal-table td:nth-child(8) {
+//   white-space: nowrap !important;
+//   overflow: hidden;
+//   text-overflow: ellipsis;
+//   width: 60px;
+
+//   text-align: left;
+// }
 
 /* For inputs and dropdowns in cells */
+
 ::ng-deep td .p-inputtext,
 ::ng-deep td .p-dropdown {
   height: 32px !important;
   font-size: 13px;
   padding: 4px 8px !important;
-  width: 100% !important;
   box-sizing: border-box;
   vertical-align: middle;
 }
@@ -145,12 +175,12 @@
 }
 
 /* Prevent Add button column from shrinking */
-::ng-deep .custom-goal-table td:last-child,
-::ng-deep .custom-goal-table th:last-child {
-  width: 100px;
-  min-width: 100px;
-  text-align: left;
-}
+// ::ng-deep .custom-goal-table td:last-child,
+// ::ng-deep .custom-goal-table th:last-child {
+//   width: 100px;
+//   min-width: 100px;
+//   text-align: left;
+// }
 
 /* Ensure inputs inside the table cells don't collapse */
 ::ng-deep .p-inputtext {

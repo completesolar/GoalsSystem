@@ -1,13 +1,14 @@
 from sqlalchemy.orm import Session
 
 # from schemas.schema import Goals
-from models.models import Goals, Who, Proj, VP, Status, goalshistory, P, B, E, D
+from models.models import Goals, Who, Proj, VP, Status, goalshistory, P, B, E, D, Action
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from schemas.schema import GoalsResponse, GoalsUpdate  # Pydantic schema
 from schemas.goalshistory import goalhistoryResponse
 from schemas.who import WhoResponse
-from schemas.status import StatusUpdate,StatusResponse
+from schemas.action import ActionResponse
+from schemas.status import StatusUpdate, StatusResponse
 from schemas.proj import ProjResponse
 from schemas.vp import VPResponse
 from schemas.p import PResponse
@@ -76,6 +77,13 @@ def update_status_entry(db: Session, id: int, status_update: StatusUpdate):
 def get_all_who(db: Session, response_model=list[WhoResponse]):
     db_who = db.query(Who).order_by(Who.id.desc()).all()
     return jsonable_encoder(db_who)
+
+
+def get_action(db: Session):
+    db_action = db.query(Action).order_by(Action.id.desc()).all()
+    print("Fetched actions:", db_action)
+    return jsonable_encoder(db_action)
+
 
 def create_goal(db: Session, goal: Goals):
     currentdate = datetime.now()

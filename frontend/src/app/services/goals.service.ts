@@ -86,4 +86,7 @@ getE() {
   return this.http.get(`${this.baseURL}/b`);
 }
 
+  getAction() {
+    return this.http.get(`${this.baseURL}/action`);
+  }
 }

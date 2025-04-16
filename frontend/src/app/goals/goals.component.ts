@@ -78,6 +78,7 @@ export class GoalsComponent {
   whoOptions: any[] = [];
   vpOptions: any[] = [];
   fullWhoList: any[] = [];
+  actionOptions: any[] = [];
 
   private readonly _destroying$ = new Subject<void>();
   selectedSettings: string | undefined;
@@ -95,7 +96,7 @@ export class GoalsComponent {
   statusOptions: { label: string; value: string }[] = [];
   priorityOptions: { label: number; value: number }[] = [];
   priorityOptionsE: { label: string; value: number }[] = [];
-  priorityOptionsD: { label: string; value: string }[] = [];  
+  priorityOptionsD: { label: string; value: string }[] = [];
   // vpOptions: { label: string; value: string }[] = [];
   projOptions: { label: string; value: string }[] = [];
   filterOpenField: string | null = null;
@@ -121,8 +122,8 @@ export class GoalsComponent {
     { field: 'e', header: 'E', tooltip: "WW goal is due" },
     { field: 'd', header: 'D', tooltip: "" },
     { field: 's', header: 'S', tooltip: "" },
-    // { field: 'fiscalyear', header: 'Year' },
     { field: 'gdb', header: 'GOAL DELIVERABLE', tooltip: "" },
+    { field: 'fiscalyear', header: 'Year' },
     { field: 'action', header: 'ACTION', tooltip: "" }
   ];
 
@@ -207,13 +208,13 @@ export class GoalsComponent {
     this.getNumData();
     this.loadVpOptions();
     this.getPriority();
+    this.getActions();
   }
 
   loadWhoOptions(): void {
     this.goalsService.getWhoOptions().subscribe({
       next: (data) => {
         this.fullWhoList = data;
-  
         this.whoOptions = data.map(item => ({
           label: `${item.initials ?? ''} (${item.employee_name ?? ''})`,
           value: item.initials
@@ -331,16 +332,13 @@ export class GoalsComponent {
     this.newRow.b = currentWeek;
     this.newRow.e = ((currentWeek === 53) ? 1 : currentWeek + 1);
     this.newRow.s = 'N';
-  
     //console.log('Selected WHO initials:', this.newRow.who);
     const selectedWho = this.fullWhoList.find(who => who.initials === this.newRow.who);
     //console.log('Matched WHO record:', selectedWho);
-  
     if (selectedWho && selectedWho.supervisor_name) {
       //console.log('Looking for supervisor:', selectedWho.supervisor_name);
-        const supervisor = this.fullWhoList.find(who => who.employee_name === selectedWho.supervisor_name);
+      const supervisor = this.fullWhoList.find(who => who.employee_name === selectedWho.supervisor_name);
       //console.log('Matched Supervisor record:', supervisor);
-  
       if (supervisor && supervisor.initials) {
         this.newRow.vp = supervisor.initials;
         //console.log('Assigned VP (supervisor initials):', this.newRow.vp);
@@ -816,16 +814,28 @@ export class GoalsComponent {
       }
     });
   }
+  getActions() {
+    this.goalsService.getAction().subscribe({
+      next: (response) => {
+        const action = response as Array<{ action: string; id: number }>;
+        this.actionOptions = action.map(item => ({
+          label: item.action,
+          value: item.action
+        }));
+      },
+      error: (error) => {
+        console.error('Error fetching status:', error);
+      }
+    });
+  }
   getNumData() {
     this.goalsService.getD().subscribe({
       next: (response) => {
         const numData = response as Array<{ d: string; id: number }>;
-  
         this.priorityOptionsE = numData.map(item => ({
           label: item.d.toString(),
           value: Number(item.d) // for 'e' (number)
         }));
-  
         this.priorityOptionsD = numData.map(item => ({
           label: item.d.toString(),
           value: item.d.toString() // for 'd' (string)
@@ -882,10 +892,9 @@ export class GoalsComponent {
     if (field === 'who') {
       return this.whoOptions;
     }
-  
     if (field === 'vp') {
       return this.vpOptions;
-    }  
+    }
     // Fallback for other fields
     const uniqueValues = [
       ...new Set(this.allGoals.map((row: any) => row[field] ?? ''))
@@ -940,6 +949,9 @@ export class GoalsComponent {
     this.selectedFilters = [];
     //console.log(`Cleared filter for ${field}`);
     this.onFilterChange(field); // Optionally trigger filter after clearing
+  }
+  isAnyRowEditable(): boolean {
+    return this.goal?.some((row: any) => row.isEditable);
   }
 
 }

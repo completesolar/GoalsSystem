@@ -10,6 +10,7 @@ from schemas.p import PResponse
 from schemas.b import BResponse
 from schemas.e import EResponse
 from schemas.d import DResponse
+from schemas.action import ActionResponse
 from database import get_db
 from crud import (
     create_goal,
@@ -31,7 +32,8 @@ from crud import (
     get_all_p,
     get_all_b,
     get_all_e,
-    get_all_d
+    get_all_d,
+    get_action,
 )
 from typing import Annotated
 
@@ -135,3 +137,6 @@ async def get_goalshistory(goalid: int, db: Session = Depends(get_db)):
 def read_goals_history(db: Session = Depends(get_db)):
     return get_all_goals_history(db)
 
+@router.get("/api/action", response_model=list[ActionResponse])
+def read_action(db: Session = Depends(get_db)):
+    return get_action(db)
