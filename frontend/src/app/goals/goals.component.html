@@ -263,12 +263,16 @@
 
         <!-- GOAL DELIVERABLE: action + description + memo -->
         <div class="flex-1">
-          <input
-            pInputText
-            [(ngModel)]="newRow.action"
-            maxlength="13"
-            placeholder="Action"
-          />
+          <p-select
+          [options]="actionOptions"
+          [(ngModel)]="newRow.action"
+          placeholder="Action"
+          optionLabel="label"
+          optionValue="value"
+          [style]="{ width: '100%' }"
+          >
+        </p-select>
+        
         </div>
 
         <div class="flex-1">
