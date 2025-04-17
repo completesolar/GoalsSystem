@@ -32,7 +32,8 @@
 ::ng-deep .custom-goal-table td:nth-child(9) {
   width: 400px;
 }
-
+.goals-text{
+font-size: 12px;}
 // /* Force the table to take up full width without unnecessary scroll */
 // ::ng-deep .custom-goal-table table {
 //   width: 100% !important;
@@ -201,6 +202,7 @@
 .saved {
   border: none;
   box-shadow: none;
+  cursor: pointer;
   // background-color: white !important;
 }
 
@@ -454,3 +456,21 @@
 ::ng-deep .p-multiselect-label-container {
   max-height: 30px;
 }
+.icon-actions-column {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px; /* Adjust spacing between icons as needed */
+}
+
+.actions {
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.highlight-change {
+  background-color: yellow;
+  color: black;
+}
+
+
+
