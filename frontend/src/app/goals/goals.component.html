@@ -121,16 +121,17 @@
 
   <div class="p-2 mx-2 bg-white mb-2 border-round-md border-1 border-green-400">
     <div class="flex align-items-center justify-content-between mb-1">
-      <div class="text-center mb-2 text-sm font-semibold">Add Goals</div>
+      <div class="text-center mb-2 goals-text font-semibold">Add Goals</div>
       <div class="align-content-center">
         <p-button
-          icon="pi pi-plus"
-          (click)="addGoal()"
-          severity="success"
-          size="small"
-          label="Add"
-          [style]="{ height: '24px' }"
-        ></p-button>
+        icon="pi pi-plus"
+        (click)="addGoal()"
+        severity="success"
+        size="small"
+        label="Add"
+        [style]="{ height: '24px', fontSize: '12px' }"
+      ></p-button>
+      
       </div>
     </div>
     <div class="mb-2 pl-2 w-full">
@@ -304,7 +305,7 @@
     </div>
   </div>
   <div class="table-container pr-3 pl-3">
-    <p-table
+    <p-table #dataTable
       [value]="goal"
       [paginator]="true"
       [rows]="10"
@@ -319,17 +320,7 @@
     >
       <ng-template pTemplate="header">
         <tr>
-          <!-- <th *ngFor="let col of columns" [pTooltip]="col.tooltip">
-            <ng-container *ngIf="col.field !== 'action'; else noSort">
-              <div [pSortableColumn]="col.field">
-                <b>{{ col.header }}</b>
-                <p-sortIcon [field]="col.field"></p-sortIcon>
-              </div>
-            </ng-container>
-            <ng-template #noSort>
-              <b>{{ col.header }}</b>
-            </ng-template>
-          </th> -->
+        
           <th
             *ngFor="let col of columns"
             [hidden]="col.field === 'fiscalyear' && !isAnyRowEditable()"
@@ -536,20 +527,28 @@
               />
             </div>
             <ng-template #viewMode>
-              <div
-                class="saved"
-                [pTooltip]="row.action + ' ' + row.description + ' ' + row.memo"
-                tooltipPosition="top"
-              >
+              <div class="saved">
                 <b>{{ row.action }}</b>
-                {{
-                  row.description.length > 10
-                    ? (row.description | slice : 0 : 55) + "..."
-                    : row.description
-                }}
+                <span
+                  *ngIf="row.description.length > 55"
+                  class="description-link"
+                  (click)="showDescription($event, row.description)"
+                  [pTooltip]="row.action + ' ' + row.description + ' ' + row.memo"
+                  tooltipPosition="top"
+                >
+                  {{ row.description | slice: 0:55 }}...
+                </span>
+            
+                <span *ngIf="row.description.length <= 55">
+                  {{ row.description }}
+                </span>
+            
                 {{ row.memo }}
               </div>
             </ng-template>
+            
+            <p-confirmPopup #descriptionPopup key="descPopup"></p-confirmPopup>
+            
           </td>
           <td *ngIf="row.isEditable">
             <input
@@ -559,18 +558,25 @@
               tooltipPosition="top"
             />
           </td>
-          <td class="align-content-center">
+          <td class="icon-actions-column">
             <i
-              [ngClass]="
-                row.isEditable ? 'pi pi-save actions' : 'pi pi-pencil actions'
-              "
+              [ngClass]="row.isEditable ? 'pi pi-save actions' : 'pi pi-pencil actions'"
               (click)="row.isEditable ? updateGoal(row) : enableEdit(row)"
             ></i>
             <i
-              class="pi pi-history actions ml-3"
+              class="pi pi-history actions"
               (click)="historyDialog(row.goalid)"
             ></i>
+            <i
+              *ngIf="row.isEditable"
+              class="pi pi-times actions"
+              (click)="cancelEdit(row)"
+              pTooltip="Cancel Edit"
+              tooltipPosition="top"
+            ></i>
           </td>
+          
+          
         </tr>
       </ng-template>
     </p-table>
@@ -594,7 +600,7 @@
               *ngFor="let col of dialogcolumns"
               [ngStyle]="
                 col.field === 'createddate'
-                  ? { 'min-width': '200px', 'white-space': 'nowrap' }
+                  ? { 'min-width': '20px', 'white-space': 'nowrap' }
                   : {}
               "
             >
@@ -602,8 +608,7 @@
             </th>
           </tr>
         </ng-template>
-
-        <ng-template pTemplate="body" let-row>
+        <ng-template pTemplate="body" let-row let-rowIndex="rowIndex">
           <tr>
             <td>{{ row.who }}</td>
             <td>{{ row.p }}</td>
@@ -613,22 +618,16 @@
             <td>{{ row.e }}</td>
             <td>{{ row.d }}</td>
             <td>{{ row.s }}</td>
-            <!-- <td>{{ row.fiscalyear }}</td> -->
-            <td>
+        
+           <td>
               <b>{{ row.action }}</b> {{ row.description }} {{ row.memo }}
             </td>
-            <td
-              style="
-                min-width: 200px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-              "
-            >
-              {{ row.createddateMST }}
-            </td>
+        
+            <td>{{ row.createddateMST }}</td>
           </tr>
         </ng-template>
+        
+        
       </p-table>
     </p-dialog>
   </div>
