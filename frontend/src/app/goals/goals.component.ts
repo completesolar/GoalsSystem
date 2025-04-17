@@ -31,7 +31,7 @@ import { SelectModule } from 'primeng/select';
 import { Goals } from '../models/goals';
 import { BadgeModule } from 'primeng/badge';
 import { OverlayBadgeModule } from 'primeng/overlaybadge';
-import { HighlightDiffPipe } from "../pipes/highlight-diff.pipe";
+// import { HighlightDiffPipe } from "../pipes/highlight-diff.pipe";
 
 
 interface Year {
