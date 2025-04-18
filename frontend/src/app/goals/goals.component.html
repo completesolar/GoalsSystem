@@ -339,30 +339,51 @@
               </ng-template>
           
               <p-columnFilter
-                *ngIf="col.field !== 'action' && col.field !== 'gdb'"
-                [field]="col.field"
-                display="menu"
-                [showMatchModes]="false"
-                [showOperator]="false"
-                [showAddButton]="false"
-                [showApplyButton]="false"
-                [showClearButton]="false"
-              >
-                <ng-template pTemplate="filter" let-filter="filterCallback">
-                  <p-multiSelect
-                    [options]="getFilterOptions(col.field)"
-                    [(ngModel)]="selectedFilters[col.field]"
-                    (onChange)="onFilterChange(col.field)"
-                    optionLabel="label"
-                    display="chip"
-                    [style]="{ width: '100%' }"
-                    panelStyleClass="filter-dropdown-left"
-                    [showToggleAll]="false"
-                    [showToggleAll]="true"
-                    [maxSelectedLabels]="0"
-                  ></p-multiSelect>
-                </ng-template>
-              </p-columnFilter>
+              *ngIf="col.field !== 'action' && col.field !== 'gdb'"
+              [field]="col.field"
+              display="menu"
+              (showMenu)="initializeFilter(col.field)"
+              [showMatchModes]="false"
+              [showOperator]="false"
+              [showAddButton]="false"
+              [showApplyButton]="false"
+              [showClearButton]="false"
+            >
+              <ng-template pTemplate="filter" let-filter="filterCallback">
+                <!-- Search Field -->
+                <input
+                  type="text"
+                  pInputText
+                  [(ngModel)]="filterSearch[col.field]"
+                  (input)="onFilterSearch(col.field)"
+                  placeholder="Search..."
+                  style="width: 100%; margin-bottom: 5px;"
+                />
+            
+                <!-- Scrollable Checkbox Container -->
+                <div
+                  style="max-height: 200px; overflow-y: auto; padding: 0 4px;"
+                >
+                  <div
+                    *ngFor="let opt of filteredFilterOptions[col.field]"
+                    class="flex align-items-center mb-1"
+                  >
+                    <p-checkbox
+                      [(ngModel)]="selectedFilters[col.field]"
+                      [value]="opt.value"
+                      [inputId]="col.field + '_' + opt.value"
+                      binary="false"
+                      (ngModelChange)="onFilterChange(col.field)"
+                    ></p-checkbox>
+                    <label [for]="col.field + '_' + opt.value" class="ml-2">{{ opt.label }}</label>
+                  </div>
+                </div>
+              </ng-template>
+            </p-columnFilter>
+            
+            
+            
+            
             </div>
           </th>
         </tr>
@@ -528,7 +549,7 @@
             </div>
             <ng-template #viewMode>
               <div class="saved">
-                <b>{{ row.action }}</b>
+                <b>{{ row.action }}:</b>
                 <span
                   *ngIf="row.description.length > 55"
                   class="description-link"

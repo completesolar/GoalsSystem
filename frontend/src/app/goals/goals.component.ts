@@ -22,6 +22,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { CheckboxModule } from 'primeng/checkbox';
 
 import {
   weekConstant,
@@ -58,6 +59,7 @@ interface Year {
     TooltipModule,
     MultiSelectModule,
     ConfirmPopupModule,
+    CheckboxModule,
 ],
   providers: [MessageService,ConfirmationService],
   templateUrl: './goals.component.html',
@@ -78,6 +80,9 @@ export class GoalsComponent implements AfterViewInit   {
   vpOptions: any[] = [];
   fullWhoList: any[] = [];
   actionOptions: any[] = [];
+  filterSearch: { [key: string]: string } = {};
+filteredFilterOptions: { [key: string]: any[] } = {};
+
 
   private readonly _destroying$ = new Subject<void>();
   selectedSettings: string | undefined;
@@ -190,6 +195,14 @@ export class GoalsComponent implements AfterViewInit   {
 
   ngOnInit() {
 
+      this.columns.forEach(col => {
+        const field = col.field;
+        if (field !== 'action' && field !== 'gdb') {
+          this.filteredFilterOptions[field] = this.getFilterOptions(field);
+          this.filterSearch[field] = '';
+        }
+      });
+    
     this.today = new Date();
     if (isPlatformBrowser(this.platform)) {
       this.msalService.instance
@@ -328,6 +341,7 @@ export class GoalsComponent implements AfterViewInit   {
     this.newRow.b = currentWeek;
     this.newRow.e = ((currentWeek === 53) ? 1 : currentWeek + 1);
     this.newRow.s = 'N';
+    this.newRow.action ='MEMO';
     const selectedWho = this.fullWhoList.find(who => who.initials === this.newRow.who);
     if (selectedWho && selectedWho.supervisor_name) {
       const supervisor = this.fullWhoList.find(who => who.employee_name === selectedWho.supervisor_name);
@@ -1067,5 +1081,23 @@ export class GoalsComponent implements AfterViewInit   {
     return '';  
   }
 
+  initializeFilter(field: string): void {
+    const options = this.getFilterOptions(field);
+    this.filterSearch[field] = ''; // clear previous search
+    this.filteredFilterOptions[field] = [...options]; // clone to avoid mutation
+  }
+  
+
+  onFilterSearch(field: string): void {
+    const searchTerm = this.filterSearch[field]?.toLowerCase() || '';
+    const allOptions = this.getFilterOptions(field);
+  
+    this.filteredFilterOptions[field] = searchTerm
+      ? allOptions.filter(opt => opt.label?.toLowerCase().includes(searchTerm))
+      : [...allOptions];  // default: full list
+  }
+  
+  
+ 
 
 }
