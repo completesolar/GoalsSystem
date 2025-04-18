@@ -442,6 +442,7 @@ export class GoalsComponent implements AfterViewInit {
 
     this.newRow.e = this.newRow.e;
     this.newRow.d = this.newRow.d.toString();
+    this.newRow.action = `${this.newRow.action}:`;
 
     this.goalsService.createGoal(this.newRow).subscribe((response: any) => {
       if (response && response.goalid) {
@@ -500,7 +501,7 @@ export class GoalsComponent implements AfterViewInit {
 
         const sortCell = worksheet.getCell('A6');
         sortCell.value = 'SORT Order: This report is sorted on WHO P';
-        sortCell.font = { italic: true, size: 12 };
+        sortCell.font = { italic: false, size: 12 };
         sortCell.alignment = { horizontal: 'left', vertical: 'middle' };
         worksheet.mergeCells('A6:K6');
 
