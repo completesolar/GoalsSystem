@@ -1,4 +1,10 @@
-import { Component, Inject, PLATFORM_ID, ViewChild ,AfterViewInit } from '@angular/core';
+import {
+  Component,
+  Inject,
+  PLATFORM_ID,
+  ViewChild,
+  AfterViewInit,
+} from '@angular/core';
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -22,17 +28,15 @@ import { TooltipModule } from 'primeng/tooltip';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { CheckboxModule } from 'primeng/checkbox';
 
-import {
-  weekConstant,
-} from '../common/common';
+import { weekConstant } from '../common/common';
 import { DropdownModule } from 'primeng/dropdown';
 import { SelectModule } from 'primeng/select';
 import { Goals } from '../models/goals';
 import { BadgeModule } from 'primeng/badge';
 import { OverlayBadgeModule } from 'primeng/overlaybadge';
 // import { HighlightDiffPipe } from "../pipes/highlight-diff.pipe";
-
 
 interface Year {
   name: number;
@@ -58,13 +62,13 @@ interface Year {
     TooltipModule,
     MultiSelectModule,
     ConfirmPopupModule,
-],
-  providers: [MessageService,ConfirmationService],
+    CheckboxModule,
+  ],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './goals.component.html',
-  styleUrls: ['./goals.component.scss']
+  styleUrls: ['./goals.component.scss'],
 })
-
-export class GoalsComponent implements AfterViewInit   {
+export class GoalsComponent implements AfterViewInit {
   @ViewChild('dataTable') dataTable: Table | undefined;
   goal: any = [];
   goalHistory: any = [];
@@ -78,14 +82,20 @@ export class GoalsComponent implements AfterViewInit   {
   vpOptions: any[] = [];
   fullWhoList: any[] = [];
   actionOptions: any[] = [];
+  filterSearch: { [key: string]: string } = {};
+  filteredFilterOptions: { [key: string]: any[] } = {};
+  activeFilters: { [key: string]: boolean } = {};
 
   private readonly _destroying$ = new Subject<void>();
   selectedSettings: string | undefined;
   isLegendVisible = false;
-  weekOptions = weekConstant.map(value => ({ label: value.toString(), value }));
-  weekOptionsseb = weekConstant.map(value => ({
+  weekOptions = weekConstant.map((value) => ({
     label: value.toString(),
-    value: value.toString()
+    value,
+  }));
+  weekOptionsseb = weekConstant.map((value) => ({
+    label: value.toString(),
+    value: value.toString(),
   }));
   statusOptions: { label: string; value: string }[] = [];
   priorityOptions: { label: number; value: number }[] = [];
@@ -96,7 +106,7 @@ export class GoalsComponent implements AfterViewInit   {
   selectedFilters: any = [];
   exportOptions = [
     { label: 'Excel', value: 'excel' },
-    { label: 'PDF', value: 'pdf' }
+    { label: 'PDF', value: 'pdf' },
   ];
   Admin = [
     { name: 'Priority' },
@@ -104,22 +114,21 @@ export class GoalsComponent implements AfterViewInit   {
     { name: 'Beginning Week' },
     { name: 'Ending Week' },
     { name: 'D' },
-    { name: 'Status' }
+    { name: 'Status' },
   ];
   columns = [
-    { field: 'who', header: 'WHO', tooltip: "Owner of the goal" },
-    { field: 'p', header: 'P', tooltip: "Priority" },
-    { field: 'proj', header: 'PROJ', tooltip: "Project" },
-    { field: 'vp', header: 'VP', tooltip: "Boss of Goal Owner" },
-    { field: 'b', header: 'B', tooltip: "WW goal was given" },
-    { field: 'e', header: 'E', tooltip: "WW goal is due" },
-    { field: 'd', header: 'D', tooltip: "" },
-    { field: 's', header: 'S', tooltip: "" },
-    { field: 'gdb', header: 'GOAL DELIVERABLE', tooltip: "" },
+    { field: 'who', header: 'WHO', tooltip: 'Owner of the goal' },
+    { field: 'p', header: 'P', tooltip: 'Priority' },
+    { field: 'proj', header: 'PROJ', tooltip: 'Project' },
+    { field: 'vp', header: 'VP', tooltip: 'Boss of Goal Owner' },
+    { field: 'b', header: 'B', tooltip: 'WW goal was given' },
+    { field: 'e', header: 'E', tooltip: 'WW goal is due' },
+    { field: 'd', header: 'D', tooltip: '' },
+    { field: 's', header: 'S', tooltip: '' },
+    { field: 'gdb', header: 'GOAL DELIVERABLE', tooltip: '' },
     { field: 'fiscalyear', header: 'Year' },
-    { field: 'action', header: 'ACTION', tooltip: "" }
+    { field: 'action', header: 'ACTION', tooltip: '' },
   ];
-
 
   dialogcolumns = [
     { field: 'who', header: 'WHO' },
@@ -151,7 +160,7 @@ export class GoalsComponent implements AfterViewInit   {
     updateddatetime: new Date(),
     description: '',
     action: '',
-    memo: ''
+    memo: '',
   };
 
   selectedExport: string | null = null;
@@ -164,16 +173,17 @@ export class GoalsComponent implements AfterViewInit   {
   selectedRow: any = null;
   previousRow: any = [];
   colorPalette = [
-    '#000000', 
+    '#000000',
     'rgb(002, 081, 150)',
     'rgb(081, 040, 136)',
     'rgb(041, 094, 017)',
-    'rgb(235, 097, 035)',  
-      'rgb(064, 176, 166)', 
-    'rgb(255, 190, 106)', 
-    'rgb(191, 044, 035)', 
-    'rgb(253, 179, 056)',   
-     'rgb(219, 076, 119)'  ];
+    'rgb(235, 097, 035)',
+    'rgb(064, 176, 166)',
+    'rgb(255, 190, 106)',
+    'rgb(191, 044, 035)',
+    'rgb(253, 179, 056)',
+    'rgb(219, 076, 119)',
+  ];
 
   constructor(
     @Inject(PLATFORM_ID) private platform: Object,
@@ -185,10 +195,16 @@ export class GoalsComponent implements AfterViewInit   {
     private sanitizer: DomSanitizer
   ) {
     this.platform = platform;
-
   }
 
   ngOnInit() {
+    this.columns.forEach((col) => {
+      const field = col.field;
+      if (field !== 'action' && field !== 'gdb') {
+        this.filteredFilterOptions[field] = this.getFilterOptions(field);
+        this.filterSearch[field] = '';
+      }
+    });
 
     this.today = new Date();
     if (isPlatformBrowser(this.platform)) {
@@ -205,13 +221,10 @@ export class GoalsComponent implements AfterViewInit   {
         .catch((error) => {
           console.error('Error initializing MSAL instance:', error);
         });
-
     }
-
   }
 
   loadInitialData() {
-
     this.loadGoals();
     this.loadWhoOptions();
     this.getStatus();
@@ -226,14 +239,14 @@ export class GoalsComponent implements AfterViewInit   {
     this.goalsService.getWhoOptions().subscribe({
       next: (data) => {
         this.fullWhoList = data;
-        this.whoOptions = data.map(item => ({
+        this.whoOptions = data.map((item) => ({
           label: `${item.initials ?? ''} (${item.employee_name ?? ''})`,
-          value: item.initials
+          value: item.initials,
         }));
       },
       error: (err) => {
         console.error('Failed to load WHO options:', err);
-      }
+      },
     });
   }
 
@@ -244,24 +257,26 @@ export class GoalsComponent implements AfterViewInit   {
       },
       error: (err) => {
         console.error('Failed to load VP options:', err);
-      }
+      },
     });
   }
 
-
   getCurrentWeekNumber(): number {
     const now = new Date();
-    const utcDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const utcDate = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+    );
 
     const dayNum = utcDate.getUTCDay() || 7;
     utcDate.setUTCDate(utcDate.getUTCDate() + 4 - dayNum);
 
     const yearStart = new Date(Date.UTC(utcDate.getUTCFullYear(), 0, 1));
-    const weekNo = Math.ceil((((utcDate.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+    const weekNo = Math.ceil(
+      ((utcDate.getTime() - yearStart.getTime()) / 86400000 + 1) / 7
+    );
 
     return weekNo;
   }
-
 
   onInputChange(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -271,12 +286,13 @@ export class GoalsComponent implements AfterViewInit   {
   }
 
   getYearsList(goals: Goals[]) {
-    const yearList = [...new Set(goals.map((goal: any) => goal.fiscalyear))].sort();
+    const yearList = [
+      ...new Set(goals.map((goal: any) => goal.fiscalyear)),
+    ].sort();
     yearList.forEach((year: any) => {
       this.years.push({ name: year, code: year });
     });
   }
-
 
   exportData(): void {
     const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(this.goal);
@@ -291,7 +307,7 @@ export class GoalsComponent implements AfterViewInit   {
     this.goalsService.getGoals().subscribe((goals: any[]) => {
       const filteredGoals = goals
         .filter((g: any) => +g.fiscalyear === this.selectedYear.code)
-        .map(g => ({
+        .map((g) => ({
           ...g,
           goalid: g.goalid,
           e: g.e ? +g.e : '',
@@ -302,7 +318,7 @@ export class GoalsComponent implements AfterViewInit   {
           vp: g.vp ? g.vp.toUpperCase() : '',
           who: g.who ?? '',
           gdb: g.gdb ?? '',
-          isEditable: false
+          isEditable: false,
         }))
         .sort((a, b) => {
           const whoA = a.who.toLowerCase();
@@ -321,16 +337,20 @@ export class GoalsComponent implements AfterViewInit   {
     });
   }
 
-
   onWhoSelected() {
     const currentWeek = this.getCurrentWeekNumber();
     this.newRow.p = 99;
     this.newRow.b = currentWeek;
-    this.newRow.e = ((currentWeek === 53) ? 1 : currentWeek + 1);
+    this.newRow.e = currentWeek === 53 ? 1 : currentWeek + 1;
     this.newRow.s = 'N';
-    const selectedWho = this.fullWhoList.find(who => who.initials === this.newRow.who);
+    this.newRow.action = 'MEMO';
+    const selectedWho = this.fullWhoList.find(
+      (who) => who.initials === this.newRow.who
+    );
     if (selectedWho && selectedWho.supervisor_name) {
-      const supervisor = this.fullWhoList.find(who => who.employee_name === selectedWho.supervisor_name);
+      const supervisor = this.fullWhoList.find(
+        (who) => who.employee_name === selectedWho.supervisor_name
+      );
       if (supervisor && supervisor.initials) {
         this.newRow.vp = supervisor.initials;
       } else {
@@ -344,17 +364,20 @@ export class GoalsComponent implements AfterViewInit   {
     this.goalsService.getGoalHistory(id).subscribe(
       (goalsHistory) => {
         this.goalHistory = (goalsHistory as any[])
-          .map(g => {
+          .map((g) => {
             const createddateMST = moment(g.createddate)
               .tz('America/Denver')
               .format('MM/DD/YYYY hh:mm:ss A');
             return {
               ...g,
-              createddateMST
+              createddateMST,
             };
           })
           .sort((a, b) => {
-            return new Date(b.createddate).getTime() - new Date(a.createddate).getTime();
+            return (
+              new Date(b.createddate).getTime() -
+              new Date(a.createddate).getTime()
+            );
           });
       },
       (error) => {
@@ -363,13 +386,10 @@ export class GoalsComponent implements AfterViewInit   {
       }
     );
   }
-  
-
 
   onYearChange() {
     this.loadGoals();
   }
-
 
   isValidGoalData(goal: Goals): string[] {
     const missingFields: string[] = [];
@@ -403,8 +423,7 @@ export class GoalsComponent implements AfterViewInit   {
       createddatetime: new Date(),
       updateddatetime: new Date(),
       description: '',
-      action: ''
-
+      action: '',
     };
   }
 
@@ -414,7 +433,9 @@ export class GoalsComponent implements AfterViewInit   {
       this.messageService.add({
         severity: 'warn',
         summary: 'Please Add the below fields for the new goal',
-        detail: `${missingFields.join(', ')}: Please fill in the following required field(s).`
+        detail: `${missingFields.join(
+          ', '
+        )}: Please fill in the following required field(s).`,
       });
       return;
     }
@@ -428,20 +449,23 @@ export class GoalsComponent implements AfterViewInit   {
           ...this.newRow,
           goalid: response.goalid,
           createddatetime: new Date(),
-          isEditable: false
+          isEditable: false,
         };
 
-        this.goal = [newGoal, ...this.goal.filter((g: Goals) => g.goalid !== newGoal.goalid)];
+        this.goal = [
+          newGoal,
+          ...this.goal.filter((g: Goals) => g.goalid !== newGoal.goalid),
+        ];
         if (this.dataTable) {
           this.dataTable.clear();
-        }      
+        }
         this.loadGoalsHistory(response.goalid);
         this.addNewRow();
 
         this.messageService.add({
           severity: 'success',
           summary: 'Goal Added',
-          detail: 'New goal has been added successfully.'
+          detail: 'New goal has been added successfully.',
         });
       } else {
         console.warn('createGoal response missing goalid:', response);
@@ -455,9 +479,9 @@ export class GoalsComponent implements AfterViewInit   {
     const imageUrl = 'assets/cslr-logo 1.png';
 
     fetch(imageUrl)
-      .then(response => response.blob())
-      .then(blob => blob.arrayBuffer())
-      .then(buffer => {
+      .then((response) => response.blob())
+      .then((blob) => blob.arrayBuffer())
+      .then((buffer) => {
         const imageId = workbook.addImage({
           buffer: buffer,
           extension: 'png',
@@ -469,9 +493,16 @@ export class GoalsComponent implements AfterViewInit   {
         });
 
         const titleCell = worksheet.getCell('F3');
-        titleCell.value = 'Goal Report';
+        titleCell.value = 'GOALS SYSTEM REPORT';
         titleCell.font = { size: 18, bold: true };
         titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        worksheet.mergeCells('F3:H3');
+
+        const sortCell = worksheet.getCell('A6');
+        sortCell.value = 'SORT Order: This report is sorted on WHO P';
+        sortCell.font = { italic: true, size: 12 };
+        sortCell.alignment = { horizontal: 'left', vertical: 'middle' };
+        worksheet.mergeCells('A6:K6');
 
         const columns = [
           { header: 'WHO', key: 'who' },
@@ -486,7 +517,6 @@ export class GoalsComponent implements AfterViewInit   {
           { header: 'GOAL DELIVERABLE', key: 'gdb' },
         ];
 
-        // Format the date
         const date = new Date();
         const options: Intl.DateTimeFormatOptions = {
           timeZone: 'America/Denver',
@@ -495,12 +525,15 @@ export class GoalsComponent implements AfterViewInit   {
           day: '2-digit',
           hour: '2-digit',
           minute: '2-digit',
-          second: '2-digit'
+          second: '2-digit',
         };
-        const formattedDate = new Date().toLocaleString('en-US', options).replace(/[\s,]/g, '').replace('MST', '');
+        const formattedDate = new Date()
+          .toLocaleString('en-US', options)
+          .replace(/[\s,]/g, '')
+          .replace('MST', '');
 
         const dateCell = worksheet.getCell('A7');
-        dateCell.value = `Report generated on: ${formattedDate}`;
+        dateCell.value = `Report Generated On: ${formattedDate}`;
         dateCell.font = { italic: false, size: 12 };
         dateCell.alignment = { horizontal: 'left', vertical: 'middle' };
         worksheet.mergeCells(`A7:K7`);
@@ -508,12 +541,11 @@ export class GoalsComponent implements AfterViewInit   {
         const keyText = [
           'Key:',
           'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
-          'S = N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed',
+          'S = N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
           'PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS',
-          'D = Delinquent',
         ];
 
-        const keyStartRow = 9;
+        const keyStartRow = 8;
         keyText.forEach((line, index) => {
           const keyRow = worksheet.getRow(keyStartRow + index);
           keyRow.getCell(1).value = line;
@@ -523,7 +555,10 @@ export class GoalsComponent implements AfterViewInit   {
             pattern: 'solid',
             fgColor: { argb: 'E2EFDA' },
           };
-          keyRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'left' };
+          keyRow.getCell(1).alignment = {
+            vertical: 'middle',
+            horizontal: 'left',
+          };
           worksheet.mergeCells(keyRow.number, 1, keyRow.number, columns.length);
         });
 
@@ -539,37 +574,70 @@ export class GoalsComponent implements AfterViewInit   {
             fgColor: { argb: 'E2EFDA' },
           };
           cell.alignment = { vertical: 'middle', horizontal: 'center' };
-          worksheet.getColumn(index + 1).width = Math.max(15, col.header.length + 5);
+          if (col.key === 'gdb') {
+            worksheet.getColumn(index + 1).width = 100;
+          } else {
+            worksheet.getColumn(index + 1).width = 15;
+          }
         });
 
-        // ✅ Add filters to header row
         worksheet.autoFilter = {
-          from: {
-            row: headerRowIndex,
-            column: 1,
-          },
-          to: {
-            row: headerRowIndex,
-            column: columns.length,
-          },
+          from: { row: headerRowIndex, column: 1 },
+          to: { row: headerRowIndex, column: columns.length },
         };
 
-        // Data rows
         this.goal.forEach((item: any, index: number) => {
-          const rowValues = columns.map(col => item[col.key]);
-          const row = worksheet.insertRow(headerRowIndex + 1 + index, rowValues);
+          const rowValues = columns.map((col) => {
+            if (col.key === 'd') {
+              return item[col.key] !== undefined &&
+                item[col.key] !== null &&
+                item[col.key] !== ''
+                ? Number(item[col.key])
+                : '';
+            } else if (col.key === 'gdb') {
+              return `${item.action ?? ''} ${item.description ?? ''} ${
+                item.memo ?? ''
+              }`.trim();
+            }
+            return item[col.key];
+          });
+
+          const row = worksheet.insertRow(
+            headerRowIndex + 1 + index,
+            rowValues
+          );
+          const isEvenRow = (headerRowIndex + 1 + index) % 2 === 0;
 
           row.eachCell((cell, colNumber) => {
-            const isEvenRow = (headerRowIndex + 1 + index) % 2 === 0;
             cell.fill = {
               type: 'pattern',
               pattern: 'solid',
               fgColor: { argb: isEvenRow ? 'E2EFDA' : 'FFFFFF' },
             };
+
+            // gdb column (10th)
+            if (colNumber === 10) {
+              cell.alignment = {
+                horizontal: 'left',
+                vertical: 'middle',
+                wrapText: false,
+              };
+            } else {
+              cell.alignment = {
+                horizontal: 'center',
+                vertical: 'middle',
+              };
+            }
           });
+
+          row.height = 20;
         });
 
-        const fileName = `Goals_${formattedDate.replace(':', '').replace(' ', '_').replace('/', '').replace('/', '')}_MST.xlsx`;
+        const fileName = `Goals_${formattedDate
+          .replace(':', '')
+          .replace(' ', '_')
+          .replace('/', '')
+          .replace('/', '')}_MST.xlsx`;
 
         workbook.xlsx.writeBuffer().then((data: ArrayBuffer) => {
           const blob = new Blob([data], {
@@ -580,50 +648,62 @@ export class GoalsComponent implements AfterViewInit   {
       });
   }
 
-
   exportPdfData(): void {
     const doc = new jsPDF('landscape');
-
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+  
     const logo = new Image();
     logo.src = 'assets/cslr-logo 1.png';
-
+  
     logo.onload = () => {
-      doc.addImage(logo, 'PNG', 10, 10, 50, 30);
-
+      const logoX = 10;
+      const logoY = 10;
+      const logoWidth = 50;
+      const logoHeight = 15;
+    
+      // Draw logo in top-left
+      doc.addImage(logo, 'PNG', logoX, logoY, logoWidth, logoHeight);
+    
+      // Centered Title (independent of logo)
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(18);
-      const title = 'Goals Report';
+      const title = 'GOALS SYSTEM REPORT';
       const pageWidth = doc.internal.pageSize.getWidth();
-      const textWidth = doc.getTextWidth(title);
-      const x = (pageWidth - textWidth) / 2;
-      doc.text(title, x, 25);
-
-      const currentMSTTime = moment().tz("America/Denver");
-      const fileNameDate = currentMSTTime.format("MM-DD-YY");
-      const formattedTime = currentMSTTime.format("hh-mm-ss A");
-      const displayTime = currentMSTTime.format("MM-DD-YYYY hh:mm:ss A");
-
+      const titleX = (pageWidth - doc.getTextWidth(title)) / 2;
+      const titleY = logoY + logoHeight + 5; // push below logo
+      doc.text(title, titleX, titleY);
+    
+      // Date + Sort Order block
+      const currentMSTTime = moment().tz('America/Denver');
+      const fileNameDate = currentMSTTime.format('MM-DD-YY');
+      const formattedTime = currentMSTTime.format('hh-mm-ss A');
+      const displayTime = currentMSTTime.format('MM-DD-YYYY hh:mm:ss A');
+    
+      const infoStartX = 14;
+      const infoStartY = titleY + 8;
+      const lineGap = 7;
+    
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(11);
-      doc.setTextColor(0, 0, 0); // Set text color to black
-      doc.text(`Reported Date & time: ${displayTime} (MST)`, 14, 43);
-
-      // Define and render Key Text with background color
+      doc.setTextColor(0, 0, 0);
+      doc.text('SORT Order: This report is sorted on WHO P', infoStartX, infoStartY);
+      doc.text(`Reported Date & time: ${displayTime} (MST)`, infoStartX, infoStartY + lineGap);
+    
+      // Legend
       const keyText = [
-        "Key:",
-        "WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due",
-        "S = N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed",
-        "PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS",
-        "D = Delinquent"
+        'Key:',
+        'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
+        'S = N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
+        'PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS',
       ];
-
-
-      let keyStartY = 50;
+    
+      let keyStartY = infoStartY + 20;
       const lineHeight = 6;
       const rectX = 10;
       const rectWidth = pageWidth - 20;
       doc.setFontSize(10);
-
+    
       keyText.forEach((line) => {
         const wrappedLines: string[] = doc.splitTextToSize(line, rectWidth - 8);
         wrappedLines.forEach((subLine: string) => {
@@ -634,12 +714,13 @@ export class GoalsComponent implements AfterViewInit   {
           keyStartY += lineHeight;
         });
       });
-
-      const tableStartY = keyStartY + 4; // ← Use this final position!
-
-
-      const columns = ["Who", "P", "Proj", "VP", "B", "E", "D", "S", "Year", "Goal Deliverable"];
-
+    
+      const tableStartY = keyStartY + 4;
+    
+      const columns = [
+        'Who', 'P', 'Proj', 'VP', 'B', 'E', 'D', 'S', 'Year', 'Goal Deliverable'
+      ];
+    
       const rows = this.goal.map((goal: any) => [
         goal.who,
         goal.p,
@@ -647,13 +728,12 @@ export class GoalsComponent implements AfterViewInit   {
         goal.vp,
         goal.b,
         goal.e,
-        goal.d,
+        goal.d ?? '',
         goal.s,
         goal.fiscalyear,
         `${goal.action ?? ''} ${goal.description ?? ''} ${goal.memo ?? ''}`.trim()
       ]);
-
-
+    
       autoTable(doc, {
         startY: tableStartY,
         head: [columns],
@@ -665,116 +745,149 @@ export class GoalsComponent implements AfterViewInit   {
         },
         bodyStyles: {
           textColor: [0, 0, 0],
-          fontSize: 10
+          fontSize: 10,
+          valign: 'middle',
         },
         columnStyles: {
-          8: { cellWidth: 20, halign: 'center' },   // Year
-          9: { cellWidth: 120 }                     // Goal Deliverable
+          8: { cellWidth: 20, halign: 'center' }, // Year
+          9: { cellWidth: 120, halign: 'left' },  // Goal Deliverable
         },
         margin: { top: 10 },
+        didDrawPage: (data) => {
+          const pageNumber = data.pageNumber;
+          const footerText = `Page ${pageNumber} | ${displayTime} | Company Confidential`;
+    
+          doc.setFontSize(9);
+          doc.text(footerText, pageWidth / 2, pageHeight - 10, { align: 'center' });
+        },
       });
-
-
+    
       const fileName = `Goals_${fileNameDate}_${formattedTime}.pdf`;
       doc.save(fileName);
     };
+    
   }
+  
 
   enableEdit(row: any): void {
     row.isEditable = true;
-  
+
     // Store a deep copy of the row so we can compare later
     this.previousRow = JSON.parse(JSON.stringify(row));
-    console.log("original (copied) row", this.previousRow);
+    console.log('original (copied) row', this.previousRow);
   }
-  
+
   updateGoal(row: Goals): void {
-    console.log("previousRow", this.previousRow);
-    console.log("currentRow", row);
-  
+    console.log('previousRow', this.previousRow);
+    console.log('currentRow', row);
+
     // Log field-by-field differences
     this.checkDifferences(this.previousRow, row);
-  
+
     const missingFields = this.isValidGoalData(row);
     if (missingFields.length > 0) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Validation Error',
-        detail: `${missingFields.join(', ')} are required`
+        detail: `${missingFields.join(', ')} are required`,
       });
       return;
     }
-  
+
     // Check for changes
     if (this.previousRow && this.isEqualGoal(this.previousRow, row)) {
       this.messageService.add({
         severity: 'info',
         summary: 'No Changes Detected',
-        detail: 'No changes were made to the goal.'
+        detail: 'No changes were made to the goal.',
       });
       row['isEditable'] = false;
       return;
     }
-  
+
     // Prepare for update
     row.e = row.e;
-    row.d = row.d.toString();  // Convert to string if needed
-  
+    row.d = row.d.toString(); // Convert to string if needed
+
     const goalid = row.goalid;
     const updatedGoal: Goals = {
       ...row,
-      isEditable: false
+      isEditable: false,
     };
-  
+
     this.goalsService.updateGoal(updatedGoal).subscribe((response) => {
       if (response) {
         const updatedGoals = this.goal.map((g: Goals) =>
           g.goalid === goalid ? updatedGoal : g
         );
-  
+
         const newTopGoal = updatedGoals.find((g: Goals) => g.goalid === goalid);
-        const restGoals = updatedGoals.filter((g: Goals) => g.goalid !== goalid);
+        const restGoals = updatedGoals.filter(
+          (g: Goals) => g.goalid !== goalid
+        );
         this.goal = newTopGoal ? [newTopGoal, ...restGoals] : updatedGoals;
-  
+
         this.messageService.add({
           severity: 'success',
           summary: 'Goal Updated',
-          detail: 'Goal updated successfully.'
+          detail: 'Goal updated successfully.',
         });
-  
+
         if (goalid) {
           this.loadGoalsHistory(goalid);
         }
       }
     });
   }
-  
+
   isEqualGoal(goal1: Goals, goal2: Goals): boolean {
     const fieldsToCompare = [
-      'who', 'p', 'proj', 'vp', 'b', 'e', 'd', 's',
-      'action', 'description', 'memo', 'fiscalyear'
+      'who',
+      'p',
+      'proj',
+      'vp',
+      'b',
+      'e',
+      'd',
+      's',
+      'action',
+      'description',
+      'memo',
+      'fiscalyear',
     ];
-  
+
     for (const field of fieldsToCompare) {
       if (goal1[field] !== goal2[field]) {
-        console.log(`Field changed: ${field} | Original: ${goal1[field]} | Updated: ${goal2[field]}`);
+        console.log(
+          `Field changed: ${field} | Original: ${goal1[field]} | Updated: ${goal2[field]}`
+        );
         return false;
       }
     }
     return true;
   }
-  
+
   checkDifferences(original: Goals, updated: Goals): void {
     const fieldsToCompare = [
-      'who', 'p', 'proj', 'vp', 'b', 'e', 'd', 's',
-      'action', 'description', 'memo', 'fiscalyear'
+      'who',
+      'p',
+      'proj',
+      'vp',
+      'b',
+      'e',
+      'd',
+      's',
+      'action',
+      'description',
+      'memo',
+      'fiscalyear',
     ];
-  
+
     console.log('--- Field Differences ---');
     for (const field of fieldsToCompare) {
       const originalValue = original[field];
       const updatedValue = updated[field];
-  
+
       if (originalValue !== updatedValue) {
         console.log(
           `Changed field: ${field} | Original: ${originalValue} | Updated: ${updatedValue}`
@@ -782,8 +895,6 @@ export class GoalsComponent implements AfterViewInit   {
       }
     }
   }
-  
-  
 
   historyDialog(goalId: number) {
     if (!goalId) {
@@ -796,7 +907,6 @@ export class GoalsComponent implements AfterViewInit   {
   }
 
   onExportChange(option: any) {
-
     if (option?.value === 'excel') {
       this.exportExcelData();
     } else if (option?.value === 'pdf') {
@@ -807,16 +917,20 @@ export class GoalsComponent implements AfterViewInit   {
   getStatus() {
     this.goalsService.getStatus().subscribe({
       next: (response) => {
-        const statusList = response as Array<{ status: string; description: string; id: number }>;
+        const statusList = response as Array<{
+          status: string;
+          description: string;
+          id: number;
+        }>;
         //console.log("statusList", statusList)
-        this.statusOptions = statusList.map(item => ({
+        this.statusOptions = statusList.map((item) => ({
           label: item.status,
-          value: item.status
+          value: item.status,
         }));
       },
       error: (error) => {
         console.error('Error fetching status:', error);
-      }
+      },
     });
   }
   getPriority() {
@@ -824,14 +938,14 @@ export class GoalsComponent implements AfterViewInit   {
       next: (response) => {
         const priority = response as Array<{ p: number; id: number }>;
         //console.log("priority", priority)
-        this.priorityOptions = priority.map(item => ({
+        this.priorityOptions = priority.map((item) => ({
           label: item.p,
-          value: item.p
+          value: item.p,
         }));
       },
       error: (error) => {
         console.error('Error fetching status:', error);
-      }
+      },
     });
   }
   // getVp() {
@@ -854,56 +968,55 @@ export class GoalsComponent implements AfterViewInit   {
       next: (response) => {
         const proj = response as Array<{ proj: string; id: number }>;
         // console.log("proj", proj)
-        this.projOptions = proj.map(item => ({
+        this.projOptions = proj.map((item) => ({
           label: item.proj,
-          value: item.proj
+          value: item.proj,
         }));
       },
       error: (error) => {
         console.error('Error fetching status:', error);
-      }
+      },
     });
   }
   getActions() {
     this.goalsService.getAction().subscribe({
       next: (response) => {
         const action = response as Array<{ action: string; id: number }>;
-        this.actionOptions = action.map(item => ({
+        this.actionOptions = action.map((item) => ({
           label: item.action,
-          value: item.action
+          value: item.action,
         }));
       },
       error: (error) => {
         console.error('Error fetching status:', error);
-      }
+      },
     });
   }
   getNumData() {
     this.goalsService.getD().subscribe({
       next: (response) => {
         const numData = response as Array<{ d: string; id: number }>;
-        this.priorityOptionsE = numData.map(item => ({
+        this.priorityOptionsE = numData.map((item) => ({
           label: item.d.toString(),
-          value: Number(item.d) // for 'e' (number)
+          value: Number(item.d), // for 'e' (number)
         }));
-        this.priorityOptionsD = numData.map(item => ({
+        this.priorityOptionsD = numData.map((item) => ({
           label: item.d.toString(),
-          value: item.d.toString() // for 'd' (string)
+          value: item.d.toString(), // for 'd' (string)
         }));
       },
       error: (error) => {
         console.error('Error fetching values:', error);
-      }
+      },
     });
   }
-
-
 
   logout() {
     // console.log("logout")
     if (isPlatformBrowser(this.platform)) {
       this.msalService.logoutRedirect({
-        postLogoutRedirectUri: 'https://dev-goals.completesolar.com/ui-goals/login'
+        postLogoutRedirectUri:
+          'https://dev-goals.completesolar.com/ui-goals/login',
       });
     }
   }
@@ -919,15 +1032,14 @@ export class GoalsComponent implements AfterViewInit   {
   }
 
   getLabelFromValue(value: any, options: any[]): string {
-    const match = options.find(opt => opt.value === value);
+    const match = options.find((opt) => opt.value === value);
     return match ? match.label : value;
-
   }
 
   getTooltipText(...fields: string[]): string {
     return fields
-      .map(field => {
-        const col = this.columns.find(c => c.field === field);
+      .map((field) => {
+        const col = this.columns.find((c) => c.field === field);
         return col && col.tooltip ? `${col.header}: ${col.tooltip}` : '';
       })
       .filter(Boolean)
@@ -936,7 +1048,6 @@ export class GoalsComponent implements AfterViewInit   {
   toggleLegend() {
     this.isLegendVisible = !this.isLegendVisible;
   }
-
 
   getFilterOptions(field: string): any[] {
     if (field === 'who') {
@@ -947,38 +1058,50 @@ export class GoalsComponent implements AfterViewInit   {
     }
     // Fallback for other fields
     const uniqueValues = [
-      ...new Set(this.allGoals.map((row: any) => row[field] ?? ''))
+      ...new Set(this.allGoals.map((row: any) => row[field] ?? '')),
     ];
 
-    return uniqueValues.map(val => ({
+    return uniqueValues.map((val) => ({
       label: val === '' ? 'Empty' : val,
-      value: val
+      value: val,
     }));
   }
 
   onFilterChange(field: string): void {
+    // Update filtered goal list
     this.goal = this.allGoals.filter((row: any) => {
-      return Object.entries(this.selectedFilters).every(([filterField, selectedValues]: any) => {
-        if (!selectedValues || selectedValues.length === 0) return true;
-
-        const includedValues = selectedValues.map((option: any) => option.value);
-        return includedValues.includes(row[filterField]);
-      });
+      return Object.entries(this.selectedFilters).every(
+        ([filterField, selectedValues]: any) => {
+          if (!selectedValues || selectedValues.length === 0) return true;
+          const includedValues = selectedValues.map(
+            (option: any) => option.value
+          );
+          return includedValues.includes(row[filterField]);
+        }
+      );
     });
-  }
 
+    // Track if current filter is active
+    this.activeFilters = this.activeFilters || {};
+    this.activeFilters[field] =
+      Array.isArray(this.selectedFilters[field]) &&
+      this.selectedFilters[field].length > 0;
+  }
 
   applyFilters(field: string): void {
     this.goal = this.allGoals.filter((row: any) => {
-      return Object.entries(this.selectedFilters).every(([filterField, selectedValues]: any) => {
-        if (!selectedValues || selectedValues.length === 0) return true;
-        const includedValues = selectedValues.map((option: any) => option.value);
+      return Object.entries(this.selectedFilters).every(
+        ([filterField, selectedValues]: any) => {
+          if (!selectedValues || selectedValues.length === 0) return true;
+          const includedValues = selectedValues.map(
+            (option: any) => option.value
+          );
 
-        return includedValues.includes(row[filterField]);
-      });
+          return includedValues.includes(row[filterField]);
+        }
+      );
     });
   }
-
 
   clearFilter(field: string) {
     this.selectedFilters = [];
@@ -989,7 +1112,8 @@ export class GoalsComponent implements AfterViewInit   {
   }
   customSort(field: string) {
     if (this.sortField === field) {
-      this.sortOrder = this.sortOrder === 1 ? -1 : this.sortOrder === -1 ? 0 : 1;
+      this.sortOrder =
+        this.sortOrder === 1 ? -1 : this.sortOrder === -1 ? 0 : 1;
     } else {
       this.sortField = field;
       this.sortOrder = 1;
@@ -1022,27 +1146,27 @@ export class GoalsComponent implements AfterViewInit   {
       console.error('dataTable not found');
     }
   }
-  
+
   showDescription(event: Event, fullDescription: string) {
     this.confirmationService.confirm({
       key: 'descPopup',
       target: event.target as HTMLElement,
       message: fullDescription,
-      icon: '', 
+      icon: '',
       acceptVisible: false,
       rejectVisible: true,
-      rejectLabel: 'close', 
+      rejectLabel: 'close',
       rejectButtonStyleClass: 'p-button-text p-button-sm p-ml-auto',
     });
     setTimeout(() => {
-      this.confirmationService.close(); 
+      this.confirmationService.close();
     }, 5000);
   }
-    
+
   cancelEdit(row: any) {
     row.isEditable = false;
   }
-  
+
   getColoredText(text: string, version: number): string {
     const prevVersion = this.getPreviousVersion(text, version);
     let coloredText = '';
@@ -1053,7 +1177,7 @@ export class GoalsComponent implements AfterViewInit   {
         const color = this.colorPalette[version % this.colorPalette.length];
         coloredText += `<span style="color:${color}">${currentChar}</span>`;
       } else {
-        coloredText += currentChar; 
+        coloredText += currentChar;
       }
     }
 
@@ -1062,10 +1186,25 @@ export class GoalsComponent implements AfterViewInit   {
 
   getPreviousVersion(currentText: string, version: number): string {
     if (version > 0) {
-      return currentText.slice(0, -1);  
+      return currentText.slice(0, -1);
     }
-    return '';  
+    return '';
   }
 
+  initializeFilter(field: string): void {
+    const options = this.getFilterOptions(field);
+    this.filterSearch[field] = ''; // clear previous search
+    this.filteredFilterOptions[field] = [...options]; // clone to avoid mutation
+  }
 
+  onFilterSearch(field: string): void {
+    const searchTerm = this.filterSearch[field]?.toLowerCase() || '';
+    const allOptions = this.getFilterOptions(field);
+
+    this.filteredFilterOptions[field] = searchTerm
+      ? allOptions.filter((opt) =>
+          opt.label?.toLowerCase().includes(searchTerm)
+        )
+      : [...allOptions]; // default: full list
+  }
 }
