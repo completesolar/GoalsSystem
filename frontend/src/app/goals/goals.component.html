@@ -359,76 +359,57 @@
       [style]="{ width: '100%', height: 'auto', tableLayout: 'fixed' }"
       tableStyleClass="custom-goal-table fixed-table"
     >
-      <ng-template pTemplate="header">
-        <tr>
+    <ng-template pTemplate="header">
+      <tr>
+      
+        <th
+          *ngFor="let col of columns"
+          [hidden]="col.field === 'fiscalyear' && !isAnyRowEditable()"
+        >
+          <div class="flex items-center justify-between">
+            <div
+              class="test"
+              [pSortableColumn]="col.field"
+              *ngIf="col.field !== 'action'; else noSort"
+            >
+              <b>{{ col.header }}</b>
+              <p-sortIcon [field]="col.field"></p-sortIcon>
+            </div>
+            <ng-template #noSort>
+              <b>{{ col.header }}</b>
+            </ng-template>
         
-          <th
-            *ngFor="let col of columns"
-            [hidden]="col.field === 'fiscalyear' && !isAnyRowEditable()"
-          >
-            <div class="flex items-center justify-between">
-              <div
-                class="test"
-                [pSortableColumn]="col.field"
-                *ngIf="col.field !== 'action'; else noSort"
-              >
-                <b>{{ col.header }}</b>
-                <p-sortIcon [field]="col.field"></p-sortIcon>
-              </div>
-              <ng-template #noSort>
-                <b>{{ col.header }}</b>
-              </ng-template>
-          
-              <p-columnFilter
+            <p-columnFilter
               *ngIf="col.field !== 'action' && col.field !== 'gdb'"
               [field]="col.field"
               display="menu"
-              (showMenu)="initializeFilter(col.field)"
               [showMatchModes]="false"
               [showOperator]="false"
               [showAddButton]="false"
               [showApplyButton]="false"
               [showClearButton]="false"
+              [ngClass]="{ 'filter-active': activeFilters[col.field] }"
+
             >
               <ng-template pTemplate="filter" let-filter="filterCallback">
-                <!-- Search Field -->
-                <input
-                  type="text"
-                  pInputText
-                  [(ngModel)]="filterSearch[col.field]"
-                  (input)="onFilterSearch(col.field)"
-                  placeholder="Search..."
-                  style="width: 100%; margin-bottom: 5px;"
-                />
-            
-                <!-- Scrollable Checkbox Container -->
-                <div
-                  style="max-height: 200px; overflow-y: auto; padding: 0 4px;"
-                >
-                  <div
-                    *ngFor="let opt of filteredFilterOptions[col.field]"
-                    class="flex align-items-center mb-1"
-                  >
-                    <p-checkbox
-                      [(ngModel)]="selectedFilters[col.field]"
-                      [value]="opt.value"
-                      [inputId]="col.field + '_' + opt.value"
-                      binary="false"
-                      (ngModelChange)="onFilterChange(col.field)"
-                    ></p-checkbox>
-                    <label [for]="col.field + '_' + opt.value" class="ml-2">{{ opt.label }}</label>
-                  </div>
-                </div>
+                <p-multiSelect
+                  [options]="getFilterOptions(col.field)"
+                  [(ngModel)]="selectedFilters[col.field]"
+                  (onChange)="onFilterChange(col.field)"
+                  optionLabel="label"
+                  display="chip"
+                  [style]="{ width: '100%' }"
+                  panelStyleClass="filter-dropdown-left"
+                  [showToggleAll]="false"
+                  [showToggleAll]="true"
+                  [maxSelectedLabels]="0"
+                ></p-multiSelect>
               </ng-template>
             </p-columnFilter>
-            
-            
-            
-            
-            </div>
-          </th>
-        </tr>
-      </ng-template>
+          </div>
+        </th>
+      </tr>
+    </ng-template>
 
       <ng-template pTemplate="body" let-row let-rowIndex="rowIndex">
         <!--  Actual data rows -->
@@ -626,9 +607,10 @@
               (click)="row.isEditable ? updateGoal(row) : enableEdit(row)"
             ></i>
             <i
-              class="pi pi-history actions"
-              (click)="historyDialog(row.goalid)"
-            ></i>
+            *ngIf="!row.isEditable"
+            class="pi pi-history actions"
+            (click)="historyDialog(row.goalid)"
+          ></i>          
             <i
               *ngIf="row.isEditable"
               class="pi pi-times actions"
