@@ -239,12 +239,10 @@ export class GoalsComponent implements AfterViewInit {
     this.goalsService.getWhoOptions().subscribe({
       next: (data) => {
         this.fullWhoList = data;
-        this.whoOptions = data
-          .map((item) => ({
-            label: `${item.initials ?? ''} (${item.employee_name ?? ''})`,
-            value: item.initials,
-          }))
-          .sort((a, b) => a.value.localeCompare(b.value));
+        this.whoOptions = data.map((item) => ({
+          label: `${item.initials ?? ''} (${item.employee_name ?? ''})`,
+          value: item.initials,
+        }));
       },
       error: (err) => {
         console.error('Failed to load WHO options:', err);
@@ -479,7 +477,7 @@ export class GoalsComponent implements AfterViewInit {
   exportExcelData(): void {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Goals');
-    const imageUrl = 'assets/sunpower_logo.png';
+    const imageUrl = 'assets/cslr-logo 1.png';
 
     fetch(imageUrl)
       .then((response) => response.blob())
@@ -492,7 +490,7 @@ export class GoalsComponent implements AfterViewInit {
 
         worksheet.addImage(imageId, {
           tl: { col: 0, row: 0 },
-          ext: { width: 130, height: 40 },
+          ext: { width: 200, height: 80 },
         });
 
         const titleCell = worksheet.getCell('F3');
@@ -655,57 +653,58 @@ export class GoalsComponent implements AfterViewInit {
     const doc = new jsPDF('landscape');
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
+  
     const logo = new Image();
-    logo.src = 'assets/sunpower_logo.png';
+    logo.src = 'assets/cslr-logo 1.png';
+  
     logo.onload = () => {
       const logoX = 10;
       const logoY = 10;
-      const logoWidth = 28;
-      const logoHeight = 10;
+      const logoWidth = 50;
+      const logoHeight = 15;
+    
       // Draw logo in top-left
       doc.addImage(logo, 'PNG', logoX, logoY, logoWidth, logoHeight);
-      // Centered Title (centered on the page, not just beside logo)
+    
+      // Centered Title (independent of logo)
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(18);
       const title = 'GOALS SYSTEM REPORT';
-      const titleX = pageWidth / 2 - doc.getTextWidth(title) / 2;
-      const titleY = logoY + logoHeight / 2 + 5;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const titleX = (pageWidth - doc.getTextWidth(title)) / 2;
+      const titleY = logoY + logoHeight + 5; // push below logo
       doc.text(title, titleX, titleY);
+    
       // Date + Sort Order block
       const currentMSTTime = moment().tz('America/Denver');
       const fileNameDate = currentMSTTime.format('MM-DD-YY');
       const formattedTime = currentMSTTime.format('hh-mm-ss A');
       const displayTime = currentMSTTime.format('MM-DD-YYYY hh:mm:ss A');
+    
       const infoStartX = 14;
-      const infoStartY = logoY + logoHeight + 10;
+      const infoStartY = titleY + 8;
       const lineGap = 7;
+    
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(11);
       doc.setTextColor(0, 0, 0);
-      doc.text(
-        'SORT Order: This report is sorted on WHO P',
-        infoStartX,
-        infoStartY
-      );
-      doc.text(
-        `Reported Date & time: ${displayTime} (MST)`,
-        infoStartX,
-        infoStartY + lineGap
-      );
-
-      // Legend block
+      doc.text('SORT Order: This report is sorted on WHO P', infoStartX, infoStartY);
+      doc.text(`Reported Date & time: ${displayTime} (MST)`, infoStartX, infoStartY + lineGap);
+    
+      // Legend
       const keyText = [
         'Key:',
         'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
         'S = N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
         'PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS',
       ];
-
+    
       let keyStartY = infoStartY + 20;
       const lineHeight = 6;
       const rectX = 10;
       const rectWidth = pageWidth - 20;
       doc.setFontSize(10);
+    
       keyText.forEach((line) => {
         const wrappedLines: string[] = doc.splitTextToSize(line, rectWidth - 8);
         wrappedLines.forEach((subLine: string) => {
@@ -716,20 +715,13 @@ export class GoalsComponent implements AfterViewInit {
           keyStartY += lineHeight;
         });
       });
+    
       const tableStartY = keyStartY + 4;
+    
       const columns = [
-        'Who',
-        'P',
-        'Proj',
-        'VP',
-        'B',
-        'E',
-        'D',
-        'S',
-        'Year',
-        'Goal Deliverable',
+        'Who', 'P', 'Proj', 'VP', 'B', 'E', 'D', 'S', 'Year', 'Goal Deliverable'
       ];
-
+    
       const rows = this.goal.map((goal: any) => [
         goal.who,
         goal.p,
@@ -740,10 +732,9 @@ export class GoalsComponent implements AfterViewInit {
         goal.d ?? '',
         goal.s,
         goal.fiscalyear,
-        `${goal.action ?? ''} ${goal.description ?? ''} ${
-          goal.memo ?? ''
-        }`.trim(),
+        `${goal.action ?? ''} ${goal.description ?? ''} ${goal.memo ?? ''}`.trim()
       ]);
+    
       autoTable(doc, {
         startY: tableStartY,
         head: [columns],
@@ -760,26 +751,24 @@ export class GoalsComponent implements AfterViewInit {
         },
         columnStyles: {
           8: { cellWidth: 20, halign: 'center' }, // Year
-          9: { cellWidth: 120, halign: 'left' }, // Goal Deliverable
+          9: { cellWidth: 120, halign: 'left' },  // Goal Deliverable
         },
         margin: { top: 10 },
         didDrawPage: (data) => {
           const pageNumber = data.pageNumber;
-          const footerY = pageHeight - 10;
+          const footerText = `Page ${pageNumber} | ${displayTime} | Company Confidential`;
+    
           doc.setFontSize(9);
-          doc.text(`${displayTime}`, 10, footerY); // Left
-          doc.text('Company Confidential', pageWidth / 2, footerY, {
-            align: 'center',
-          }); // Center
-          doc.text(`Page ${pageNumber}`, pageWidth - 10, footerY, {
-            align: 'right',
-          }); // Right
+          doc.text(footerText, pageWidth / 2, pageHeight - 10, { align: 'center' });
         },
       });
+    
       const fileName = `Goals_${fileNameDate}_${formattedTime}.pdf`;
       doc.save(fileName);
     };
+    
   }
+  
 
   enableEdit(row: any): void {
     row.isEditable = true;
@@ -819,7 +808,7 @@ export class GoalsComponent implements AfterViewInit {
 
     // Prepare for update
     row.e = row.e;
-    row.d = row.d.toString();
+    row.d = row.d.toString(); // Convert to string if needed
 
     const goalid = row.goalid;
     const updatedGoal: Goals = {
@@ -934,12 +923,11 @@ export class GoalsComponent implements AfterViewInit {
           description: string;
           id: number;
         }>;
-        this.statusOptions = statusList
-          .map((item) => ({
-            label: item.status,
-            value: item.status,
-          }))
-          .sort((a, b) => a.label.localeCompare(b.label));
+        //console.log("statusList", statusList)
+        this.statusOptions = statusList.map((item) => ({
+          label: item.status,
+          value: item.status,
+        }));
       },
       error: (error) => {
         console.error('Error fetching status:', error);
@@ -950,15 +938,14 @@ export class GoalsComponent implements AfterViewInit {
     this.goalsService.getP().subscribe({
       next: (response) => {
         const priority = response as Array<{ p: number; id: number }>;
-        this.priorityOptions = priority
-          .map((item) => ({
-            label: item.p,
-            value: item.p,
-          }))
-          .sort((a, b) => a.value - b.value);
+        //console.log("priority", priority)
+        this.priorityOptions = priority.map((item) => ({
+          label: item.p,
+          value: item.p,
+        }));
       },
       error: (error) => {
-        console.error('Error fetching priority:', error);
+        console.error('Error fetching status:', error);
       },
     });
   }
@@ -981,15 +968,14 @@ export class GoalsComponent implements AfterViewInit {
     this.goalsService.getProj().subscribe({
       next: (response) => {
         const proj = response as Array<{ proj: string; id: number }>;
-        this.projOptions = proj
-          .map((item) => ({
-            label: item.proj,
-            value: item.proj,
-          }))
-          .sort((a, b) => a.label.localeCompare(b.label));
+        // console.log("proj", proj)
+        this.projOptions = proj.map((item) => ({
+          label: item.proj,
+          value: item.proj,
+        }));
       },
       error: (error) => {
-        console.error('Error fetching project list:', error);
+        console.error('Error fetching status:', error);
       },
     });
   }
@@ -997,15 +983,13 @@ export class GoalsComponent implements AfterViewInit {
     this.goalsService.getAction().subscribe({
       next: (response) => {
         const action = response as Array<{ action: string; id: number }>;
-        this.actionOptions = action
-          .map((item) => ({
-            label: item.action,
-            value: item.action,
-          }))
-          .sort((a, b) => a.label.localeCompare(b.label));
+        this.actionOptions = action.map((item) => ({
+          label: item.action,
+          value: item.action,
+        }));
       },
       error: (error) => {
-        console.error('Error fetching actions:', error);
+        console.error('Error fetching status:', error);
       },
     });
   }
@@ -1013,19 +997,14 @@ export class GoalsComponent implements AfterViewInit {
     this.goalsService.getD().subscribe({
       next: (response) => {
         const numData = response as Array<{ d: string; id: number }>;
-        this.priorityOptionsE = numData
-          .map((item) => ({
-            label: item.d.toString(),
-            value: Number(item.d),
-          }))
-          .sort((a, b) => a.value - b.value);
-
-        this.priorityOptionsD = numData
-          .map((item) => ({
-            label: item.d.toString(),
-            value: item.d.toString(),
-          }))
-          .sort((a, b) => +a.value - +b.value);
+        this.priorityOptionsE = numData.map((item) => ({
+          label: item.d.toString(),
+          value: Number(item.d), // for 'e' (number)
+        }));
+        this.priorityOptionsD = numData.map((item) => ({
+          label: item.d.toString(),
+          value: item.d.toString(), // for 'd' (string)
+        }));
       },
       error: (error) => {
         console.error('Error fetching values:', error);
@@ -1215,8 +1194,8 @@ export class GoalsComponent implements AfterViewInit {
 
   initializeFilter(field: string): void {
     const options = this.getFilterOptions(field);
-    this.filterSearch[field] = '';
-    this.filteredFilterOptions[field] = [...options];
+    this.filterSearch[field] = ''; // clear previous search
+    this.filteredFilterOptions[field] = [...options]; // clone to avoid mutation
   }
 
   onFilterSearch(field: string): void {
@@ -1227,6 +1206,6 @@ export class GoalsComponent implements AfterViewInit {
       ? allOptions.filter((opt) =>
           opt.label?.toLowerCase().includes(searchTerm)
         )
-      : [...allOptions];
+      : [...allOptions]; // default: full list
   }
 }

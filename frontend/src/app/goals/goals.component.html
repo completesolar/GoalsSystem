@@ -1,6 +1,6 @@
 <div class="body">
   <div class="mb-2 logo-section flex p-2 items-center justify-content-between">
-    <img src="assets/sunpower_logo.svg" alt="Complete Solar" class="logo h-10" />
+    <img src="assets/cslr-logo 1.svg" alt="Complete Solar" class="logo h-10" />
 
     <div
       class="px-2 title-section flex items-center align-items-center justify-content-between"
@@ -411,252 +411,218 @@
       </tr>
     </ng-template>
 
-    <ng-template pTemplate="body" let-row let-rowIndex="rowIndex">
-      <tr>
-        <td>
-          <p-select
-          [options]="whoOptions"
-          [(ngModel)]="row.who"
-          [disabled]="!row.isEditable"
-          optionLabel="label"
-          optionValue="value"
-          filter
-          [ngClass]="{ saved: !row.isEditable }"
-          tooltipPosition="top"
-          [attr.tabindex]="row.isEditable ? rowIndex * 100 + 1 : null"
-        >
-          <!-- Rendered WHO options -->
-          <ng-template let-option pTemplate="item">{{ option.label }}</ng-template>
-        
-          <!-- Selected WHO value -->
-          <ng-template let-selectedOption pTemplate="selectedItem">
-            {{ selectedOption?.value }}
-          </ng-template>
-        
-          <ng-template pTemplate="filter">
-            <input
-              #whoDropdownInput
-              type="text"
-              autocomplete="off"
-              class="p-dropdown-filter p-inputtext p-component"
-            />
-          </ng-template>
-        </p-select>
-        
-        </td>
-    
-        <td>
-          <p-select
-            [options]="priorityOptions"
-            [(ngModel)]="row.p"
-            [disabled]="!row.isEditable"
-            optionLabel="label"
-            optionValue="value"
-            filter
-            [ngClass]="{ saved: !row.isEditable }"
-            tooltipPosition="top"
-            [attr.tabindex]="row.isEditable ? rowIndex * 100 + 2 : null"
-          ></p-select>
-        </td>
-    
-        <td>
-          <p-select
-            [options]="projOptions"
-            [(ngModel)]="row.proj"
-            [disabled]="!row.isEditable"
-            optionLabel="label"
-            optionValue="value"
-            filter
-            [ngClass]="{ saved: !row.isEditable }"
-            tooltipPosition="top"
-            [attr.tabindex]="row.isEditable ? rowIndex * 100 + 3 : null"
-          ></p-select>
-        </td>
-    
-        <td>
-          <p-select
-            [options]="vpOptions"
-            [(ngModel)]="row.vp"
-            [disabled]="!row.isEditable"
-            optionLabel="label"
-            optionValue="value"
-            filter
-            [ngClass]="{ saved: !row.isEditable }"
-            tooltipPosition="top"
-            [attr.tabindex]="row.isEditable ? rowIndex * 100 + 4 : null"
-          >
-            <ng-template let-option pTemplate="item">{{ option.label }}</ng-template>
-            <ng-template let-selectedOption pTemplate="selectedItem">
-              {{ selectedOption?.value }}
-            </ng-template>
-          </p-select>
-        </td>
-    
-        <td>
-          <p-select
-            [options]="weekOptions"
-            [(ngModel)]="row.b"
-            [disabled]="!row.isEditable"
-            optionLabel="label"
-            optionValue="value"
-            filter
-            [ngClass]="{ saved: !row.isEditable }"
-            tooltipPosition="top"
-            [attr.tabindex]="row.isEditable ? rowIndex * 100 + 5 : null"
-          ></p-select>
-        </td>
-    
-        <td>
-          <p-select
-            [options]="priorityOptionsE"
-            [(ngModel)]="row.e"
-            [disabled]="!row.isEditable"
-            optionLabel="label"
-            optionValue="value"
-            filter
-            [ngClass]="{ saved: !row.isEditable }"
-            tooltipPosition="top"
-            [attr.tabindex]="row.isEditable ? rowIndex * 100 + 6 : null"
-          ></p-select>
-        </td>
-    
-        <td>
-          <p-select
-            [options]="priorityOptionsD"
-            [(ngModel)]="row.d"
-            [disabled]="!row.isEditable"
-            optionLabel="label"
-            optionValue="value"
-            filter
-            [ngClass]="{ saved: !row.isEditable }"
-            tooltipPosition="top"
-            [attr.tabindex]="row.isEditable ? rowIndex * 100 + 7 : null"
-          ></p-select>
-        </td>
-    
-        <td>
-          <p-select
-            [options]="statusOptions"
-            [(ngModel)]="row.s"
-            [disabled]="!row.isEditable"
-            optionLabel="label"
-            optionValue="value"
-            filter
-            [ngClass]="{ saved: !row.isEditable }"
-            [attr.tabindex]="row.isEditable ? rowIndex * 100 + 8 : null"
-          ></p-select>
-        </td>
-    
-        <td>
-          <div *ngIf="row.isEditable; else viewMode" style="display: flex; gap: 6px; flex-wrap: wrap">
+      <ng-template pTemplate="body" let-row let-rowIndex="rowIndex">
+        <!--  Actual data rows -->
+        <tr *ngIf="goal.length">
+          <td>
             <p-select
-              [options]="actionOptions"
-              [(ngModel)]="row.action"
+              [options]="whoOptions"
+              [(ngModel)]="row.who"
               [disabled]="!row.isEditable"
-              [pTooltip]="row.action"
-              tooltipPosition="top"
-              placeholder="Select Action"
               optionLabel="label"
               optionValue="value"
-              [attr.tabindex]="rowIndex * 100 + 9"
+              filter
+              [ngClass]="{ saved: !row.isEditable }"
+              tooltipPosition="top"
+            >
+              <ng-template let-option pTemplate="item">
+                {{ option.label }}
+              </ng-template>
+              <ng-template let-selectedOption pTemplate="selectedItem">
+                {{
+                  row.isEditable ? selectedOption?.value : selectedOption?.value
+                }}
+              </ng-template>
+            </p-select>
+          </td>
+
+          <td>
+            <p-select
+              [options]="priorityOptions"
+              [(ngModel)]="row.p"
+              [disabled]="!row.isEditable"
+              optionLabel="label"
+              optionValue="value"
+              filter
+              [ngClass]="{ saved: !row.isEditable }"
+              tooltipPosition="top"
             ></p-select>
-            <input
-              pInputText
-              [(ngModel)]="row.description"
+          </td>
+
+          <td>
+            <p-select
+              [options]="projOptions"
+              [(ngModel)]="row.proj"
               [disabled]="!row.isEditable"
-              [pTooltip]="row.description"
+              optionLabel="label"
+              optionValue="value"
+              filter
+              [ngClass]="{ saved: !row.isEditable }"
               tooltipPosition="top"
-              style="width: 100px !important"
-              placeholder="Goal Description"
-              [attr.tabindex]="rowIndex * 100 + 10"
-            />
-            <input
-              pInputText
-              [(ngModel)]="row.memo"
+            ></p-select>
+          </td>
+
+          <td>
+            <p-select
+              [options]="vpOptions"
+              [(ngModel)]="row.vp"
               [disabled]="!row.isEditable"
-              [pTooltip]="row.memo"
+              optionLabel="label"
+              optionValue="value"
+              filter
+              [ngClass]="{ saved: !row.isEditable }"
               tooltipPosition="top"
-              style="width: 100px !important"
-              placeholder="Spec/memo"
-              [attr.tabindex]="rowIndex * 100 + 11"
-            />
-          </div>
-          <ng-template #viewMode>
-            <div class="saved">
-              <b>{{ row.action }}</b>
-              <span
-                *ngIf="row.description.length > 55"
-                class="description-link"
-                (click)="showDescription($event, row.description)"
-                [pTooltip]="row.action + ' ' + row.description + ' ' + row.memo"
+            >
+              <ng-template let-option pTemplate="item">
+                {{ option.label }}
+              </ng-template>
+              <ng-template let-selectedOption pTemplate="selectedItem">
+                {{
+                  row.isEditable ? selectedOption?.value : selectedOption?.value
+                }}
+              </ng-template>
+            </p-select>
+          </td>
+
+          <td>
+            <p-select
+              [options]="weekOptions"
+              [(ngModel)]="row.b"
+              [disabled]="!row.isEditable"
+              optionLabel="label"
+              optionValue="value"
+              filter
+              [ngClass]="{ saved: !row.isEditable }"
+              tooltipPosition="top"
+            ></p-select>
+          </td>
+
+          <td>
+            <p-select
+              [options]="priorityOptionsE"
+              [(ngModel)]="row.e"
+              [disabled]="!row.isEditable"
+              optionLabel="label"
+              optionValue="value"
+              filter
+              [ngClass]="{ saved: !row.isEditable }"
+              tooltipPosition="top"
+            ></p-select>
+          </td>
+
+          <td>
+            <p-select
+              [options]="priorityOptionsD"
+              [(ngModel)]="row.d"
+              [disabled]="!row.isEditable"
+              optionLabel="label"
+              optionValue="value"
+              filter
+              [ngClass]="{ saved: !row.isEditable }"
+              tooltipPosition="top"
+            ></p-select>
+          </td>
+
+          <td>
+            <p-select
+              [options]="statusOptions"
+              [(ngModel)]="row.s"
+              [disabled]="!row.isEditable"
+              optionLabel="label"
+              optionValue="value"
+              filter
+              [ngClass]="{ saved: !row.isEditable }"
+            ></p-select>
+          </td>
+
+          <td>
+            <div
+              *ngIf="row.isEditable; else viewMode"
+              style="display: flex; gap: 6px; flex-wrap: wrap"
+            >
+              <p-select
+                [options]="actionOptions"
+                [(ngModel)]="row.action"
+                [disabled]="!row.isEditable"
+                [pTooltip]="row.action"
                 tooltipPosition="top"
-              >
-                {{ row.description | slice: 0:55 }}...
-              </span>
-              <span *ngIf="row.description.length <= 55">
-                {{ row.description }}
-              </span>
-              {{ row.memo }}
+                placeholder="Select Action"
+                optionLabel="label"
+                optionValue="value"
+              />
+              <input
+                pInputText
+                [(ngModel)]="row.description"
+                [disabled]="!row.isEditable"
+                [pTooltip]="row.description"
+                tooltipPosition="top"
+                style="width: 100px !important"
+                placeholder="Goal Description"
+              />
+              <input
+                pInputText
+                [(ngModel)]="row.memo"
+                [disabled]="!row.isEditable"
+                [pTooltip]="row.memo"
+                tooltipPosition="top"
+                style="width: 100px !important"
+                placeholder="Spec/memo"
+              />
             </div>
-          </ng-template>
-          <p-confirmPopup #descriptionPopup key="descPopup"></p-confirmPopup>
-        </td>
-    
-        <td *ngIf="row.isEditable">
-          <input
-            pInputText
-            [(ngModel)]="row.fiscalyear"
-            [disabled]="!row.isEditable"
-            tooltipPosition="top"
-            [attr.tabindex]="rowIndex * 100 + 12"
-          />
-        </td>
-    
-        <td class="icon-actions-column">
-          <!-- EDIT ICON (when not editing) -->
-          <i
-            *ngIf="!row.isEditable"
-            class="pi pi-pencil actions"
-            (click)="enableEdit(row)"
-            [attr.tabindex]="rowIndex * 100 + 13"
-            role="button"
-            style="cursor: pointer"
-            (keydown.enter)="enableEdit(row)"
-          ></i>
-    
-          <!-- SAVE ICON (when editing) -->
-          <i
-            *ngIf="row.isEditable"
-            class="pi pi-save actions"
-            (click)="updateGoal(row)"
-            [attr.tabindex]="rowIndex * 100 + 13"
-            role="button"
-            style="cursor: pointer"
-            (keydown.enter)="updateGoal(row)"
-          ></i>
-    
-          <!-- HISTORY ICON -->
-          <i
+            <ng-template #viewMode>
+              <div class="saved">
+                <b>{{ row.action }}</b>
+                <span
+                  *ngIf="row.description.length > 55"
+                  class="description-link"
+                  (click)="showDescription($event, row.description)"
+                  [pTooltip]="row.action + ' ' + row.description + ' ' + row.memo"
+                  tooltipPosition="top"
+                >
+                  {{ row.description | slice: 0:55 }}...
+                </span>
+            
+                <span *ngIf="row.description.length <= 55">
+                  {{ row.description }}
+                </span>
+            
+                {{ row.memo }}
+              </div>
+            </ng-template>
+            
+            <p-confirmPopup #descriptionPopup key="descPopup"></p-confirmPopup>
+            
+          </td>
+          <td *ngIf="row.isEditable">
+            <input
+              pInputText
+              [(ngModel)]="row.fiscalyear"
+              [disabled]="!row.isEditable"
+              tooltipPosition="top"
+            />
+          </td>
+          <td class="icon-actions-column">
+            <i
+              [ngClass]="row.isEditable ? 'pi pi-save actions' : 'pi pi-pencil actions'"
+              (click)="row.isEditable ? updateGoal(row) : enableEdit(row)"
+            ></i>
+            <i
             *ngIf="!row.isEditable"
             class="pi pi-history actions"
             (click)="historyDialog(row.goalid)"
-            style="cursor: pointer"
-          ></i>
-    
-          <i
-            *ngIf="row.isEditable"
-            class="pi pi-times actions"
-            (click)="cancelEdit(row)"
-            pTooltip="Cancel Edit"
-            tooltipPosition="top"
-            [attr.tabindex]="rowIndex * 100 + 14"
-            role="button"
-            style="cursor: pointer"
-            (keydown.enter)="cancelEdit(row)"
-          ></i>
-        </td>
-      </tr>
-    </ng-template>
+          ></i>          
+            <i
+              *ngIf="row.isEditable"
+              class="pi pi-times actions"
+              (click)="cancelEdit(row)"
+              pTooltip="Cancel Edit"
+              tooltipPosition="top"
+            ></i>
+          </td>
+          
+          
+        </tr>
+      </ng-template>
     </p-table>
 
     <p-dialog
