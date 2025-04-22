@@ -247,7 +247,7 @@ export class GoalsComponent implements AfterViewInit {
         this.whoOptions = data.map((item) => ({
           label: `${item.initials ?? ''} (${item.employee_name ?? ''})`,
           value: item.initials,
-        }));
+        })).sort((a, b) => a.label.localeCompare(b.label));;
       },
       error: (err) => {
         console.error('Failed to load WHO options:', err);
@@ -683,7 +683,7 @@ export class GoalsComponent implements AfterViewInit {
     const pageHeight = doc.internal.pageSize.getHeight();
   
     const logo = new Image();
-    logo.src = 'assets/cslr-logo 1.png';
+    logo.src = 'assets/sunpower-logo.png';
   
     logo.onload = () => {
       const logoX = 10;
@@ -969,7 +969,7 @@ export class GoalsComponent implements AfterViewInit {
         this.statusOptions = statusList.map((item) => ({
           label: item.status,
           value: item.status,
-        }));
+        })).sort((a, b) => a.label.localeCompare(b.label));;
       },
       error: (error) => {
         console.error('Error fetching status:', error);
@@ -984,7 +984,7 @@ export class GoalsComponent implements AfterViewInit {
         this.priorityOptions = priority.map((item) => ({
           label: item.p,
           value: item.p,
-        }));
+        })).sort((a, b) => a.value - b.value);;
       },
       error: (error) => {
         console.error('Error fetching status:', error);
@@ -998,7 +998,7 @@ export class GoalsComponent implements AfterViewInit {
         this.projOptions = proj.map((item) => ({
           label: item.proj,
           value: item.proj,
-        }));
+        })).sort((a, b) => a.label.localeCompare(b.label));;
       },
       error: (error) => {
         console.error('Error fetching status:', error);
@@ -1012,7 +1012,7 @@ export class GoalsComponent implements AfterViewInit {
         this.actionOptions = action.map((item) => ({
           label: item.action,
           value: item.action,
-        }));
+        })).sort((a, b) => a.label.localeCompare(b.label));;
       },
       error: (error) => {
         console.error('Error fetching status:', error);
@@ -1023,13 +1023,18 @@ export class GoalsComponent implements AfterViewInit {
     this.goalsService.getD().subscribe({
       next: (response) => {
         const numData = response as Array<{ d: string; id: number }>;
-        this.priorityOptionsE = numData.map((item) => ({
-          label: item.d.toString(),
-          value: Number(item.d), // for 'e' (number)
+  
+        // Sort numerically by converting to number during sort
+        const sortedNumData = [...numData].sort((a, b) => +a.d - +b.d);
+  
+        this.priorityOptionsE = sortedNumData.map((item) => ({
+          label: item.d,
+          value: Number(item.d), // 'e' expects number
         }));
-        this.priorityOptionsD = numData.map((item) => ({
-          label: item.d.toString(),
-          value: item.d.toString(), // for 'd' (string)
+  
+        this.priorityOptionsD = sortedNumData.map((item) => ({
+          label: item.d,
+          value: item.d, // 'd' expects string
         }));
       },
       error: (error) => {
@@ -1037,6 +1042,7 @@ export class GoalsComponent implements AfterViewInit {
       },
     });
   }
+  
 
   logout() {
     // console.log("logout")
