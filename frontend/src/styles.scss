@@ -126,3 +126,60 @@ padding-left: 4px;
 padding-left: 4px;
   padding-right: 0px;
 }
+
+@media(min-width:1600px){
+
+  .custom-goal-table th:nth-child(1),
+ .custom-goal-table td:nth-child(1) {
+  width: 80px;
+}
+
+.custom-goal-table th:nth-child(2),
+.custom-goal-table td:nth-child(2) {
+ width: 80px;
+}
+
+
+.custom-goal-table th:nth-child(3),
+.custom-goal-table td:nth-child(3) {
+ width: 90px;
+}
+
+.custom-goal-table th:nth-child(4),
+.custom-goal-table td:nth-child(4) {
+ width: 80px;
+}
+
+.custom-goal-table th:nth-child(5),
+.custom-goal-table td:nth-child(5) {
+ width: 80px;
+}
+
+.custom-goal-table th:nth-child(6),
+.custom-goal-table td:nth-child(6) {
+ width: 80px;
+}
+
+.custom-goal-table th:nth-child(7),
+.custom-goal-table td:nth-child(7) {
+ width: 80px;
+}
+
+.custom-goal-table th:nth-child(8),
+.custom-goal-table td:nth-child(8) {
+ width: 80px;
+}
+.custom-goal-table th:nth-child(9),
+ .custom-goal-table td:nth-child(9) {
+  width: 800px !important;
+}
+
+.custom-goal-table th:last-child,
+.custom-goal-table td:last-child {
+ width: 100px;
+}
+}
+.highlight {
+  background-color: yellow;
+  font-weight: bold;
+}
