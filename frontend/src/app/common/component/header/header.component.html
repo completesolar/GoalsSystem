@@ -8,6 +8,14 @@
     </div>
 
     <div class="flex items-center justify-end gap-4 align-items-center">
+      <button
+      (click)="goToMetrics()"
+      class="px-2 py-1 rounded-md text-sm font-medium bg-gray-100 hover:bg-green-200 transition text-gray-700 shadow-sm"
+      style="border: none; cursor: pointer;"
+    >
+    {{ buttonLabel }}
+    </button>
+    
       <!-- Icon + Full Date on same line -->
       <div class="flex items-center gap-1 align-items-center">
         <img

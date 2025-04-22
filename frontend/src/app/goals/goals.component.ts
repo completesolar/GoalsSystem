@@ -683,42 +683,43 @@ export class GoalsComponent implements AfterViewInit {
     const pageHeight = doc.internal.pageSize.getHeight();
   
     const logo = new Image();
-    logo.src = 'assets/sunpower-logo.png';
+    logo.src = 'assets/cslr-logo 1.png';
   
     logo.onload = () => {
       const logoX = 10;
       const logoY = 10;
       const logoWidth = 50;
       const logoHeight = 15;
-    
+  
       // Draw logo in top-left
       doc.addImage(logo, 'PNG', logoX, logoY, logoWidth, logoHeight);
-    
-      // Centered Title (independent of logo)
+  
+      // Centered Title on same line as logo
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(18);
+  
       const title = 'GOALS SYSTEM REPORT';
-      const pageWidth = doc.internal.pageSize.getWidth();
       const titleX = (pageWidth - doc.getTextWidth(title)) / 2;
-      const titleY = logoY + logoHeight + 5; // push below logo
+      const titleY = logoY + logoHeight / 2 + 5; // Align with logo middle + slight adjustment
+  
       doc.text(title, titleX, titleY);
-    
+  
       // Date + Sort Order block
       const currentMSTTime = moment().tz('America/Denver');
       const fileNameDate = currentMSTTime.format('MM-DD-YY');
       const formattedTime = currentMSTTime.format('hh-mm-ss A');
       const displayTime = currentMSTTime.format('MM-DD-YYYY hh:mm:ss A');
-    
+  
       const infoStartX = 14;
       const infoStartY = titleY + 8;
       const lineGap = 7;
-    
+  
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(11);
       doc.setTextColor(0, 0, 0);
       doc.text('SORT Order: This report is sorted on WHO P', infoStartX, infoStartY);
       doc.text(`Reported Date & time: ${displayTime} (MST)`, infoStartX, infoStartY + lineGap);
-    
+  
       // Legend
       const keyText = [
         'Key:',
@@ -726,13 +727,13 @@ export class GoalsComponent implements AfterViewInit {
         'S = N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
         'PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS',
       ];
-    
+  
       let keyStartY = infoStartY + 20;
       const lineHeight = 6;
       const rectX = 10;
       const rectWidth = pageWidth - 20;
       doc.setFontSize(10);
-    
+  
       keyText.forEach((line) => {
         const wrappedLines: string[] = doc.splitTextToSize(line, rectWidth - 8);
         wrappedLines.forEach((subLine: string) => {
@@ -743,13 +744,13 @@ export class GoalsComponent implements AfterViewInit {
           keyStartY += lineHeight;
         });
       });
-    
+  
       const tableStartY = keyStartY + 4;
-    
+  
       const columns = [
         'Who', 'P', 'Proj', 'VP', 'B', 'E', 'D', 'S', 'Year', 'Goal Deliverable'
       ];
-    
+  
       const rows = this.goal.map((goal: any) => [
         goal.who,
         goal.p,
@@ -762,7 +763,7 @@ export class GoalsComponent implements AfterViewInit {
         goal.fiscalyear,
         `${goal.action ?? ''} ${goal.description ?? ''} ${goal.memo ?? ''}`.trim()
       ]);
-    
+  
       autoTable(doc, {
         startY: tableStartY,
         head: [columns],
@@ -784,18 +785,28 @@ export class GoalsComponent implements AfterViewInit {
         margin: { top: 10 },
         didDrawPage: (data) => {
           const pageNumber = data.pageNumber;
-          const footerText = `Page ${pageNumber} | ${displayTime} | Company Confidential`;
-    
+  
+          // Footer with: LEFT = Date, CENTER = Confidential, RIGHT = Page No
           doc.setFontSize(9);
-          doc.text(footerText, pageWidth / 2, pageHeight - 10, { align: 'center' });
+  
+          // LEFT: Date & Time
+          doc.text(`Reported: ${displayTime}`, 14, pageHeight - 10, { align: 'left' });
+  
+          // CENTER: Company Confidential
+          doc.text('Company Confidential', pageWidth / 2, pageHeight - 10, { align: 'center' });
+  
+          // RIGHT: Page Number
+          doc.text(`Page ${pageNumber}`, pageWidth - 14, pageHeight - 10, { align: 'right' });
         },
       });
-    
+  
       const fileName = `Goals_${fileNameDate}_${formattedTime}.pdf`;
       doc.save(fileName);
     };
-    
   }
+  
+  
+  
   enableEdit(row: any): void {
     row.isEditable = true;
     this.previousRow = JSON.parse(JSON.stringify(row));

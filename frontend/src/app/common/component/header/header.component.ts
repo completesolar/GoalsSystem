@@ -1,5 +1,6 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import { Router } from '@angular/router';
 import { MsalService } from '@azure/msal-angular';
 import { SelectModule } from 'primeng/select';
 
@@ -11,14 +12,34 @@ import { SelectModule } from 'primeng/select';
 })
 export class HeaderComponent {
   today: Date = new Date();
+  buttonLabel: string = 'Dashboard';
 
   constructor(
     @Inject(PLATFORM_ID) private platform: Object,
-    private msalService: MsalService
+    private msalService: MsalService,
+    private router: Router
   ) {}
 
   ngOnInit() {
     this.today = new Date();
+    this.updateButtonLabel();
+
+    // Watch route changes if navigation happens dynamically
+    this.router.events.subscribe(() => {
+      this.updateButtonLabel();
+    });
+  
+  }
+
+  updateButtonLabel(): void {
+    const currentUrl = this.router.url;
+    this.buttonLabel = currentUrl.includes('goals-metrics') ? 'Goals' : 'Dashboard';
+  }
+  
+  goToMetrics(): void {
+    const isInMetrics = this.router.url.includes('goals-metrics');
+    const targetRoute = isInMetrics ? '/goals' : '/goals-metrics';
+    this.router.navigate([targetRoute]);
   }
 
   getCurrentWeekNumber(): number {
