@@ -20,6 +20,7 @@ from sqlalchemy.sql import text
 from json import dumps, loads
 from datetime import datetime
 from copy import deepcopy
+from sqlalchemy import func,extract
 
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -372,3 +373,34 @@ def update_goal(db: Session, goal_id: int, goal_update: GoalsUpdate):
     #     newgoal=dumps(updated_goal_dict),  # Serialize the updated goal to JSON
     #     createddate=currentdate,
     #     createdby=goal_update.updateBy
+
+def get_goals_metrics(db: Session, vp=None, proj=None, priority=None, created_from=None, created_to=None):
+    query = db.query(Goals)
+
+    if vp:
+        query = query.filter(Goals.vp == vp)
+    if proj:
+        query = query.filter(Goals.proj == proj)
+    if priority:
+        query = query.filter(Goals.p == priority)
+    if created_from:
+        query = query.filter(Goals.createddatetime >= created_from)
+    if created_to:
+        query = query.filter(Goals.createddatetime <= created_to)
+
+    # Year-wise goals using fiscalyear (already a column)
+    yearwise_data = query.with_entities(
+        Goals.fiscalyear,
+        func.count().label('count')
+    ).group_by(Goals.fiscalyear).order_by(Goals.fiscalyear).all()
+
+    # Status-wise goals
+    statuswise_data = query.with_entities(
+        Goals.s,
+        func.count().label('count')
+    ).group_by(Goals.s).all()
+
+    return {
+        "yearWise": [{"year": row.fiscalyear, "count": row.count} for row in yearwise_data],
+        "statusWise": [{"status": row.s or "Unassigned", "count": row.count} for row in statuswise_data]
+    }

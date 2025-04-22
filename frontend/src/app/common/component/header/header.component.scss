@@ -1,0 +1,38 @@
+.main-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #333;
+    letter-spacing: 1px;
+  }
+
+  .calendar-icon {
+    vertical-align: middle;
+    margin-bottom: 1px; /* optional fine-tuning */
+  }
+
+  .date {
+    font-size: 10px;
+    color: #777;
+    margin-top: 2px;
+  }
+
+  .settingSelect {
+    background: none !important;
+    box-shadow: none;
+    border: none;
+    // width: 40% !important;
+  }
+  
+  .settingSelect:hover {
+    background: none !important;
+  }
+  
+  .settings-icon {
+    width: 19px;
+    margin-right: 5px;
+  }
+  
+  .settingSelect ::ng-deep.p-placeholder {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }

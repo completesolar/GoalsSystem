@@ -4,6 +4,7 @@ import {
   PLATFORM_ID,
   ViewChild,
   AfterViewInit,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -36,7 +37,8 @@ import { SelectModule } from 'primeng/select';
 import { Goals } from '../models/goals';
 import { BadgeModule } from 'primeng/badge';
 import { OverlayBadgeModule } from 'primeng/overlaybadge';
-// import { HighlightDiffPipe } from "../pipes/highlight-diff.pipe";
+import { diff_match_patch, DIFF_EQUAL, DIFF_INSERT, DIFF_DELETE } from 'diff-match-patch';
+import { ViewChildren, QueryList, ElementRef } from '@angular/core';
 
 interface Year {
   name: number;
@@ -70,6 +72,7 @@ interface Year {
 })
 export class GoalsComponent implements AfterViewInit {
   @ViewChild('dataTable') dataTable: Table | undefined;
+  @ViewChildren('whoSelectWrapper') whoSelectWrappers!: QueryList<ElementRef>;
   goal: any = [];
   goalHistory: any = [];
   today: Date = new Date();
@@ -184,6 +187,7 @@ export class GoalsComponent implements AfterViewInit {
     'rgb(253, 179, 056)',
     'rgb(219, 076, 119)',
   ];
+  gdbSearchText: string = '';
 
   constructor(
     @Inject(PLATFORM_ID) private platform: Object,
@@ -192,7 +196,8 @@ export class GoalsComponent implements AfterViewInit {
     private msalService: MsalService,
     private router: Router,
     private confirmationService: ConfirmationService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private cdr: ChangeDetectorRef
   ) {
     this.platform = platform;
   }
@@ -242,7 +247,7 @@ export class GoalsComponent implements AfterViewInit {
         this.whoOptions = data.map((item) => ({
           label: `${item.initials ?? ''} (${item.employee_name ?? ''})`,
           value: item.initials,
-        }));
+        })).sort((a, b) => a.label.localeCompare(b.label));;
       },
       error: (err) => {
         console.error('Failed to load WHO options:', err);
@@ -360,29 +365,52 @@ export class GoalsComponent implements AfterViewInit {
       console.warn('Selected WHO has no supervisor_name.');
     }
   }
+
   loadGoalsHistory(id: number) {
     this.goalsService.getGoalHistory(id).subscribe(
       (goalsHistory) => {
-        this.goalHistory = (goalsHistory as any[])
-          .map((g) => {
-            const createddateMST = moment(g.createddate)
+        let sortedHistory = (goalsHistory as any[])
+          .map(g => ({
+            ...g,
+            createddateMST: moment(g.createddate)
               .tz('America/Denver')
-              .format('MM/DD/YYYY hh:mm:ss A');
-            return {
-              ...g,
-              createddateMST,
-            };
-          })
-          .sort((a, b) => {
-            return (
-              new Date(b.createddate).getTime() -
-              new Date(a.createddate).getTime()
-            );
-          });
+              .format('MM/DD/YYYY hh:mm:ss A')
+          }))
+          .sort((a, b) => new Date(a.createddate).getTime() - new Date(b.createddate).getTime());
+  
+        const coloredHistory = [];
+  
+        for (let i = 0; i < sortedHistory.length; i++) {
+          const current = sortedHistory[i];
+          const previous = sortedHistory[i - 1];
+          const color = this.colorPalette[i] || '#000000';
+  
+          const rowDisplay: any = {
+            ...current,
+            display: {
+              action: [],
+              description: [],
+              memo: []
+            }
+          };
+  
+          if (i === 0) {
+            rowDisplay.display.action.push({ text: current.action || '', color: this.colorPalette[0] });
+            rowDisplay.display.description.push({ text: current.description || '', color: this.colorPalette[0] });
+            rowDisplay.display.memo.push({ text: current.memo || '', color: this.colorPalette[0] });
+          } else {
+            rowDisplay.display.memo = this.getSmartDiffChunks(current.memo || '', previous.memo || '', color);
+            rowDisplay.display.action = this.getSmartDiffChunksForAction(current.action || '', previous.action || '', color);
+            rowDisplay.display.description = this.getSmartDiffChunks(current.description || '', previous.description || '', color);
+                    }
+  
+          coloredHistory.push(rowDisplay);
+        }
+  
+        this.goalHistory = coloredHistory.reverse();
       },
-      (error) => {
+      error => {
         console.error('Error fetching goal history for ID:', id);
-        console.error(error);
       }
     );
   }
@@ -662,35 +690,36 @@ export class GoalsComponent implements AfterViewInit {
       const logoY = 10;
       const logoWidth = 50;
       const logoHeight = 15;
-    
+  
       // Draw logo in top-left
       doc.addImage(logo, 'PNG', logoX, logoY, logoWidth, logoHeight);
-    
-      // Centered Title (independent of logo)
+  
+      // Centered Title on same line as logo
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(18);
+  
       const title = 'GOALS SYSTEM REPORT';
-      const pageWidth = doc.internal.pageSize.getWidth();
       const titleX = (pageWidth - doc.getTextWidth(title)) / 2;
-      const titleY = logoY + logoHeight + 5; // push below logo
+      const titleY = logoY + logoHeight / 2 + 5; // Align with logo middle + slight adjustment
+  
       doc.text(title, titleX, titleY);
-    
+  
       // Date + Sort Order block
       const currentMSTTime = moment().tz('America/Denver');
       const fileNameDate = currentMSTTime.format('MM-DD-YY');
       const formattedTime = currentMSTTime.format('hh-mm-ss A');
       const displayTime = currentMSTTime.format('MM-DD-YYYY hh:mm:ss A');
-    
+  
       const infoStartX = 14;
       const infoStartY = titleY + 8;
       const lineGap = 7;
-    
+  
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(11);
       doc.setTextColor(0, 0, 0);
       doc.text('SORT Order: This report is sorted on WHO P', infoStartX, infoStartY);
       doc.text(`Reported Date & time: ${displayTime} (MST)`, infoStartX, infoStartY + lineGap);
-    
+  
       // Legend
       const keyText = [
         'Key:',
@@ -698,13 +727,13 @@ export class GoalsComponent implements AfterViewInit {
         'S = N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
         'PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS',
       ];
-    
+  
       let keyStartY = infoStartY + 20;
       const lineHeight = 6;
       const rectX = 10;
       const rectWidth = pageWidth - 20;
       doc.setFontSize(10);
-    
+  
       keyText.forEach((line) => {
         const wrappedLines: string[] = doc.splitTextToSize(line, rectWidth - 8);
         wrappedLines.forEach((subLine: string) => {
@@ -715,13 +744,13 @@ export class GoalsComponent implements AfterViewInit {
           keyStartY += lineHeight;
         });
       });
-    
+  
       const tableStartY = keyStartY + 4;
-    
+  
       const columns = [
         'Who', 'P', 'Proj', 'VP', 'B', 'E', 'D', 'S', 'Year', 'Goal Deliverable'
       ];
-    
+  
       const rows = this.goal.map((goal: any) => [
         goal.who,
         goal.p,
@@ -734,7 +763,7 @@ export class GoalsComponent implements AfterViewInit {
         goal.fiscalyear,
         `${goal.action ?? ''} ${goal.description ?? ''} ${goal.memo ?? ''}`.trim()
       ]);
-    
+  
       autoTable(doc, {
         startY: tableStartY,
         head: [columns],
@@ -756,28 +785,55 @@ export class GoalsComponent implements AfterViewInit {
         margin: { top: 10 },
         didDrawPage: (data) => {
           const pageNumber = data.pageNumber;
-          const footerText = `Page ${pageNumber} | ${displayTime} | Company Confidential`;
-    
+  
+          // Footer with: LEFT = Date, CENTER = Confidential, RIGHT = Page No
           doc.setFontSize(9);
-          doc.text(footerText, pageWidth / 2, pageHeight - 10, { align: 'center' });
+  
+          // LEFT: Date & Time
+          doc.text(`Reported: ${displayTime}`, 14, pageHeight - 10, { align: 'left' });
+  
+          // CENTER: Company Confidential
+          doc.text('Company Confidential', pageWidth / 2, pageHeight - 10, { align: 'center' });
+  
+          // RIGHT: Page Number
+          doc.text(`Page ${pageNumber}`, pageWidth - 14, pageHeight - 10, { align: 'right' });
         },
       });
-    
+  
       const fileName = `Goals_${fileNameDate}_${formattedTime}.pdf`;
       doc.save(fileName);
     };
-    
   }
   
-
+  
+  
   enableEdit(row: any): void {
     row.isEditable = true;
-
-    // Store a deep copy of the row so we can compare later
     this.previousRow = JSON.parse(JSON.stringify(row));
-    console.log('original (copied) row', this.previousRow);
+    this.cdr.detectChanges();
+  
+    setTimeout(() => {
+      const index = this.goal.findIndex((g: any) => g === row);
+      const wrapperRef = this.whoSelectWrappers.get(index);
+  
+      if (wrapperRef?.nativeElement) {
+        const wrapperEl = wrapperRef.nativeElement;
+  
+        const triggerEl: HTMLElement = wrapperEl.querySelector('.p-select-label');
+  
+        if (triggerEl) {
+          triggerEl.focus();
+          triggerEl.click(); 
+        } else {
+          console.warn('Could not find .p-select-label inside WHO');
+          console.log('Wrapper content:', wrapperEl.innerHTML);
+        }
+      } else {
+        console.warn('No wrapper found for WHO at index', index);
+      }
+    }, 100);
   }
-
+    
   updateGoal(row: Goals): void {
     console.log('previousRow', this.previousRow);
     console.log('currentRow', row);
@@ -794,8 +850,6 @@ export class GoalsComponent implements AfterViewInit {
       });
       return;
     }
-
-    // Check for changes
     if (this.previousRow && this.isEqualGoal(this.previousRow, row)) {
       this.messageService.add({
         severity: 'info',
@@ -806,9 +860,8 @@ export class GoalsComponent implements AfterViewInit {
       return;
     }
 
-    // Prepare for update
     row.e = row.e;
-    row.d = row.d.toString(); // Convert to string if needed
+    row.d = row.d.toString(); 
 
     const goalid = row.goalid;
     const updatedGoal: Goals = {
@@ -927,7 +980,7 @@ export class GoalsComponent implements AfterViewInit {
         this.statusOptions = statusList.map((item) => ({
           label: item.status,
           value: item.status,
-        }));
+        })).sort((a, b) => a.label.localeCompare(b.label));;
       },
       error: (error) => {
         console.error('Error fetching status:', error);
@@ -942,37 +995,21 @@ export class GoalsComponent implements AfterViewInit {
         this.priorityOptions = priority.map((item) => ({
           label: item.p,
           value: item.p,
-        }));
+        })).sort((a, b) => a.value - b.value);;
       },
       error: (error) => {
         console.error('Error fetching status:', error);
       },
     });
   }
-  // getVp() {
-  //   this.goalsService.getVP().subscribe({
-  //     next: (response) => {
-  //       const vp = response as Array<{ vp: string; id: number }>;
-  //       console.log("vp", vp)
-  //       this.vpOptions = vp.map(item => ({
-  //         label: item.vp,
-  //         value: item.vp
-  //       }));
-  //     },
-  //     error: (error) => {
-  //       console.error('Error fetching status:', error);
-  //     }
-  //   });
-  // }
   getProj() {
     this.goalsService.getProj().subscribe({
       next: (response) => {
         const proj = response as Array<{ proj: string; id: number }>;
-        // console.log("proj", proj)
         this.projOptions = proj.map((item) => ({
           label: item.proj,
           value: item.proj,
-        }));
+        })).sort((a, b) => a.label.localeCompare(b.label));;
       },
       error: (error) => {
         console.error('Error fetching status:', error);
@@ -986,7 +1023,7 @@ export class GoalsComponent implements AfterViewInit {
         this.actionOptions = action.map((item) => ({
           label: item.action,
           value: item.action,
-        }));
+        })).sort((a, b) => a.label.localeCompare(b.label));;
       },
       error: (error) => {
         console.error('Error fetching status:', error);
@@ -997,13 +1034,18 @@ export class GoalsComponent implements AfterViewInit {
     this.goalsService.getD().subscribe({
       next: (response) => {
         const numData = response as Array<{ d: string; id: number }>;
-        this.priorityOptionsE = numData.map((item) => ({
-          label: item.d.toString(),
-          value: Number(item.d), // for 'e' (number)
+  
+        // Sort numerically by converting to number during sort
+        const sortedNumData = [...numData].sort((a, b) => +a.d - +b.d);
+  
+        this.priorityOptionsE = sortedNumData.map((item) => ({
+          label: item.d,
+          value: Number(item.d), // 'e' expects number
         }));
-        this.priorityOptionsD = numData.map((item) => ({
-          label: item.d.toString(),
-          value: item.d.toString(), // for 'd' (string)
+  
+        this.priorityOptionsD = sortedNumData.map((item) => ({
+          label: item.d,
+          value: item.d, // 'd' expects string
         }));
       },
       error: (error) => {
@@ -1011,6 +1053,7 @@ export class GoalsComponent implements AfterViewInit {
       },
     });
   }
+  
 
   logout() {
     // console.log("logout")
@@ -1057,7 +1100,6 @@ export class GoalsComponent implements AfterViewInit {
     if (field === 'vp') {
       return this.vpOptions;
     }
-    // Fallback for other fields
     const uniqueValues = [
       ...new Set(this.allGoals.map((row: any) => row[field] ?? '')),
     ];
@@ -1067,47 +1109,55 @@ export class GoalsComponent implements AfterViewInit {
       value: val,
     }));
   }
-
   onFilterChange(field: string): void {
-    // Update filtered goal list
-    this.goal = this.allGoals.filter((row: any) => {
-      return Object.entries(this.selectedFilters).every(
-        ([filterField, selectedValues]: any) => {
-          if (!selectedValues || selectedValues.length === 0) return true;
-          const includedValues = selectedValues.map(
-            (option: any) => option.value
-          );
-          return includedValues.includes(row[filterField]);
-        }
-      );
-    });
-
-    // Track if current filter is active
+    this.applyFilters(); 
+  
     this.activeFilters = this.activeFilters || {};
     this.activeFilters[field] =
       Array.isArray(this.selectedFilters[field]) &&
       this.selectedFilters[field].length > 0;
   }
-
-  applyFilters(field: string): void {
+  onGdbFilterChange(): void {
+    this.applyFilters();
+    this.activeFilters = this.activeFilters || {};
+    this.activeFilters['gdb'] = !!this.gdbSearchText?.trim();
+  }
+  
+  applyFilters(): void {
     this.goal = this.allGoals.filter((row: any) => {
-      return Object.entries(this.selectedFilters).every(
+      const matchMultiSelect = Object.entries(this.selectedFilters).every(
         ([filterField, selectedValues]: any) => {
           if (!selectedValues || selectedValues.length === 0) return true;
-          const includedValues = selectedValues.map(
-            (option: any) => option.value
-          );
-
+          const includedValues = selectedValues.map((option: any) => option.value);
           return includedValues.includes(row[filterField]);
         }
       );
+  
+      const gdbText = `${row.action ?? ''} ${row.description ?? ''} ${row.memo ?? ''}`.toLowerCase();
+      const matchGdb =
+        !this.gdbSearchText ||
+        gdbText.includes(this.gdbSearchText.toLowerCase());
+  
+      return matchMultiSelect && matchGdb;
     });
   }
-
-  clearFilter(field: string) {
-    this.selectedFilters = [];
-    this.onFilterChange(field);
+  
+  clearFilter(field: string): void {
+    if (field === 'gdb') {
+      this.gdbSearchText = '';
+      this.onGdbFilterChange();
+    } else {
+      this.selectedFilters[field] = [];
+      this.onFilterChange(field);
+    }
   }
+  customGdbFilter(value: any, filter: string): boolean {
+    if (!filter || filter.trim() === '') return true;
+  
+    const gdbText = `${value?.action ?? ''} ${value?.description ?? ''} ${value?.memo ?? ''}`.toLowerCase();
+    return gdbText.includes(filter.toLowerCase());
+  } 
+  
   isAnyRowEditable(): boolean {
     return this.goal?.some((row: any) => row.isEditable);
   }
@@ -1168,44 +1218,51 @@ export class GoalsComponent implements AfterViewInit {
     row.isEditable = false;
   }
 
-  getColoredText(text: string, version: number): string {
-    const prevVersion = this.getPreviousVersion(text, version);
-    let coloredText = '';
-    for (let i = 0; i < text.length; i++) {
-      const currentChar = text[i];
-      const prevChar = prevVersion[i] || '';
-      if (currentChar !== prevChar) {
-        const color = this.colorPalette[version % this.colorPalette.length];
-        coloredText += `<span style="color:${color}">${currentChar}</span>`;
-      } else {
-        coloredText += currentChar;
-      }
+  getSmartDiffChunksForAction(current: string, previous: string, highlightColor: string): { text: string; color: string }[] {
+  const cleanedCurrent = current.trim();
+  const cleanedPrevious = previous.trim();
+
+  const color = cleanedCurrent === cleanedPrevious ? '#000000' : highlightColor;
+
+  return [{ text: cleanedCurrent, color }];
+}
+
+  
+  
+getSmartDiffChunks(current: string, previous: string, highlightColor: string): { text: string; color: string }[] {
+  const dmp = new diff_match_patch();
+  const diffs = dmp.diff_main(previous, current);
+  dmp.diff_cleanupSemantic(diffs);
+
+  return diffs.map(([op, data]) => {
+    if (op === DIFF_EQUAL) {
+      return { text: data, color: '#000000' };
+    } else if (op === DIFF_INSERT) {
+      return { text: data, color: highlightColor };
+    } else {
+      return { text: '', color: '' };
     }
+  });
+}
 
-    return coloredText;
-  }
 
-  getPreviousVersion(currentText: string, version: number): string {
-    if (version > 0) {
-      return currentText.slice(0, -1);
+
+onKeydownGeneric(event: KeyboardEvent, options: any[], field: keyof typeof this.newRow,selectRef:any) {
+  if (event.key === 'Enter') {
+    const inputElement = event.target as HTMLInputElement;
+    const filterValue = inputElement.value.toLowerCase();
+
+    const filteredOptions = options.filter(option =>
+      option.label.toLowerCase().includes(filterValue)
+    );
+
+    if (filteredOptions.length > 0) {
+      this.newRow[field] = filteredOptions[0].value;
     }
-    return '';
+    if (selectRef) {
+      selectRef.hide();
+    }
   }
+}
 
-  initializeFilter(field: string): void {
-    const options = this.getFilterOptions(field);
-    this.filterSearch[field] = ''; // clear previous search
-    this.filteredFilterOptions[field] = [...options]; // clone to avoid mutation
-  }
-
-  onFilterSearch(field: string): void {
-    const searchTerm = this.filterSearch[field]?.toLowerCase() || '';
-    const allOptions = this.getFilterOptions(field);
-
-    this.filteredFilterOptions[field] = searchTerm
-      ? allOptions.filter((opt) =>
-          opt.label?.toLowerCase().includes(searchTerm)
-        )
-      : [...allOptions]; // default: full list
-  }
 }
