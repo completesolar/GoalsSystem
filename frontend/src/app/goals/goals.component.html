@@ -1,44 +1,4 @@
 <div class="body">
-  <div class="mb-2 logo-section flex p-2 items-center justify-content-between">
-    <img src="assets/cslr-logo 1.svg" alt="Complete Solar" class="logo h-10" />
-
-    <div
-      class="px-2 title-section flex items-center align-items-center justify-content-between"
-    >
-      <div class="main-title">GOALS SYSTEM</div>
-    </div>
-
-    <div class="flex items-center justify-end gap-4 align-items-center">
-      <div class="flex items-center gap-1 align-items-center">
-        <img
-          src="assets/solar_calendar-linear.svg"
-          alt="Calendar Icon"
-          class="calendar-icon"
-        />
-        <span class="date-text white-space-nowrap" style="font-size: 12px;">
-          {{ today | date : "MM-dd-yyyy" }}
-        </span>        
-      </div>
-
-      <p-select
-        [options]="[{ label: 'Logout', value: 'logout' }]"
-        [filter]="false"
-        [style]="{ width: '6rem' }"
-        placeholder="WW{{ getCurrentWeekNumber() }}"
-        appendTo="body"
-        (onChange)="onLogoutChange($event)"
-        [showClear]="false"
-        class="settingSelect"
-      >
-        <ng-template let-item pTemplate="item">
-          <div class="text-red-500 font-semibold">
-            {{ item.label }}
-          </div>
-        </ng-template>
-      </p-select>
-    </div>
-  </div>
-
   <p-toast position="top-right"></p-toast>
 
   <div class="mb-1 title-section flex items-center">

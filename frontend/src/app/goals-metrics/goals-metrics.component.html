@@ -1,0 +1,34 @@
+
+
+<div class="pagetitle">Dashboard</div>
+
+
+<div class="flex gap-3 p-5">
+    <div class="bg-white p-3 border-round-md" style="flex-basis: 50%; overflow-x: auto;">
+        <div>
+          <apx-chart
+            *ngIf="yearChartOptions?.series?.length && yearChartOptions?.chart"
+            [series]="yearChartOptions.series"
+            [chart]="yearChartOptions.chart"
+            [xaxis]="yearChartOptions.xaxis"
+            [plotOptions]="yearChartOptions.plotOptions"
+            [dataLabels]="yearChartOptions.dataLabels"
+            [title]="yearChartOptions.title">
+          </apx-chart>
+        </div>
+      </div>
+      
+  
+    <div class="bg-white p-3 border-round-md"  style="flex-basis: 50%;">
+      <!-- Status Pie -->
+      <apx-chart
+        *ngIf="statusPieOptions?.series?.length && statusPieOptions?.chart"
+        [series]="statusPieOptions.series"
+        [labels]="statusPieOptions.labels"
+        [chart]="statusPieOptions.chart"
+        [title]="statusPieOptions.title"
+        [legend]="statusPieOptions.legend">
+      </apx-chart>
+    </div>
+  </div>
+  

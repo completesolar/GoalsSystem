@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException,Query
 from sqlalchemy.orm import Session
 from schemas.schema import Goals, GoalsResponse, GoalsUpdate
 from schemas.goalshistory import goalshistory, goalhistoryResponse
@@ -11,6 +11,7 @@ from schemas.b import BResponse
 from schemas.e import EResponse
 from schemas.d import DResponse
 from schemas.action import ActionResponse
+from typing import Optional
 from database import get_db
 from crud import (
     create_goal,
@@ -34,6 +35,7 @@ from crud import (
     get_all_e,
     get_all_d,
     get_action,
+    get_goals_metrics,
 )
 from typing import Annotated
 
@@ -114,6 +116,24 @@ def create_goals(goal: Goals, db: Session = Depends(get_db)):
 @router.get("/api/goals", response_model=list[GoalsResponse])
 def read_goals(db: Session = Depends(get_db)):
     return get_all_goals(db)
+
+@router.get("/api/goals/metrics")
+def read_goals_metrics(
+    vp: Optional[str] = None,
+    proj: Optional[str] = None,
+    priority: Optional[int] = None,
+    created_from: Optional[str] = None,
+    created_to: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    return get_goals_metrics(
+        db=db,
+        vp=vp,
+        proj=proj,
+        priority=priority,
+        created_from=created_from,
+        created_to=created_to
+    )
 
 @router.get("/api/goals/{goalid}", response_model=GoalsResponse)
 def read_goal(goalid: int, db: Session = Depends(get_db)):
