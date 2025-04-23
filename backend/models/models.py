@@ -36,6 +36,8 @@ class P(Base):
     __tablename__ = "p"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     p = Column(Integer, unique=True, index=True)
+    status = Column(Integer, default=1)  
+    remarks = Column(String, nullable=True)
 
 class Goals(Base):
     __tablename__ = "goals"

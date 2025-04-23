@@ -189,6 +189,14 @@ export class GoalsComponent implements AfterViewInit {
   ];
   gdbSearchText: string = '';
 
+
+  settingsDropdownOptions = [
+    { label: 'Priority', route: '/priority' },
+    { label: 'Status', route: '/status-page' }
+
+  ];
+  settingDropdownOpen: boolean=false;
+  selectedSettingOption:string | undefined;
   constructor(
     @Inject(PLATFORM_ID) private platform: Object,
     private goalsService: GoalsService,
@@ -366,6 +374,55 @@ export class GoalsComponent implements AfterViewInit {
     }
   }
 
+  // loadGoalsHistory(id: number) {
+  //   this.goalsService.getGoalHistory(id).subscribe(
+  //     (goalsHistory) => {
+  //       let sortedHistory = (goalsHistory as any[])
+  //         .map(g => ({
+  //           ...g,
+  //           createddateMST: moment(g.createddate)
+  //             .tz('America/Denver')
+  //             .format('MM/DD/YYYY hh:mm:ss A')
+  //         }))
+  //         .sort((a, b) => new Date(a.createddate).getTime() - new Date(b.createddate).getTime());
+  
+  //       const coloredHistory = [];
+  
+  //       for (let i = 0; i < sortedHistory.length; i++) {
+  //         const current = sortedHistory[i];
+  //         const previous = sortedHistory[i - 1];
+  //         const cyclePalette = this.colorPalette.slice(1); 
+  //         const color = cyclePalette[(i - 1) % cyclePalette.length] || cyclePalette[0];
+  
+  //         const rowDisplay: any = {
+  //           ...current,
+  //           display: {
+  //             action: [],
+  //             description: [],
+  //             memo: []
+  //           }
+  //         };
+  
+  //         if (i === 0) {
+  //           rowDisplay.display.action.push({ text: current.action || '', color: this.colorPalette[0] });
+  //           rowDisplay.display.description.push({ text: current.description || '', color: this.colorPalette[0] });
+  //           rowDisplay.display.memo.push({ text: current.memo || '', color: this.colorPalette[0] });
+  //         } else {
+  //           rowDisplay.display.memo = this.getSmartDiffChunks(current.memo || '', previous.memo || '', color);
+  //           rowDisplay.display.action = this.getSmartDiffChunksForAction(current.action || '', previous.action || '', color);
+  //           rowDisplay.display.description = this.getSmartDiffChunks(current.description || '', previous.description || '', color);
+  //                   }
+  
+  //         coloredHistory.push(rowDisplay);
+  //       }
+  
+  //       this.goalHistory = coloredHistory.reverse();
+  //     },
+  //     error => {
+  //       console.error('Error fetching goal history for ID:', id);
+  //     }
+  //   );
+  // }
   loadGoalsHistory(id: number) {
     this.goalsService.getGoalHistory(id).subscribe(
       (goalsHistory) => {
@@ -380,10 +437,17 @@ export class GoalsComponent implements AfterViewInit {
   
         const coloredHistory = [];
   
+        const getRandomBrightColor = (): string => {
+          const r = Math.floor(128 + Math.random() * 127);
+          const g = Math.floor(128 + Math.random() * 127);
+          const b = Math.floor(128 + Math.random() * 127);
+          return `rgb(${r}, ${g}, ${b})`;
+        };
+  
         for (let i = 0; i < sortedHistory.length; i++) {
           const current = sortedHistory[i];
           const previous = sortedHistory[i - 1];
-          const color = this.colorPalette[i] || '#000000';
+          const color = i === 0 ? '#000000' : getRandomBrightColor();
   
           const rowDisplay: any = {
             ...current,
@@ -395,14 +459,14 @@ export class GoalsComponent implements AfterViewInit {
           };
   
           if (i === 0) {
-            rowDisplay.display.action.push({ text: current.action || '', color: this.colorPalette[0] });
-            rowDisplay.display.description.push({ text: current.description || '', color: this.colorPalette[0] });
-            rowDisplay.display.memo.push({ text: current.memo || '', color: this.colorPalette[0] });
+            rowDisplay.display.action.push({ text: current.action || '', color });
+            rowDisplay.display.description.push({ text: current.description || '', color });
+            rowDisplay.display.memo.push({ text: current.memo || '', color });
           } else {
             rowDisplay.display.memo = this.getSmartDiffChunks(current.memo || '', previous.memo || '', color);
             rowDisplay.display.action = this.getSmartDiffChunksForAction(current.action || '', previous.action || '', color);
             rowDisplay.display.description = this.getSmartDiffChunks(current.description || '', previous.description || '', color);
-                    }
+          }
   
           coloredHistory.push(rowDisplay);
         }
@@ -414,6 +478,8 @@ export class GoalsComponent implements AfterViewInit {
       }
     );
   }
+  
+
 
   onYearChange() {
     this.loadGoals();
@@ -1265,4 +1331,10 @@ onKeydownGeneric(event: KeyboardEvent, options: any[], field: keyof typeof this.
   }
 }
 
+ onOptionChange(event: any) {
+    const selectedRoute = event.value;
+    if (selectedRoute) {
+      this.router.navigate([selectedRoute]);
+    }
+  }
 }

@@ -6,7 +6,7 @@ from schemas.who import WhoCreate, WhoResponse
 from schemas.status import StatusCreate, StatusUpdate, StatusResponse
 from schemas.proj import ProjResponse
 from schemas.vp import VPResponse
-from schemas.p import PResponse
+from schemas.p import PCreate, PResponse, PUpdate
 from schemas.b import BResponse
 from schemas.e import EResponse
 from schemas.d import DResponse
@@ -35,6 +35,8 @@ from crud import (
     get_all_e,
     get_all_d,
     get_action,
+    update_p,
+    create_p,
     get_goals_metrics,
 )
 from typing import Annotated
@@ -112,7 +114,6 @@ def read_who(id: int, db: Session = Depends(get_db)):
 def create_goals(goal: Goals, db: Session = Depends(get_db)):
     return create_goal(db=db, goal=goal)
 
-
 @router.get("/api/goals", response_model=list[GoalsResponse])
 def read_goals(db: Session = Depends(get_db)):
     return get_all_goals(db)
@@ -160,3 +161,14 @@ def read_goals_history(db: Session = Depends(get_db)):
 @router.get("/api/action", response_model=list[ActionResponse])
 def read_action(db: Session = Depends(get_db)):
     return get_action(db)
+
+@router.post("/api/p", response_model=PResponse)
+def create_p_endpoint(p: PCreate, db: Session = Depends(get_db)):
+    return create_p(db=db, p_data=p)
+
+@router.put("/api/p/{id}", response_model=PResponse)
+def update_p_endpoint(id: int, p: PUpdate, db: Session = Depends(get_db)):
+    db_p = update_p(db=db, id=id, p_data=p)
+    if not db_p:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return db_p
