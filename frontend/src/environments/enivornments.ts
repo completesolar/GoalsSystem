@@ -4,8 +4,8 @@ export const environment = {
     serviceURL: "https://dev-goals.completesolar.com/ui-goals",
     config: {
         auth: {
-            "clientId": "1a3f14be-e3aa-453c-ac73-190faf1098ce",
-            "authority": "https://login.microsoftonline.com/43754c3b-6e44-4fc9-8b0a-304ac51f69a1",
+            "clientId": "0cc6d736-8ecd-4bdc-afea-d4857d20c620",
+            "authority": "https://login.microsoftonline.com/ffc7dbdc-1911-45a2-ac3f-ddfa669a5fad",
             "validateAuthority": true,
             "redirectUri": "https://dev-goals.completesolar.com/ui-goals/goals",
             "postLogoutRedirectUri": "https://dev-goals.completesolar.com/ui-goals",
@@ -18,7 +18,7 @@ export const environment = {
         resources: {
             "demoApi": {
                 "resourceUri": "https://dev-goals.completesolar.com/ui-goals",
-                "resourceScope": "api://1a3f14be-e3aa-453c-ac73-190faf1098ce/User.read",
+                "resourceScope": "api://0cc6d736-8ecd-4bdc-afea-d4857d20c620/User.read",
             }
         },
         scopes: {
