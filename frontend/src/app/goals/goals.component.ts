@@ -127,7 +127,7 @@ export class GoalsComponent implements AfterViewInit {
     { field: 'b', header: 'B', tooltip: 'WW goal was given' },
     { field: 'e', header: 'E', tooltip: 'WW goal is due' },
     { field: 'd', header: 'D', tooltip: '' },
-    { field: 's', header: 'S', tooltip: '' },
+    { field: 's', header: 'S', tooltip: 'Status of the goal' },
     { field: 'gdb', header: 'GOAL DELIVERABLE', tooltip: '' },
     { field: 'fiscalyear', header: 'Year' },
     { field: 'action', header: 'ACTION', tooltip: '' },
@@ -636,7 +636,7 @@ export class GoalsComponent implements AfterViewInit {
         const keyText = [
           'Key:',
           'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
-          'S = N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
+          'S =Status of the goal, N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
           'PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS',
         ];
 
@@ -710,13 +710,12 @@ export class GoalsComponent implements AfterViewInit {
               fgColor: { argb: isEvenRow ? 'E2EFDA' : 'FFFFFF' },
             };
 
-            // gdb column (10th)
             if (colNumber === 10) {
               cell.alignment = {
                 horizontal: 'left',
                 vertical: 'middle',
                 wrapText: false,
-              };
+              }
             } else {
               cell.alignment = {
                 horizontal: 'center',
@@ -757,16 +756,13 @@ export class GoalsComponent implements AfterViewInit {
       const logoWidth = 50;
       const logoHeight = 15;
   
-      // Draw logo in top-left
       doc.addImage(logo, 'PNG', logoX, logoY, logoWidth, logoHeight);
-  
-      // Centered Title on same line as logo
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(18);
   
       const title = 'GOALS SYSTEM REPORT';
       const titleX = (pageWidth - doc.getTextWidth(title)) / 2;
-      const titleY = logoY + logoHeight / 2 + 5; // Align with logo middle + slight adjustment
+      const titleY = logoY + logoHeight / 2 + 5; 
   
       doc.text(title, titleX, titleY);
   
@@ -790,7 +786,7 @@ export class GoalsComponent implements AfterViewInit {
       const keyText = [
         'Key:',
         'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
-        'S = N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
+        'S =Status of the goal, N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
         'PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS',
       ];
   
@@ -845,23 +841,16 @@ export class GoalsComponent implements AfterViewInit {
           valign: 'middle',
         },
         columnStyles: {
-          8: { cellWidth: 20, halign: 'center' }, // Year
-          9: { cellWidth: 120, halign: 'left' },  // Goal Deliverable
+          8: { cellWidth: 20, halign: 'left' },
+          9: { cellWidth: 120, halign: 'left' },
         },
         margin: { top: 10 },
         didDrawPage: (data) => {
           const pageNumber = data.pageNumber;
-  
-          // Footer with: LEFT = Date, CENTER = Confidential, RIGHT = Page No
           doc.setFontSize(9);
-  
-          // LEFT: Date & Time
           doc.text(`Reported: ${displayTime}`, 14, pageHeight - 10, { align: 'left' });
-  
-          // CENTER: Company Confidential
           doc.text('Company Confidential', pageWidth / 2, pageHeight - 10, { align: 'center' });
   
-          // RIGHT: Page Number
           doc.text(`Page ${pageNumber}`, pageWidth - 14, pageHeight - 10, { align: 'right' });
         },
       });
@@ -873,6 +862,33 @@ export class GoalsComponent implements AfterViewInit {
   
   
   
+  // enableEdit(row: any): void {
+  //   row.isEditable = true;
+  //   this.previousRow = JSON.parse(JSON.stringify(row));
+  //   this.cdr.detectChanges();
+  
+  //   setTimeout(() => {
+  //     const index = this.goal.findIndex((g: any) => g === row);
+  //     const wrapperRef = this.whoSelectWrappers.get(index);
+  
+  //     if (wrapperRef?.nativeElement) {
+  //       const wrapperEl = wrapperRef.nativeElement;
+  
+  //       const triggerEl: HTMLElement = wrapperEl.querySelector('.p-select-label');
+  
+  //       if (triggerEl) {
+  //         triggerEl.focus();
+  //         triggerEl.click(); 
+          
+  //       } else {
+  //         console.warn('Could not find .p-select-label inside WHO');
+  //         console.log('Wrapper content:', wrapperEl.innerHTML);
+  //       }
+  //     } else {
+  //       console.warn('No wrapper found for WHO at index', index);
+  //     }
+  //   }, 100);
+  // }
   enableEdit(row: any): void {
     row.isEditable = true;
     this.previousRow = JSON.parse(JSON.stringify(row));
@@ -885,11 +901,30 @@ export class GoalsComponent implements AfterViewInit {
       if (wrapperRef?.nativeElement) {
         const wrapperEl = wrapperRef.nativeElement;
   
+        // Focus the dropdown input or label
         const triggerEl: HTMLElement = wrapperEl.querySelector('.p-select-label');
   
         if (triggerEl) {
           triggerEl.focus();
-          triggerEl.click(); 
+          triggerEl.click();
+  
+          // Now add keyboard event listener
+          const inputEl: HTMLInputElement = wrapperEl.querySelector('input');
+  
+          if (inputEl) {
+            inputEl.addEventListener('keydown', (event: KeyboardEvent) => {
+              if (event.key === 'Tab') {
+                console.log('Tab pressed - move to next field');
+                triggerEl.click();
+
+                // Optional: blur and let natural tab order continue
+              } else {
+                console.log('Key pressed:', event.key);
+              }
+            }, { once: true }); // add { once: true } to avoid duplicate handlers
+          } else {
+            console.warn('No input element found for WHO');
+          }
         } else {
           console.warn('Could not find .p-select-label inside WHO');
           console.log('Wrapper content:', wrapperEl.innerHTML);
@@ -899,12 +934,15 @@ export class GoalsComponent implements AfterViewInit {
       }
     }, 100);
   }
-    
+  
+  // Function to get element by tabindex
+  getElementByTabIndex(tabIndex: number): HTMLElement | null {
+    return document.querySelector(`[tabindex="${tabIndex}"]`);
+  }
+  
   updateGoal(row: Goals): void {
     console.log('previousRow', this.previousRow);
     console.log('currentRow', row);
-
-    // Log field-by-field differences
     this.checkDifferences(this.previousRow, row);
 
     const missingFields = this.isValidGoalData(row);
@@ -959,6 +997,8 @@ export class GoalsComponent implements AfterViewInit {
       }
     });
   }
+
+
 
   isEqualGoal(goal1: Goals, goal2: Goals): boolean {
     const fieldsToCompare = [
@@ -1032,7 +1072,7 @@ export class GoalsComponent implements AfterViewInit {
     } else if (option?.value === 'pdf') {
       this.exportPdfData();
     }
-  }
+  }  
 
   getStatus() {
     this.goalsService.getStatus().subscribe({
@@ -1217,6 +1257,7 @@ export class GoalsComponent implements AfterViewInit {
       this.onFilterChange(field);
     }
   }
+  
   customGdbFilter(value: any, filter: string): boolean {
     if (!filter || filter.trim() === '') return true;
   
@@ -1331,10 +1372,307 @@ onKeydownGeneric(event: KeyboardEvent, options: any[], field: keyof typeof this.
   }
 }
 
- onOptionChange(event: any) {
-    const selectedRoute = event.value;
-    if (selectedRoute) {
-      this.router.navigate([selectedRoute]);
-    }
+onHistoryExportChange(option: any,goalHistory:[]) {
+  console.log("goalHistory",goalHistory)
+  if (option?.value === 'excel') {
+    this.exportHistoryExcelData(goalHistory);
+  } else if (option?.value === 'pdf') {
+    this.exportHistoryPdfData(goalHistory);
   }
+}
+
+exportHistoryExcelData(goalHistory:[]): void {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Goals');
+  const imageUrl = 'assets/cslr-logo 1.png';
+
+  fetch(imageUrl)
+    .then((response) => response.blob())
+    .then((blob) => blob.arrayBuffer())
+    .then((buffer) => {
+      const imageId = workbook.addImage({
+        buffer: buffer,
+        extension: 'png',
+      });
+
+      worksheet.addImage(imageId, {
+        tl: { col: 0, row: 0 },
+        ext: { width: 200, height: 80 },
+      });
+
+      const titleCell = worksheet.getCell('F3');
+      titleCell.value = 'GOALS HISTORY REPORT';
+      titleCell.font = { size: 18, bold: true };
+      titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+      worksheet.mergeCells('F3:H3');
+
+      const sortCell = worksheet.getCell('A6');
+      sortCell.value = 'SORT Order: This report is sorted on WHO P';
+      sortCell.font = { italic: false, size: 12 };
+      sortCell.alignment = { horizontal: 'left', vertical: 'middle' };
+      worksheet.mergeCells('A6:K6');
+
+      const columns = [
+        { header: 'WHO', key: 'who' },
+        { header: 'P', key: 'p' },
+        { header: 'PROJ', key: 'proj' },
+        { header: 'VP', key: 'vp' },
+        { header: 'B', key: 'b' },
+        { header: 'E', key: 'e' },
+        { header: 'D', key: 'd' },
+        { header: 'S', key: 's' },
+        { header: 'Year', key: 'fiscalyear' },
+        { header: 'GOAL DELIVERABLE', key: 'gdb' },
+      ];
+
+      const date = new Date();
+      const options: Intl.DateTimeFormatOptions = {
+        timeZone: 'America/Denver',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      };
+      const formattedDate = new Date()
+        .toLocaleString('en-US', options)
+        .replace(/[\s,]/g, '')
+        .replace('MST', '');
+
+      const dateCell = worksheet.getCell('A7');
+      dateCell.value = `Report Generated On: ${formattedDate}`;
+      dateCell.font = { italic: false, size: 12 };
+      dateCell.alignment = { horizontal: 'left', vertical: 'middle' };
+      worksheet.mergeCells(`A7:K7`);
+
+      const keyText = [
+        'Key:',
+        'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
+        'S =Status of the goal, N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
+        'PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS',
+      ];
+
+      const keyStartRow = 8;
+      keyText.forEach((line, index) => {
+        const keyRow = worksheet.getRow(keyStartRow + index);
+        keyRow.getCell(1).value = line;
+        keyRow.getCell(1).font = { bold: true };
+        keyRow.getCell(1).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'E2EFDA' },
+        };
+        keyRow.getCell(1).alignment = {
+          vertical: 'middle',
+          horizontal: 'left',
+        };
+        worksheet.mergeCells(keyRow.number, 1, keyRow.number, columns.length);
+      });
+
+      const headerRowIndex = keyStartRow + keyText.length + 1;
+      const headerRow = worksheet.getRow(headerRowIndex);
+      columns.forEach((col, index) => {
+        const cell = headerRow.getCell(index + 1);
+        cell.value = col.header;
+        cell.font = { bold: true };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'E2EFDA' },
+        };
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        if (col.key === 'gdb') {
+          worksheet.getColumn(index + 1).width = 100;
+        } else {
+          worksheet.getColumn(index + 1).width = 15;
+        }
+      });
+
+      worksheet.autoFilter = {
+        from: { row: headerRowIndex, column: 1 },
+        to: { row: headerRowIndex, column: columns.length },
+      };
+
+      goalHistory.forEach((item: any, index: number) => {
+        const rowValues = columns.map((col) => {
+          if (col.key === 'd') {
+            return item[col.key] !== undefined &&
+              item[col.key] !== null &&
+              item[col.key] !== ''
+              ? Number(item[col.key])
+              : '';
+          } else if (col.key === 'gdb') {
+            return `${item.action ?? ''} ${item.description ?? ''} ${
+              item.memo ?? ''
+            }`.trim();
+          }
+          return item[col.key];
+        });
+
+        const row = worksheet.insertRow(
+          headerRowIndex + 1 + index,
+          rowValues
+        );
+        const isEvenRow = (headerRowIndex + 1 + index) % 2 === 0;
+
+        row.eachCell((cell, colNumber) => {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: isEvenRow ? 'E2EFDA' : 'FFFFFF' },
+          };
+
+          if (colNumber === 10) {
+            cell.alignment = {
+              horizontal: 'left',
+              vertical: 'middle',
+              wrapText: false,
+            }
+          } else {
+            cell.alignment = {
+              horizontal: 'center',
+              vertical: 'middle',
+            };
+          }
+        });
+
+        row.height = 20;
+      });
+
+      const fileName = `Goals_${formattedDate
+        .replace(':', '')
+        .replace(' ', '_')
+        .replace('/', '')
+        .replace('/', '')}_MST.xlsx`;
+
+      workbook.xlsx.writeBuffer().then((data: ArrayBuffer) => {
+        const blob = new Blob([data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        FileSaver.saveAs(blob, fileName);
+      });
+    });
+}
+
+exportHistoryPdfData(goalHistory:[]): void {
+  const doc = new jsPDF('landscape');
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+
+  const logo = new Image();
+  logo.src = 'assets/cslr-logo 1.png';
+
+  logo.onload = () => {
+    const logoX = 10;
+    const logoY = 10;
+    const logoWidth = 50;
+    const logoHeight = 15;
+
+    doc.addImage(logo, 'PNG', logoX, logoY, logoWidth, logoHeight);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+
+    const title = 'GOALS HISTORY REPORT';
+    const titleX = (pageWidth - doc.getTextWidth(title)) / 2;
+    const titleY = logoY + logoHeight / 2 + 5; 
+
+    doc.text(title, titleX, titleY);
+
+    // Date + Sort Order block
+    const currentMSTTime = moment().tz('America/Denver');
+    const fileNameDate = currentMSTTime.format('MM-DD-YY');
+    const formattedTime = currentMSTTime.format('hh-mm-ss A');
+    const displayTime = currentMSTTime.format('MM-DD-YYYY hh:mm:ss A');
+
+    const infoStartX = 14;
+    const infoStartY = titleY + 8;
+    const lineGap = 7;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.setTextColor(0, 0, 0);
+    doc.text('SORT Order: This report is sorted on WHO P', infoStartX, infoStartY);
+    doc.text(`Reported Date & time: ${displayTime} (MST)`, infoStartX, infoStartY + lineGap);
+
+    // Legend
+    const keyText = [
+      'Key:',
+      'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
+      'S =Status of the goal, N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
+      'PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS',
+    ];
+
+    let keyStartY = infoStartY + 20;
+    const lineHeight = 6;
+    const rectX = 10;
+    const rectWidth = pageWidth - 20;
+    doc.setFontSize(10);
+
+    keyText.forEach((line) => {
+      const wrappedLines: string[] = doc.splitTextToSize(line, rectWidth - 8);
+      wrappedLines.forEach((subLine: string) => {
+        doc.setFillColor(226, 239, 218);
+        doc.rect(rectX, keyStartY - 4, rectWidth, lineHeight, 'F');
+        doc.setTextColor(0, 0, 0);
+        doc.text(subLine, 14, keyStartY);
+        keyStartY += lineHeight;
+      });
+    });
+
+    const tableStartY = keyStartY + 4;
+
+    const columns = [
+      'Who', 'P', 'Proj', 'VP', 'B', 'E', 'D', 'S', 'Year', 'Goal Deliverable'
+    ];
+
+    const rows = goalHistory.map((goal: any) => [
+      goal.who,
+      goal.p,
+      goal.proj,
+      goal.vp,
+      goal.b,
+      goal.e,
+      goal.d ?? '',
+      goal.s,
+      goal.fiscalyear,
+      `${goal.action ?? ''} ${goal.description ?? ''} ${goal.memo ?? ''}`.trim()
+    ]);
+
+    autoTable(doc, {
+      startY: tableStartY,
+      head: [columns],
+      body: rows,
+      theme: 'striped',
+      headStyles: {
+        fillColor: [226, 239, 218],
+        textColor: [0, 0, 0],
+      },
+      bodyStyles: {
+        textColor: [0, 0, 0],
+        fontSize: 10,
+        valign: 'middle',
+      },
+      columnStyles: {
+        8: { cellWidth: 20, halign: 'left' },
+        9: { cellWidth: 120, halign: 'left' },
+      },
+      margin: { top: 10 },
+      didDrawPage: (data) => {
+        const pageNumber = data.pageNumber;
+        doc.setFontSize(9);
+        doc.text(`Reported: ${displayTime}`, 14, pageHeight - 10, { align: 'left' });
+        doc.text('Company Confidential', pageWidth / 2, pageHeight - 10, { align: 'center' });
+
+        doc.text(`Page ${pageNumber}`, pageWidth - 14, pageHeight - 10, { align: 'right' });
+      },
+    });
+
+    const fileName = `Goals_${fileNameDate}_${formattedTime}.pdf`;
+    doc.save(fileName);
+  };
+}
+
+
+
 }
