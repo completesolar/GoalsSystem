@@ -11,7 +11,7 @@ from schemas.action import ActionResponse
 from schemas.status import StatusUpdate, StatusResponse
 from schemas.proj import ProjResponse
 from schemas.vp import VPResponse
-from schemas.p import PResponse
+from schemas.p import PCreate, PResponse, PUpdate
 from schemas.b import BResponse
 from schemas.e import EResponse
 from schemas.d import DResponse
@@ -192,6 +192,23 @@ def create_proj(db: Session, proj: str):
     db.commit()
     db.refresh(db_proj)
     return db_proj
+
+def create_p(db: Session, p_data: PCreate):
+    db_p = P(**p_data.dict())
+    db.add(db_p)
+    db.commit()
+    db.refresh(db_p)
+    return db_p
+
+def update_p(db: Session, id: int, p_data: PUpdate):
+    db_p = db.query(P).filter(P.id == id).first()
+    if not db_p:
+        return None
+    for key, value in p_data.dict(exclude_unset=True).items():
+        setattr(db_p, key, value)
+    db.commit()
+    db.refresh(db_p)
+    return db_p
 
 def update_goal(db: Session, goal_id: int, goal_update: GoalsUpdate):
     currentdate = datetime.now()

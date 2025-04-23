@@ -129,6 +129,50 @@ padding-left: 4px;
 
 @media(min-width:1600px){
 
+  .p-paginator{
+  width: 51.2%;
+  }
+
+  .p-datatable-table{
+  width: min-content;
+  }
+
+.p-select-label{
+  overflow: visible;
+  }
+.pi{
+font-size: 12px !important;
+}
+  .custom-goal-table td:nth-child(1) .p-select {
+    width: 76px;
+  }
+
+  .custom-goal-table td:nth-child(3) .p-select {
+    width: 76px;
+  }
+
+  .custom-goal-table td:nth-child(4) .p-select {
+    width: 70px;
+  }
+
+  .custom-goal-table td:nth-child(5) .p-select {
+    width: 63px;
+  }
+  .custom-goal-table td:nth-child(6) .p-select {
+    width: 62px;
+  }
+
+  .custom-goal-table td:nth-child(7) .p-select {
+    width: 62px;
+  }
+
+  .custom-goal-table td:nth-child(8) .p-select {
+    width: 62px;
+  }
+
+  .custom-goal-table td:nth-child(9) .p-select {
+    width: 65px;
+  }
   .custom-goal-table th:nth-child(1),
  .custom-goal-table td:nth-child(1) {
   width: 80px;

@@ -9,6 +9,18 @@
     </div>
 
     <div class="flex items-center justify-end gap-4 align-items-center">
+      <div class="flex items-center justify-end gap-4 mb-2">
+        <p-select
+        [options]="settingsDropdownOptions"
+        [(ngModel)]="selectedSettingOption"
+        optionLabel="label"
+        optionValue="route"  
+        placeholder="Settings"
+        (onChange)="onOptionChange($event)"
+        styleClass="w-40"
+      ></p-select>
+      </div>
+
       <div class="flex items-center gap-1 align-items-center">
         <img
           src="assets/solar_calendar-linear.svg"

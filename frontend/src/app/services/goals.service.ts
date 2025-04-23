@@ -46,6 +46,13 @@ getD() {
 getP() {
   return this.http.get(`${this.baseURL}/p`);
 }
+createP(p: any) {
+  return this.http.post(`${this.baseURL}/p`, p);
+}
+
+updateP(p: any) {
+  return this.http.put(`${this.baseURL}/p/${p.id}`, p);
+}
 getVpOptions(): Observable<any[]> {
   return this.http.get<any[]>(`${this.baseURL}/who`).pipe(
     map(data => {
