@@ -1,6 +1,5 @@
 <div class="body">
   <div class="mb-2 logo-section flex p-2 items-center justify-content-between">
-    <img src="assets/cslr-logo 1.svg" alt="Complete Solar" class="logo h-10" />
 
     <div class="px-2 title-section flex items-center justify-between w-full">
       <div class="main-title text-lg font-semibold ">Priority Master</div>
@@ -17,9 +16,9 @@
   </div>
 
 
-      <p-table
-      class=" flex justify-content-center"
-      [value]="priorityOptions"
+     <p-table
+     class="custom-table flex justify-content-center"
+     [value]="priorityOptions"
       [paginator]="true"
       [rows]="10"
       [rowsPerPageOptions]="[5, 10, 20]"
@@ -84,7 +83,7 @@
           </td>
         </tr>
       </ng-template>
-    </p-table> 
+    </p-table>  
     
   </div>
   <p-dialog

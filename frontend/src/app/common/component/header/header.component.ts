@@ -2,11 +2,23 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, Inject, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
 import { MsalService } from '@azure/msal-angular';
+import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MenuModule } from 'primeng/menu';
+
 
 @Component({
   selector: 'app-header',
-  imports: [SelectModule, CommonModule],
+  imports: [
+    SelectModule, 
+    CommonModule,
+    ButtonModule,
+    MultiSelectModule,
+  FormsModule,
+ReactiveFormsModule,
+MenuModule],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
@@ -20,11 +32,33 @@ export class HeaderComponent {
     private router: Router
   ) {}
 
+  settingsMenu = [
+    {
+      label: 'Dashboard',
+      icon: 'pi pi-home',
+      routerLink: ['/goals-metrics']
+    },
+    {
+      label: 'Priority',
+      icon: 'pi pi-sort-amount-down',
+      routerLink: ['/priority']
+    },
+    {
+      label: 'Goals',
+      icon: 'pi pi-bullseye',
+      routerLink: ['/goals']
+    },
+    // {
+    //   label: 'Metrics',
+    //   icon: 'pi pi-chart-line',
+    //   routerLink: ['/goals-metrics']
+    // }
+  ];
+
   ngOnInit() {
     this.today = new Date();
     this.updateButtonLabel();
 
-    // Watch route changes if navigation happens dynamically
     this.router.events.subscribe(() => {
       this.updateButtonLabel();
     });
@@ -72,6 +106,12 @@ export class HeaderComponent {
   onLogoutChange(event: any) {
     if (event?.value === 'logout') {
       this.logout();
+    }
+  }
+  onOptionChange(event: any) {
+    const selectedRoute = event.value;
+    if (selectedRoute) {
+      this.router.navigate([selectedRoute]);
     }
   }
 }

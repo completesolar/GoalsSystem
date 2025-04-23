@@ -53,7 +53,7 @@ ngOnInit() {
 getPriority() {
   this.goalsService.getP().subscribe({
     next: (response) => {
-      console.log("response", response);
+      // console.log("response", response);
       this.priorityOptions = (response as Array<{ p: number; id: number }>).map(item => ({
         id: item.id,
         p: `${item.p}`, 
