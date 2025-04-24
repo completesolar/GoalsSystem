@@ -28,6 +28,10 @@ input,
   box-sizing: border-box;
   vertical-align: middle !important;
   height: 28px !important;
+
+}
+.custom-goal-table .p-datatable-tbody > tr > td, .custom-goal-table .p-datatable-thead > tr > th {
+  border-bottom: 0px solid gainsboro !important ;
 }
 
 .p-datatable-sortable-column:not(.p-datatable-column-sorted):hover {
@@ -55,6 +59,9 @@ html {
 .p-datatable-flex-scrollable {
   height: 100% !important;
 }
+.p-select-label{
+  overflow: visible !important;
+}
 /* Apply to all tooltip positions */
 body .p-tooltip {
   animation: fadeOutTooltip 0s ease-in 3s forwards !important;
@@ -72,7 +79,7 @@ body .p-tooltip {
   margin-top: -2px;
 }
 .p-iconwrapper svg {
-  width: 11px;
+  width: 12px;
 }
 
 .whoselect .p-select-label{
@@ -126,13 +133,36 @@ padding-left: 4px;
 padding-left: 4px;
   padding-right: 0px;
 }
+span.p-multiselect-dropdown-icon.pi.pi-filter {
+  font-size: 13px;
+}
+.menu-button{
+  font-size: 12px !important;
+}
 
-@media(min-width:1600px){
-
-  .p-paginator{
-  width: 51.2%;
+.p-multiselect-dropdown{
+  justify-content: flex-start !important;
+}
+@media only screen and (min-width: 1199px) and (max-width: 1550px){
+  .custom-goal-table th:nth-child(10) {
+    width: 100px ;
   }
 
+  #action-select{
+    width: 140px !important;
+  }
+
+  #goal-select{
+    width: 320px !important;
+    height: 28px !important;
+  }
+#spec-select{
+  width: 140px !important;
+  height: 28px !important;
+}
+#year-input{
+  width: 100px !important;
+}
   .p-datatable-table{
   width: min-content;
   }
@@ -143,6 +173,125 @@ padding-left: 4px;
 .pi{
 font-size: 12px !important;
 }
+
+  .custom-goal-table td:nth-child(1) .p-select {
+    width: 76px;
+  }
+
+  .custom-goal-table td:nth-child(3) .p-select {
+    width: 76px;
+  }
+
+  .custom-goal-table td:nth-child(4) .p-select {
+    width: 70px;
+  }
+
+  .custom-goal-table td:nth-child(5) .p-select {
+    width: 63px;
+  }
+  .custom-goal-table td:nth-child(6) .p-select {
+    width: 62px;
+  }
+
+  .custom-goal-table td:nth-child(7) .p-select {
+    width: 62px;
+  }
+
+  .custom-goal-table td:nth-child(8) .p-select {
+    width: 62px;
+  }
+
+  .custom-goal-table td:nth-child(9) .p-select {
+    width: 65px;
+  }
+  .custom-goal-table th:nth-child(1),
+ .custom-goal-table td:nth-child(1) {
+  width: 80px;
+}
+
+.custom-goal-table th:nth-child(2),
+.custom-goal-table td:nth-child(2) {
+ width: 80px;
+}
+
+
+.custom-goal-table th:nth-child(3),
+.custom-goal-table td:nth-child(3) {
+ width: 90px;
+}
+
+.custom-goal-table th:nth-child(4),
+.custom-goal-table td:nth-child(4) {
+ width: 80px;
+}
+
+.custom-goal-table th:nth-child(5),
+.custom-goal-table td:nth-child(5) {
+ width: 80px;
+}
+
+.custom-goal-table th:nth-child(6),
+.custom-goal-table td:nth-child(6) {
+ width: 80px;
+}
+
+.custom-goal-table th:nth-child(7),
+.custom-goal-table td:nth-child(7) {
+ width: 80px;
+}
+
+.custom-goal-table th:nth-child(8),
+.custom-goal-table td:nth-child(8) {
+ width: 80px;
+}
+.custom-goal-table th:nth-child(9),
+ .custom-goal-table td:nth-child(9) {
+  width: 800px !important;
+}
+
+.custom-goal-table th:last-child,
+.custom-goal-table td:last-child {
+ width: 100px;
+}
+
+}
+
+
+
+
+
+@media(min-width:1600px){
+
+  .custom-goal-table th:nth-child(10) {
+    width: 100px ;
+  }
+
+  #action-select{
+    width: 140px !important;
+  }
+
+  #goal-select{
+    width: 320px !important;
+    height: 28px !important;
+  }
+#spec-select{
+  width: 140px !important;
+  height: 28px !important;
+}
+#year-input{
+  width: 100px !important;
+}
+  .p-datatable-table{
+  width: min-content;
+  }
+
+.p-select-label{
+  overflow: visible;
+  }
+.pi{
+font-size: 12px !important;
+}
+
   .custom-goal-table td:nth-child(1) .p-select {
     width: 76px;
   }
@@ -234,4 +383,16 @@ font-size: 12px !important;
   padding: 35px;
   padding-bottom: 0px;
   padding-top: 10px;
+}
+
+.logo-section {
+ background: #fff;
+}
+
+.title-section{
+  font-size: 20px;
+}
+
+.menu-button .pi{
+  font-size: 15px !important;
 }
