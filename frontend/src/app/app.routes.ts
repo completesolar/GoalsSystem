@@ -11,5 +11,5 @@ export const routes: Routes = [
   { path: 'priority', component: PriorityComponent }, 
   { path: 'b_week', component: BeginningWeekComponent }, 
   { path: 'goals-metrics', component: GoalsMetricsComponent },
-  { path: '**', redirectTo: '' } 
+  { path: '**', redirectTo: '' },
 ];

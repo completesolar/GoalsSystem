@@ -10,34 +10,31 @@ import {
   ApexChart,
   ApexXAxis,
   ApexTitleSubtitle,
-  ApexNonAxisChartSeries,
-  ApexResponsive,
   ApexLegend,
   ApexPlotOptions,
   ApexDataLabels
 } from 'ng-apexcharts';
 
-export type ChartOptions = {
-  series: ApexAxisChartSeries;
+export type PieChartOptions = {
+  series: number[];
+  chart: ApexChart;
+  labels: string[];
+  legend: ApexLegend;
+  title: ApexTitleSubtitle;
+  fill: { type: string };
+  plotOptions: ApexPlotOptions;
+  dataLabels: ApexDataLabels;
+};
+
+export type BarChartOptions = {
+  series: { name: string; data: number[] }[];
   chart: ApexChart;
   xaxis: ApexXAxis;
   title: ApexTitleSubtitle;
   plotOptions: ApexPlotOptions;
   dataLabels: ApexDataLabels;
-};
-
-export type PieChartOptions = {
-  series: ApexNonAxisChartSeries;
-  chart: ApexChart;
-  labels: string[];
-  responsive?: ApexResponsive[];
   legend: ApexLegend;
-  title: ApexTitleSubtitle;
-  fill?: { type: string };
-  plotOptions?: ApexPlotOptions;
-  dataLabels?: ApexDataLabels;
 };
-
 
 @Component({
   standalone: true,
@@ -55,22 +52,75 @@ export class GoalsMetricsComponent implements OnInit {
     created_to: null
   };
 
-  yearChartOptions: ChartOptions = {
+  yearChartOptions: BarChartOptions = {
     series: [],
-    chart: { type: 'bar', height: 350 },
+    chart: { type: 'bar', height: 3000, stacked: false, toolbar: { show: false } },
     xaxis: { categories: [] },
     title: { text: '' },
-    plotOptions: { bar: { columnWidth: '40%' } },
-    dataLabels: { enabled: true }
+    plotOptions: {
+      bar: {
+        horizontal: true,
+        barHeight: '80%',
+        columnWidth: '60%',
+        dataLabels: {
+          position: 'right'
+        }
+      }
+    },
+    dataLabels: {
+      enabled: true,
+      formatter: function (val: number) {
+        return val === 0 ? '' : val.toString();
+      },
+      style: {
+        fontSize: '12px',
+        colors: ['#000']
+      },
+      offsetX: 25
+    },
+    legend: { show: true, position: 'bottom' }
   };
 
   statusPieOptions: PieChartOptions = {
     series: [],
     labels: [],
-    chart: { type: 'donut', width: 380 },
+    chart: { type: 'pie', width: 420 },
     title: { text: '' },
-    legend: { position: 'bottom' },
-    fill: { type: 'gradient' }
+    legend: { position: 'right' },
+    fill: { type: 'gradient' },
+    dataLabels: { enabled: true },
+    plotOptions: { pie: { expandOnClick: false } }
+  };
+
+  yearWiseChartOptions: BarChartOptions = {
+    series: [],
+    chart: { type: 'bar', height: 350, toolbar: { show: false } },
+    xaxis: { categories: [] },
+    title: { text: 'Year-wise Goal Distribution' },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        columnWidth: '50%'
+      }
+    },
+    dataLabels: {
+      enabled: true,
+      formatter: val => val === 0 ? '' : val.toString(),
+      style: { fontSize: '12px', colors: ['#000'] },
+      offsetX: 0
+    },
+    legend: { show: false }
+  };
+
+  statusWiseChartOptions: PieChartOptions = {
+    series: [],
+    labels: [],
+    chart: { type: 'pie', width: 420 },
+    title: { text: 'Status-wise Goal Distribution' },
+    legend: { position: 'right' },
+    fill: { type: 'gradient' },
+    dataLabels: { enabled: true },
+    plotOptions: { pie: { expandOnClick: false } }
   };
 
   constructor(private goalsService: GoalsService) {}
@@ -99,72 +149,97 @@ export class GoalsMetricsComponent implements OnInit {
     }
 
     this.goalsService.getGoalsMetrics(formattedFilters).subscribe((res) => {
-      this.yearChartOptions = {
-        series: [
-          {
-            name: 'Goals per Year',
-            data: res.yearWise.map((item: any) => item.count)
-          }
-        ],
-        chart: {
-          type: 'bar',
-          height: 350
-        },
-        xaxis: {
-          categories: res.yearWise.map((item: any) => item.year.toString())
-        },
-        plotOptions: {
-          bar: {
-            columnWidth: '40%'
-          }
-        },
-        title: {
-          text: 'Year-wise Goals Trend'
-        },
-        dataLabels: {
-          enabled: true
-        }
-      };
+      const cd = res.completedAndDelinquent;
 
       this.statusPieOptions = {
-        series: res.statusWise.map((item: any) => item.count),
-        labels: res.statusWise.map((item: any) => item.status),
-        chart: {
-          type: 'donut',
-        },
-        title: {
-          text: 'Status-wise Goal Distribution'
-        },
-
-        fill: {
-          type: 'gradient'
-        },
+        series: [cd.Completed, cd.Delinquent],
+        labels: ['Completed', 'Delinquent'],
+        chart: { type: 'pie', width: 420 },
+        title: { text: `Completed vs Delinquent (Total: ${cd.Completed + cd.Delinquent})` },
+        fill: { type: 'gradient' },
         dataLabels: {
-          enabled: false
+          enabled: true,
+          style: {
+            fontSize: '12px',
+            colors: ['#000']
+          }
         },
         legend: {
           show: true,
           position: 'right',
-          formatter: function (seriesName: string, opts: any) {
+          formatter: (seriesName: string, opts: any) => {
             const value = opts.w.globals.series[opts.seriesIndex];
-            return seriesName + ': ' + value;
+            return `${seriesName}: ${value}`;
           }
-        },        
+        },
         plotOptions: {
-          pie: {
-            expandOnClick: false,
-            donut: {
-              size: '60%' // Reduce donut size to give space for label rendering
-            },
-            dataLabels: {
-              offset: 30 // Push labels further outward
-            }
-          }
+          pie: { expandOnClick: false, dataLabels: { offset: 30 } }
         }
       };
-      
-      
-      
+
+      const sortedProjects = res.projectWise.slice().sort((a: any, b: any) => b.total - a.total);
+
+      this.yearChartOptions = {
+        series: [
+          { name: 'Total', data: sortedProjects.map((p: any) => p.total) },
+          { name: 'Completed', data: sortedProjects.map((p: any) => p.completed) },
+          { name: 'Delinquent', data: sortedProjects.map((p: any) => p.delinquent) }
+        ],
+        chart: {
+          type: 'bar',
+          stacked: false,
+          height: 3000,
+          toolbar: { show: false }
+        },
+        xaxis: {
+          categories: sortedProjects.map((p: any) => p.project || 'Unassigned')
+        },
+        title: {
+          text: `Goals by Project: Total, Completed, Delinquent (Total: ${sortedProjects.reduce((sum: number, p: any) => sum + p.total, 0)})`
+        },
+        plotOptions: {
+          bar: {
+            horizontal: true,
+            barHeight: '80%',
+            columnWidth: '60%',
+            dataLabels: {
+              position: 'right'
+            }
+          }
+        },
+        dataLabels: {
+          enabled: true,
+          formatter: function (val: number) {
+            return val === 0 ? '' : val.toString();
+          },
+          style: {
+            fontSize: '12px',
+            colors: ['#000']
+          },
+          offsetX: 25
+        },
+        legend: {
+          show: true,
+          position: 'bottom'
+        }
+      };
+
+      this.yearWiseChartOptions = {
+        ...this.yearWiseChartOptions,
+        series: [{
+          name: 'Goals',
+          data: res.yearWise.map((y: any) => y.count)
+        }],
+        xaxis: {
+          categories: res.yearWise.map((y: any) => y.year.toString())
+        }
+      };
+
+      this.statusWiseChartOptions = {
+        ...this.statusWiseChartOptions,
+        series: res.statusWise.map((s: any) => s.count),
+        labels: res.statusWise.map((s: any) => s.status)
+      };
     });
   }
 }
