@@ -27,7 +27,6 @@ from crud import (
     get_all_status,
     get_status_by_id,
     create_status_entry,
-    update_status_entry,
     get_all_proj,
     get_all_vp,
     get_all_p,
@@ -38,8 +37,8 @@ from crud import (
     update_p,
     create_p,
     get_goals_metrics,
-    create_B,
-    update_B,
+    create_b,
+    update_b,
     create_E,
     update_E,
     create_D,
@@ -164,9 +163,12 @@ def read_status(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Status not found")
     return db_status
 
-@router.put("/api/status/{id}", response_model=StatusUpdate)
-def update_statu(id: int, status_update: StatusUpdate, db: Session = Depends(get_db)):
-    return update_status(db=db, id=id, status_update=status_update)
+@router.put("/api/status/{id}", response_model=StatusResponse)
+def update_status_route(id: int, status_update: StatusUpdate, db: Session = Depends(get_db)):
+    updated = update_status(db=db, id=id, status_data=status_update)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Status not found")
+    return updated
 
 # B
 @router.get("/api/b", response_model=list[BResponse])
@@ -174,8 +176,8 @@ def read_b(db: Session = Depends(get_db)):
     return get_all_b(db)
 
 @router.post("/api/b", response_model=BResponse)
-def create_b(b: BCreate, db: Session = Depends(get_db)):
-    return create_B(db=db, b=b)
+def create_B(b: BCreate, db: Session = Depends(get_db)):
+    return create_b(db=db, b=b)
 
 @router.get("/api/b/{id}", response_model=BResponse)
 def read_b(id: int, db: Session = Depends(get_db)):
@@ -186,7 +188,7 @@ def read_b(id: int, db: Session = Depends(get_db)):
 
 @router.put("/api/b/{id}", response_model=BResponse)
 def update_b_endpoint(id: int, b: BUpdate, db: Session = Depends(get_db)):
-    db_b = update_B(db=db, id=id, b_data=b)
+    db_b = update_b(db=db, id=id, b_data=b)
     if not db_b:
         raise HTTPException(status_code=404, detail="Item not found")
     return db_b

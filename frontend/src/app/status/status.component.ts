@@ -60,6 +60,7 @@ export class StatusComponent {
         console.log('response', response);
         this.statusList = (
           response as Array<{
+            description:string,
             status: string;
             id: number;
             remarks: string;
@@ -71,6 +72,7 @@ export class StatusComponent {
           activeStatus: item.activeStatus,
           remarks: item.remarks,
           isEditable: false,
+          description:item.description
         }));
       },
       error: (error) => {
