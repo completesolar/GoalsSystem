@@ -7,9 +7,9 @@ from schemas.status import StatusCreate, StatusUpdate, StatusResponse
 from schemas.proj import ProjResponse
 from schemas.vp import VPResponse
 from schemas.p import PCreate, PResponse, PUpdate
-from schemas.b import BResponse
-from schemas.e import EResponse
-from schemas.d import DResponse
+from schemas.b import BResponse,BCreate,BUpdate
+from schemas.e import EResponse,ECreate,EUpdate
+from schemas.d import DResponse,DUpdate,DCreate
 from schemas.action import ActionResponse
 from typing import Optional
 from database import get_db
@@ -38,22 +38,20 @@ from crud import (
     update_p,
     create_p,
     get_goals_metrics,
+    create_B,
+    update_B,
+    create_E,
+    update_E,
+    create_D,
+    update_D,
+    get_B_by_id,
+    get_E_by_id,
+    get_D_by_id
 )
 from typing import Annotated
 
 router = APIRouter()
 
-@router.get("/api/b", response_model=list[BResponse])
-def read_b(db: Session = Depends(get_db)):
-    return get_all_b(db)
-
-@router.get("/api/e", response_model=list[EResponse])
-def read_e(db: Session = Depends(get_db)):
-    return get_all_e(db)
-
-@router.get("/api/d", response_model=list[DResponse])
-def read_d(db: Session = Depends(get_db)):
-    return get_all_d(db)
 
 @router.get("/api/p", response_model=list[PResponse])
 def read_p(db: Session = Depends(get_db)):
@@ -66,30 +64,6 @@ def read_vp(db: Session = Depends(get_db)):
 @router.get("/api/proj", response_model=list[ProjResponse])
 def read_proj(db: Session = Depends(get_db)):
     return get_all_proj(db)
-
-@router.get("/api/status", response_model=list[StatusResponse])
-def read_status(db: Session = Depends(get_db)):
-    return get_all_status(db)
-
-
-@router.post("/api/status", response_model=StatusResponse)
-def create_status(status: StatusCreate, db: Session = Depends(get_db)):
-    return create_status_entry(db=db, status=status)
-
-
-
-@router.get("/api/status/{id}", response_model=StatusResponse)
-def read_status(id: int, db: Session = Depends(get_db)):
-    db_status = get_status_by_id(db, id=id)
-    if db_status is None:
-        raise HTTPException(status_code=404, detail="Status not found")
-    return db_status
-
-
-@router.put("/api/status/{id}", response_model=StatusUpdate)
-def update_status(id: int, status_update: StatusUpdate, db: Session = Depends(get_db)):
-    return update_status_entry(db=db, id=id, status_update=status_update)
-
 
 @router.get("/api/who", response_model=list[WhoResponse])
 def read_who(db: Session = Depends(get_db)):
@@ -172,3 +146,84 @@ def update_p_endpoint(id: int, p: PUpdate, db: Session = Depends(get_db)):
     if not db_p:
         raise HTTPException(status_code=404, detail="Item not found")
     return db_p
+
+# status
+@router.get("/api/status", response_model=list[StatusResponse])
+def read_status(db: Session = Depends(get_db)):
+    return get_all_status(db)
+
+@router.post("/api/status", response_model=StatusResponse)
+def create_status(status: StatusCreate, db: Session = Depends(get_db)):
+    return create_status_entry(db=db, status=status)
+
+@router.get("/api/status/{id}", response_model=StatusResponse)
+def read_status(id: int, db: Session = Depends(get_db)):
+    db_status = get_status_by_id(db, id=id)
+    if db_status is None:
+        raise HTTPException(status_code=404, detail="Status not found")
+    return db_status
+
+@router.put("/api/status/{id}", response_model=StatusUpdate)
+def update_status(id: int, status_update: StatusUpdate, db: Session = Depends(get_db)):
+    return update_status_entry(db=db, id=id, status_update=status_update)
+
+# B
+@router.get("/api/b", response_model=list[BResponse])
+def read_b(db: Session = Depends(get_db)):
+    return get_all_b(db)
+
+@router.post("/api/b", response_model=BResponse)
+def create_b(b: BCreate, db: Session = Depends(get_db)):
+    return create_B(db=db, b=b)
+
+@router.get("/api/b/{id}", response_model=BResponse)
+def read_b(id: int, db: Session = Depends(get_db)):
+    db_b = get_B_by_id(db, id=id)
+    if db_b is None:
+        raise HTTPException(b_code=404, detail="B not found")
+    return db_b
+
+@router.put("/api/b/{id}", response_model=BUpdate)
+def update_b(id: int, b_update: BUpdate, db: Session = Depends(get_db)):
+    return update_B(db=db, id=id, b_update=b_update)
+
+
+# E
+@router.get("/api/e", response_model=list[EResponse])
+def read_e(db: Session = Depends(get_db)):
+    return get_all_e(db)
+
+@router.post("/api/e", response_model=EResponse)
+def create_e(e: ECreate, db: Session = Depends(get_db)):
+    return create_E(db=db, e=e)
+
+@router.get("/api/e/{id}", response_model=EResponse)
+def read_(id: int, db: Session = Depends(get_db)):
+    db_e = get_E_by_id(db, id=id)
+    if db_e is None:
+        raise HTTPException(b_code=404, detail="B not found")
+    return db_e
+
+@router.put("/api/e/{id}", response_model=BUpdate)
+def update_e(id: int, b_update: EUpdate, db: Session = Depends(get_db)):
+    return update_E(db=db, id=id, b_update=b_update)
+
+# D
+@router.get("/api/d", response_model=list[DResponse])
+def read_d(db: Session = Depends(get_db)):
+    return get_all_d(db)
+
+@router.post("/api/d", response_model=DResponse)
+def create_d(D: DCreate, db: Session = Depends(get_db)):
+    return create_D(db=db, D=D)
+
+@router.get("/api/d/{id}", response_model=DResponse)
+def read_D(id: int, db: Session = Depends(get_db)):
+    db_D = get_D_by_id(db, id=id)
+    if db_D is None:
+        raise HTTPException(D_code=404, detail="D not found")
+    return db_D
+
+@router.put("/api/d/{id}", response_model=DUpdate)
+def update_d(id: int, D_update: DUpdate, db: Session = Depends(get_db)):
+    return update_D(db=db, id=id, D_update=D_update)
