@@ -57,21 +57,19 @@ export class StatusComponent {
         console.log('response', response);
         this.statusList = (
           response as Array<{
-            description:string,
+            description: string;
             status: string;
             id: number;
             remarks: string;
-            description: string;
             activeStatus: number;
           }>
         ).map((item) => ({
           id: item.id,
           status: `${item.status}`,
           activeStatus: item.activeStatus,
-          description: item.description,
           remarks: item.remarks,
           isEditable: false,
-          description:item.description
+          description: item.description,
         }));
       },
       error: (error) => {
@@ -114,9 +112,10 @@ export class StatusComponent {
     let data = {
       status: this.initial,
       description: this.name,
-      activeStatus: this.status.value,
+      active_status: this.status.value,
       remarks: this.remarks,
     };
+    console.log('Data', data);
 
     this.goalsService.createStatus(data).subscribe({
       next: (response: any) => {
