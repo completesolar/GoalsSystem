@@ -8,113 +8,144 @@ import { SelectModule } from 'primeng/select';
 import { DialogModule } from 'primeng/dialog';
 import { Priority } from '../models/priority';
 import { MessageService } from 'primeng/api';
+import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'app-priority',
-  imports: [FormsModule,
+  imports: [
+    FormsModule,
     ReactiveFormsModule,
     CommonModule,
     TableModule,
     ButtonModule,
     SelectModule,
-    DialogModule
-],
-providers:[MessageService],
+    DialogModule,
+    InputTextModule,
+  ],
+  providers: [MessageService],
   templateUrl: './priority.component.html',
   styleUrl: './priority.component.scss',
-  standalone:true
+  standalone: true,
 })
 export class PriorityComponent {
-  priorityOptions: { id: number; p: string; status: number; remarks: string }[] = [];
+  priorityList: {
+    id: number;
+    p: string;
+    status: number;
+    remarks: string;
+  }[] = [];
   editingItem: any = null;
-statusOptions :any= [
-  { label: 'Active', value: 1 },
-  { label: 'Inactive', value: 0 },
-];
+  statusOptions: any = [
+    { label: 'Active', value: 1 },
+    { label: 'Inactive', value: 0 },
+  ];
+  selectedStatus: { label: string; value: number } | undefined;
 
-addDialogVisible: boolean = false;
-newPriority: Priority = {
-  p: '',
-  status: 1,
-  remarks: ''
-};
+  addDialogVisible: boolean = false;
 
+  priority: number | undefined;
+  remarks: any;
+  status: any;
 
-constructor(  
-private goalsService: GoalsService,
-private messageService: MessageService
-){}
+  columns = [
+    { field: 's.no', header: 'S.No', tooltip: '' },
+    { field: 'priorityId', header: 'Priority ID', tooltip: '' },
+    { field: 'priority', header: 'Priority', tooltip: '' },
+    { field: 'status', header: 'Status', tooltip: '' },
+    { field: 'remarks', header: 'Remarks', tooltip: '' },
+    { field: 'action', header: 'ACTION', tooltip: '' },
+  ];
 
-ngOnInit() {
-  this.getPriority()
-}
+  constructor(
+    private goalsService: GoalsService,
+    private messageService: MessageService
+  ) {}
 
+  ngOnInit() {
+    this.getPriority();
+  }
 
-getPriority() {
-  this.goalsService.getP().subscribe({
-    next: (response) => {
-      // console.log("response", response);
-      this.priorityOptions = (response as Array<{ p: number; id: number }>).map(item => ({
-        id: item.id,
-        p: `${item.p}`, 
-        status: 1,
-        remarks: ''
-      }));
-    },
-    error: (error) => {
-      console.error('Error fetching priorities:', error);
-    },
-  });
-}
-
-
-
-onEdit(item: any) {
-  this.editingItem = { ...item };
-}
-updateP() {
-  if (!this.editingItem) return;
-
-  console.log("Updating item:", this.editingItem);
-
-  this.goalsService.updateP(this.editingItem).subscribe({
-    next: (response: any) => {
-      if (response && response.id) {
-        this.priorityOptions = this.priorityOptions.map((p: any) =>
-          p.id === response.id ? { ...response } : p
+  getPriority() {
+    this.goalsService.getP().subscribe({
+      next: (response) => {
+        // console.log("response", response);
+        this.priorityList = (response as Array<{ p: number; id: number }>).map(
+          (item) => ({
+            id: item.id,
+            p: `${item.p}`,
+            status: 1,
+            remarks: '',
+            isEditable: false,
+          })
         );
-        this.editingItem = null;
-      }
-    },
-    error: (err) => {
-      console.error("Update failed:", err);
-    }
-  });
-}
+        console.log('priorityList', this.priorityList);
+      },
+      error: (error) => {
+        console.error('Error fetching priorities:', error);
+      },
+    });
+  }
 
- saveNewPriority() {
-  this.goalsService.createP(this.newPriority).subscribe({
-    next: (response: any) => {
-      if (response && response.id) {
-        const newGoal = {
-          ...this.newPriority,
-          id: response.id,
-          createddatetime: new Date(),
-          isEditable: false
-        };
-        this.priorityOptions = [newGoal, ...this.priorityOptions];
-        this.newPriority = { p: '', status: 1, remarks: '' };
-        this.addDialogVisible = false;
-      }
-    },
-    error: (err) => {
-      console.error("Create failed", err);
-    }
-  });
-}
-addPriority() {
-  this.newPriority = { p: '', status: 1, remarks: '' };
-  this.addDialogVisible = true;
-}
+  onEdit(item: any) {
+    this.editingItem = { ...item };
+  }
 
+  async updateP(item: any) {
+    const isChanged = await this.isObjectChanged(item, this.editingItem);
+    if (!this.editingItem && isChanged) return;
+    this.goalsService.updateP(this.editingItem).subscribe({
+      next: (response: any) => {
+        if (response && response.id) {
+          this.priorityList = this.priorityList.map((p: any) =>
+            p.id === response.id ? { ...response } : p
+          );
+          this.editingItem = null;
+        }
+      },
+      error: (err) => {
+        console.error('Update failed:', err);
+      },
+    });
+  }
+
+  cancelEdit() {
+    this.editingItem = null;
+  }
+
+  saveNewPriority() {
+    if (this.priority === undefined) {
+      return;
+    }
+    let data = {
+      p: this.priority?.toString(),
+      status: this.status.value,
+      remarks: this.remarks,
+    };
+
+    this.goalsService.createP(data).subscribe({
+      next: (response: any) => {
+        if (response && response.id) {
+          const newGoal = {
+            ...data,
+            id: response.id,
+            createddatetime: new Date(),
+            isEditable: false,
+          };
+          this.priorityList = [newGoal, ...this.priorityList];
+        }
+      },
+      error: (err) => {
+        console.error('Create failed', err);
+      },
+    });
+  }
+
+  isObjectChanged(objA: any, objB: any): boolean {
+    // Destructure objects to exclude `isEditable`
+    const { isEditable: _, ...restA } = objA;
+    const { isEditable: __, ...restB } = objB;
+
+    // Compare remaining properties
+    return JSON.stringify(restA) !== JSON.stringify(restB);
+  }
 }
