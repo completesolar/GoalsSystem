@@ -51,10 +51,10 @@ export class StatusComponent {
   constructor(private goalsService: GoalsService) {}
 
   ngOnInit() {
-    this.getPriority();
+    this.getStatus();
   }
 
-  getPriority() {
+  getStatus() {
     this.goalsService.getStatus().subscribe({
       next: (response) => {
         console.log('response', response);
@@ -63,12 +63,14 @@ export class StatusComponent {
             status: string;
             id: number;
             remarks: string;
+            description: string;
             activeStatus: number;
           }>
         ).map((item) => ({
           id: item.id,
           status: `${item.status}`,
           activeStatus: item.activeStatus,
+          description: item.description,
           remarks: item.remarks,
           isEditable: false,
         }));
@@ -84,14 +86,18 @@ export class StatusComponent {
   }
 
   async updateStatus(item: any) {
+    console.log('editingItem', this.editingItem);
     const isChanged = await this.isObjectChanged(item, this.editingItem);
     if (!this.editingItem && isChanged) return;
-    this.goalsService.updateP(this.editingItem).subscribe({
+    this.goalsService.updateStatus(this.editingItem).subscribe({
       next: (response: any) => {
+        console.log('Response', response);
         if (response && response.id) {
           this.statusList = this.statusList.map((p: any) =>
             p.id === response.id ? { ...response } : p
           );
+          console.log('statusList edit', this.statusList);
+          this.getStatus();
           this.editingItem = null;
         }
       },
@@ -107,12 +113,13 @@ export class StatusComponent {
 
   saveNewStatus() {
     let data = {
-      // p: this.priority?.toString(),
-      status: this.status.value,
+      status: this.initial,
+      description: this.name,
+      activeStatus: this.status.value,
       remarks: this.remarks,
     };
 
-    this.goalsService.createP(data).subscribe({
+    this.goalsService.createStatus(data).subscribe({
       next: (response: any) => {
         if (response && response.id) {
           const newGoal = {
