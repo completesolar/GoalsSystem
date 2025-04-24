@@ -9,18 +9,19 @@
     <!-- Settings Button with Menu -->
     <p-menu [model]="settingsMenu" [popup]="true" #menu></p-menu>
     <div class="flex align-items-center gap-3">
-      <div class="cursor-pointer">Dashboard</div>
-      <div class="cursor-pointer">Goals</div>
-    <button
-    (click)="menu.toggle($event)"
-    class="px-2 py-1 rounded-md text-sm  bg-white  transition  shadow-sm flex items-center gap-2 menu-button"
-    style="border: none; cursor: pointer;"
-  >
-    <i class="pi pi-cog"></i>  <!-- PrimeNG settings icon -->
-    Settings
-    <i class="pi pi-chevron-down"></i>  <!-- Right-side down arrow icon -->
-  </button>
-</div>
+      <div class="cursor-pointer" (click)="router.navigate(['/goals-metrics'])">Dashboard</div>
+      <div class="cursor-pointer" (click)="router.navigate(['/goals'])">Goals</div>
+      <button
+        (click)="menu.toggle($event)"
+        class="settings-button"
+      >
+        <i class="pi pi-cog"></i>
+        Settings
+        <i class="pi pi-chevron-down"></i>
+      </button>
+    </div>
+    
+    
     <!-- Icon + Full Date on same line -->
     <div class="flex items-center gap-1 align-items-center">
       <img

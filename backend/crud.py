@@ -20,7 +20,7 @@ from sqlalchemy.sql import text
 from json import dumps, loads
 from datetime import datetime
 from copy import deepcopy
-from sqlalchemy import func,extract
+from sqlalchemy import case, func,extract
 
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -408,35 +408,75 @@ def update_goal(db: Session, goal_id: int, goal_update: GoalsUpdate):
     #     createdby=goal_update.updateBy
 
 def get_goals_metrics(db: Session, vp=None, proj=None, priority=None, created_from=None, created_to=None):
-    query = db.query(Goals)
+    base_query = db.query(Goals)
 
     if vp:
-        query = query.filter(Goals.vp == vp)
+        base_query = base_query.filter(Goals.vp == vp)
     if proj:
-        query = query.filter(Goals.proj == proj)
+        base_query = base_query.filter(Goals.proj == proj)
     if priority:
-        query = query.filter(Goals.p == priority)
+        base_query = base_query.filter(Goals.p == priority)
     if created_from:
-        query = query.filter(Goals.createddatetime >= created_from)
+        base_query = base_query.filter(Goals.createddatetime >= created_from)
     if created_to:
-        query = query.filter(Goals.createddatetime <= created_to)
+        base_query = base_query.filter(Goals.createddatetime <= created_to)
 
-    # Year-wise goals using fiscalyear (already a column)
-    yearwise_data = query.with_entities(
+    # 1. Completed and Delinquent Counts
+    completed_delinquent_data = {"Completed": 0, "Delinquent": 0}
+    for row in base_query.with_entities(Goals.s, func.count().label("count")).filter(Goals.s.in_(['C', 'D'])).group_by(Goals.s).all():
+        if row.s == 'C':
+            completed_delinquent_data["Completed"] = row.count
+        elif row.s == 'D':
+            completed_delinquent_data["Delinquent"] = row.count
+
+    # 2. Valid Projects
+    valid_projects = set(proj_row.proj for proj_row in db.query(Proj.proj).all())
+
+    # 3. Project-wise Totals
+    raw_project_data = base_query.with_entities(
+        Goals.proj,
+        func.count().label("total"),
+        func.sum(case((Goals.s == 'C', 1), else_=0)).label("completed"),
+        func.sum(case((Goals.s == 'D', 1), else_=0)).label("delinquent")
+    ).group_by(Goals.proj).all()
+
+    project_data = []
+    unassigned = {"project": "Unassigned", "total": 0, "completed": 0, "delinquent": 0}
+    for row in raw_project_data:
+        proj_value = row.proj or ""
+        if proj_value in valid_projects:
+            project_data.append({
+                "project": proj_value,
+                "total": row.total,
+                "completed": row.completed,
+                "delinquent": row.delinquent
+            })
+        else:
+            unassigned["total"] += row.total
+            unassigned["completed"] += row.completed
+            unassigned["delinquent"] += row.delinquent
+    if unassigned["total"] > 0:
+        project_data.append(unassigned)
+
+    # 4. Year-wise Goals
+    yearwise_data = base_query.with_entities(
         Goals.fiscalyear,
         func.count().label('count')
     ).group_by(Goals.fiscalyear).order_by(Goals.fiscalyear).all()
 
-    # Status-wise goals
-    statuswise_data = query.with_entities(
+    # 5. Status-wise Goals
+    statuswise_data = base_query.with_entities(
         Goals.s,
         func.count().label('count')
     ).group_by(Goals.s).all()
 
     return {
+        "completedAndDelinquent": completed_delinquent_data,
+        "projectWise": project_data,
         "yearWise": [{"year": row.fiscalyear, "count": row.count} for row in yearwise_data],
         "statusWise": [{"status": row.s or "Unassigned", "count": row.count} for row in statuswise_data]
     }
+
 
 def create_B(db: Session, b_data: BCreate):
     db_b = B(**b_data.dict())

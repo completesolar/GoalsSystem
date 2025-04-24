@@ -29,7 +29,7 @@ export class HeaderComponent {
   constructor(
     @Inject(PLATFORM_ID) private platform: Object,
     private msalService: MsalService,
-    private router: Router
+    public router: Router
   ) {}
 
   settingsMenu = [
