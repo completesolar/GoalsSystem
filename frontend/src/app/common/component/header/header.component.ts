@@ -8,17 +8,17 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MenuModule } from 'primeng/menu';
 
-
 @Component({
   selector: 'app-header',
   imports: [
-    SelectModule, 
+    SelectModule,
     CommonModule,
     ButtonModule,
     MultiSelectModule,
-  FormsModule,
-ReactiveFormsModule,
-MenuModule],
+    FormsModule,
+    ReactiveFormsModule,
+    MenuModule,
+  ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
@@ -36,17 +36,22 @@ export class HeaderComponent {
     {
       label: 'Dashboard',
       icon: 'pi pi-home',
-      routerLink: ['/goals-metrics']
+      routerLink: ['/goals-metrics'],
     },
     {
       label: 'Priority',
       icon: 'pi pi-sort-amount-down',
-      routerLink: ['/priority']
+      routerLink: ['/priority'],
+    },
+    {
+      label: 'Status',
+      icon: 'pi pi-sort-amount-down',
+      routerLink: ['/status'],
     },
     {
       label: 'Goals',
       icon: 'pi pi-bullseye',
-      routerLink: ['/goals']
+      routerLink: ['/goals'],
     },
     // {
     //   label: 'Metrics',
@@ -62,14 +67,15 @@ export class HeaderComponent {
     this.router.events.subscribe(() => {
       this.updateButtonLabel();
     });
-  
   }
 
   updateButtonLabel(): void {
     const currentUrl = this.router.url;
-    this.buttonLabel = currentUrl.includes('goals-metrics') ? 'Goals' : 'Dashboard';
+    this.buttonLabel = currentUrl.includes('goals-metrics')
+      ? 'Goals'
+      : 'Dashboard';
   }
-  
+
   goToMetrics(): void {
     const isInMetrics = this.router.url.includes('goals-metrics');
     const targetRoute = isInMetrics ? '/goals' : '/goals-metrics';
