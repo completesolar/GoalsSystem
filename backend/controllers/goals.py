@@ -46,7 +46,8 @@ from crud import (
     update_D,
     get_B_by_id,
     get_E_by_id,
-    get_D_by_id
+    get_D_by_id,
+    update_status
 )
 from typing import Annotated
 
@@ -164,8 +165,8 @@ def read_status(id: int, db: Session = Depends(get_db)):
     return db_status
 
 @router.put("/api/status/{id}", response_model=StatusUpdate)
-def update_status(id: int, status_update: StatusUpdate, db: Session = Depends(get_db)):
-    return update_status_entry(db=db, id=id, status_update=status_update)
+def update_statu(id: int, status_update: StatusUpdate, db: Session = Depends(get_db)):
+    return update_status(db=db, id=id, status_update=status_update)
 
 # B
 @router.get("/api/b", response_model=list[BResponse])
@@ -183,10 +184,12 @@ def read_b(id: int, db: Session = Depends(get_db)):
         raise HTTPException(b_code=404, detail="B not found")
     return db_b
 
-@router.put("/api/b/{id}", response_model=BUpdate)
-def update_b(id: int, b_update: BUpdate, db: Session = Depends(get_db)):
-    return update_B(db=db, id=id, b_update=b_update)
-
+@router.put("/api/b/{id}", response_model=BResponse)
+def update_b_endpoint(id: int, b: BUpdate, db: Session = Depends(get_db)):
+    db_b = update_B(db=db, id=id, b_data=b)
+    if not db_b:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return db_b
 
 # E
 @router.get("/api/e", response_model=list[EResponse])

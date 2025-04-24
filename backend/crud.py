@@ -8,7 +8,7 @@ from schemas.schema import GoalsResponse, GoalsUpdate  # Pydantic schema
 from schemas.goalshistory import goalhistoryResponse
 from schemas.who import WhoResponse
 from schemas.action import ActionResponse
-from schemas.status import StatusUpdate, StatusResponse
+from schemas.status import StatusUpdate, StatusResponse,StatusCreate
 from schemas.proj import ProjResponse
 from schemas.vp import VPResponse
 from schemas.p import PCreate, PResponse, PUpdate
@@ -75,14 +75,7 @@ def get_E_by_id(db: Session, id: int):
 def get_D_by_id(db: Session, id: int):
     return db.query(D).filter(D.id == id).first()
 
-def update_status_entry(db: Session, id: int, status_update: StatusUpdate):
-    db_status = db.query(Status).filter(Status.id == id).first()
-    if db_status:
-        for key, value in status_update.dict(exclude_unset=True).items():
-            setattr(db_status, key, value)
-        db.commit()
-        db.refresh(db_status)
-    return db_status
+
 
 def get_all_who(db: Session, response_model=list[WhoResponse]):
     db_who = db.query(Who).order_by(Who.id.desc()).all()
@@ -203,12 +196,6 @@ def create_proj(db: Session, proj: str):
     db.refresh(db_proj)
     return db_proj
 
-def create_p(db: Session, p_data: PCreate):
-    db_p = P(**p_data.dict())
-    db.add(db_p)
-    db.commit()
-    db.refresh(db_p)
-    return db_p
 
 def create_p(db: Session, p_data: PCreate):
     db_p = P(**p_data.dict())
@@ -479,14 +466,14 @@ def get_goals_metrics(db: Session, vp=None, proj=None, priority=None, created_fr
     }
 
 
-def create_B(db: Session, b_data: BCreate):
+def create_b(db: Session, b_data: BCreate):
     db_b = B(**b_data.dict())
     db.add(db_b)
     db.commit()
     db.refresh(db_b)
     return db_b
 
-def update_B(db: Session, id: int, b_data: BUpdate):
+def update_b(db: Session, id: int, b_data: BUpdate):
     db_b = db.query(B).filter(B.id == id).first()
     if not db_b:
         return None
@@ -495,6 +482,23 @@ def update_B(db: Session, id: int, b_data: BUpdate):
     db.commit()
     db.refresh(db_b)
     return db_b
+
+def create_status(db: Session, status_data: StatusCreate):
+    db_status = B(**status_data.dict())
+    db.add(db_status)
+    db.commit()
+    db.refresh(db_status)
+    return db_status
+
+def update_status(db: Session, id: int, status_data: StatusUpdate):
+    db_status = db.query(Status).filter(Status.id == id).first()
+    if not db_status:
+        return None
+    for key, value in status_data.dict(exclude_unset=True).items():
+        setattr(db_status, key, value)
+    db.commit()
+    db.refresh(db_status)
+    return db_status
 
 
 def create_E(db: Session, e_data: ECreate):
