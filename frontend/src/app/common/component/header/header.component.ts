@@ -29,7 +29,7 @@ export class HeaderComponent {
   constructor(
     @Inject(PLATFORM_ID) private platform: Object,
     private msalService: MsalService,
-    public router: Router
+    private router: Router
   ) {}
 
   settingsMenu = [
@@ -72,6 +72,14 @@ export class HeaderComponent {
     this.router.events.subscribe(() => {
       this.updateButtonLabel();
     });
+  }
+
+  goToDashboard(): void {
+    this.router.navigate(['/goals-metrics']);
+  }
+  
+  goToGoals(): void {
+    this.router.navigate(['/goals']);
   }
 
   updateButtonLabel(): void {
