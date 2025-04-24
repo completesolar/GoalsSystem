@@ -48,6 +48,11 @@ export class HeaderComponent {
       icon: 'pi pi-sort-amount-down',
       routerLink: ['/status'],
     },
+    {
+      label: 'Begnning Week',
+      icon: 'pi pi-bullseye',
+      routerLink: ['/b_week']
+    },
     // {
     //   label: 'Goals',
     //   icon: 'pi pi-bullseye',
@@ -67,6 +72,14 @@ export class HeaderComponent {
     this.router.events.subscribe(() => {
       this.updateButtonLabel();
     });
+  }
+
+  goToDashboard(): void {
+    this.router.navigate(['/goals-metrics']);
+  }
+  
+  goToGoals(): void {
+    this.router.navigate(['/goals']);
   }
 
   updateButtonLabel(): void {

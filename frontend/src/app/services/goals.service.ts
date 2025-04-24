@@ -120,4 +120,11 @@ export class GoalsService {
     const params = new HttpParams({ fromObject: filters });
     return this.http.get<any>(`${this.baseURL}/goals/metrics`, { params });
   }
+  createB(b: any) {
+    return this.http.post(`${this.baseURL}/b`, b);
+  }
+
+  updateB(b: any) {
+    return this.http.put(`${this.baseURL}/b/${b.id}`, b);
+  }
 }

@@ -6,7 +6,6 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import { DialogModule } from 'primeng/dialog';
-import { Priority } from '../models/priority';
 import { MessageService } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 
@@ -68,13 +67,13 @@ export class PriorityComponent {
   getPriority() {
     this.goalsService.getP().subscribe({
       next: (response) => {
-        // console.log("response", response);
-        this.priorityList = (response as Array<{ p: number; id: number }>).map(
+        console.log("response", response);
+        this.priorityList = (response as Array<{ p: number; id: number;status:number;remarks:string }>).map(
           (item) => ({
             id: item.id,
             p: `${item.p}`,
-            status: 1,
-            remarks: '',
+            status: item.status,
+            remarks: item.remarks,
             isEditable: false,
           })
         );

@@ -1,13 +1,12 @@
-import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { GoalsService } from '../services/goals.service';
+import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
+import { SelectModule } from 'primeng/select';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
-import { SelectModule } from 'primeng/select';
-import { TableModule } from 'primeng/table';
-import { GoalsService } from '../services/goals.service';
-import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-beginning-week',
@@ -23,11 +22,14 @@ import { MessageService } from 'primeng/api';
   ],
   templateUrl: './beginning-week.component.html',
   styleUrl: './beginning-week.component.scss',
+  standalone: true,
+
 })
 export class BeginningWeekComponent {
+
   bList: {
     id: number;
-    p: string;
+    b: string;
     status: number;
     remarks: string;
   }[] = [];
@@ -40,14 +42,14 @@ export class BeginningWeekComponent {
 
   addDialogVisible: boolean = false;
 
-  bName: number | undefined;
+  b: number | undefined;
   remarks: any;
   status: any;
 
   columns = [
     { field: 's.no', header: 'S.No', tooltip: '' },
-    { field: 'bId', header: 'B ID', tooltip: '' },
-    { field: 'b', header: 'B', tooltip: '' },
+    { field: 'bId', header: 'b ID', tooltip: '' },
+    { field: 'b', header: 'b', tooltip: '' },
     { field: 'status', header: 'Status', tooltip: '' },
     { field: 'remarks', header: 'Remarks', tooltip: '' },
     { field: 'action', header: 'ACTION', tooltip: '' },
@@ -55,30 +57,29 @@ export class BeginningWeekComponent {
 
   constructor(
     private goalsService: GoalsService,
-    private messageService: MessageService
   ) {}
 
   ngOnInit() {
-    this.getPriority();
+    this.getb();
   }
 
-  getPriority() {
-    this.goalsService.getP().subscribe({
+  getb() {
+    this.goalsService.getB().subscribe({
       next: (response) => {
-        // console.log("response", response);
-        this.bList = (response as Array<{ p: number; id: number }>).map(
+        console.log("response", response);
+        this.bList = (response as Array<{ b: number; id: number;status:number;remarks:string }>).map(
           (item) => ({
             id: item.id,
-            p: `${item.p}`,
-            status: 1,
-            remarks: '',
+            b: `${item.b}`,
+            status: item.status,
+            remarks: item.remarks,
             isEditable: false,
           })
         );
         console.log('bList', this.bList);
       },
       error: (error) => {
-        console.error('Error fetching b:', error);
+        console.error('Error fetching priorities:', error);
       },
     });
   }
@@ -90,7 +91,7 @@ export class BeginningWeekComponent {
   async updateB(item: any) {
     const isChanged = await this.isObjectChanged(item, this.editingItem);
     if (!this.editingItem && isChanged) return;
-    this.goalsService.updateP(this.editingItem).subscribe({
+    this.goalsService.updateB(this.editingItem).subscribe({
       next: (response: any) => {
         if (response && response.id) {
           this.bList = this.bList.map((p: any) =>
@@ -109,17 +110,17 @@ export class BeginningWeekComponent {
     this.editingItem = null;
   }
 
-  saveNewB() {
-    if (this.bName === undefined) {
+  saveNewb() {
+    if (this.b === undefined) {
       return;
     }
     let data = {
-      p: this.bName?.toString(),
+      b: this.b?.toString(),
       status: this.status.value,
       remarks: this.remarks,
     };
 
-    this.goalsService.createP(data).subscribe({
+    this.goalsService.createB(data).subscribe({
       next: (response: any) => {
         if (response && response.id) {
           const newGoal = {
