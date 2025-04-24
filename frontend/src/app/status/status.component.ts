@@ -1,39 +1,39 @@
-import { Component } from '@angular/core';
-import { GoalsService } from '../services/goals.service';
 import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
+import { TableModule } from 'primeng/table';
+import { GoalsService } from '../services/goals.service';
 import { SelectModule } from 'primeng/select';
-import { DialogModule } from 'primeng/dialog';
-import { Priority } from '../models/priority';
-import { MessageService } from 'primeng/api';
-import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
-  selector: 'app-priority',
+  selector: 'app-status',
   imports: [
+    ButtonModule,
     FormsModule,
     ReactiveFormsModule,
-    CommonModule,
     TableModule,
-    ButtonModule,
+    CommonModule,
     SelectModule,
-    DialogModule,
-    InputTextModule,
   ],
-  providers: [MessageService],
-  templateUrl: './priority.component.html',
-  styleUrl: './priority.component.scss',
-  standalone: true,
+  templateUrl: './status.component.html',
+  styleUrl: './status.component.scss',
 })
-export class PriorityComponent {
-  priorityList: {
-    id: number;
-    p: string;
-    status: number;
-    remarks: string;
-  }[] = [];
+export class StatusComponent {
+  updateP(_t73: any) {
+    throw new Error('Method not implemented.');
+  }
+  columns = [
+    { field: 's.no', header: 'S.No', tooltip: '' },
+    { field: 'statusId', header: 'Status ID', tooltip: '' },
+    { field: 'initial', header: 'Initial', tooltip: '' },
+    { field: 'name', header: 'Name', tooltip: '' },
+    { field: 'status', header: 'Status', tooltip: '' },
+    { field: 'remarks', header: 'Remarks', tooltip: '' },
+    { field: 'action', header: 'ACTION', tooltip: '' },
+  ];
+
+  statusList: any[] = [];
   editingItem: any = null;
   statusOptions: any = [
     { label: 'Active', value: 1 },
@@ -43,41 +43,35 @@ export class PriorityComponent {
 
   addDialogVisible: boolean = false;
 
-  priority: number | undefined;
+  initial: string | undefined;
+  name: string | undefined;
   remarks: any;
   status: any;
 
-  columns = [
-    { field: 's.no', header: 'S.No', tooltip: '' },
-    { field: 'priorityId', header: 'Priority ID', tooltip: '' },
-    { field: 'priority', header: 'Priority', tooltip: '' },
-    { field: 'status', header: 'Status', tooltip: '' },
-    { field: 'remarks', header: 'Remarks', tooltip: '' },
-    { field: 'action', header: 'ACTION', tooltip: '' },
-  ];
-
-  constructor(
-    private goalsService: GoalsService,
-    private messageService: MessageService
-  ) {}
+  constructor(private goalsService: GoalsService) {}
 
   ngOnInit() {
     this.getPriority();
   }
 
   getPriority() {
-    this.goalsService.getP().subscribe({
+    this.goalsService.getStatus().subscribe({
       next: (response) => {
-        // console.log("response", response);
-        this.priorityList = (response as Array<{ p: number; id: number }>).map(
-          (item) => ({
-            id: item.id,
-            p: `${item.p}`,
-            status: 1,
-            remarks: '',
-            isEditable: false,
-          })
-        );
+        console.log('response', response);
+        this.statusList = (
+          response as Array<{
+            status: string;
+            id: number;
+            remarks: string;
+            activeStatus: number;
+          }>
+        ).map((item) => ({
+          id: item.id,
+          status: `${item.status}`,
+          activeStatus: item.activeStatus,
+          remarks: item.remarks,
+          isEditable: false,
+        }));
       },
       error: (error) => {
         console.error('Error fetching priorities:', error);
@@ -89,13 +83,13 @@ export class PriorityComponent {
     this.editingItem = { ...item };
   }
 
-  async updateP(item: any) {
+  async updateStatus(item: any) {
     const isChanged = await this.isObjectChanged(item, this.editingItem);
     if (!this.editingItem && isChanged) return;
     this.goalsService.updateP(this.editingItem).subscribe({
       next: (response: any) => {
         if (response && response.id) {
-          this.priorityList = this.priorityList.map((p: any) =>
+          this.statusList = this.statusList.map((p: any) =>
             p.id === response.id ? { ...response } : p
           );
           this.editingItem = null;
@@ -111,12 +105,9 @@ export class PriorityComponent {
     this.editingItem = null;
   }
 
-  saveNewPriority() {
-    if (this.priority === undefined) {
-      return;
-    }
+  saveNewStatus() {
     let data = {
-      p: this.priority?.toString(),
+      // p: this.priority?.toString(),
       status: this.status.value,
       remarks: this.remarks,
     };
@@ -130,7 +121,7 @@ export class PriorityComponent {
             createddatetime: new Date(),
             isEditable: false,
           };
-          this.priorityList = [newGoal, ...this.priorityList];
+          this.statusList = [newGoal, ...this.statusList];
         }
       },
       error: (err) => {
