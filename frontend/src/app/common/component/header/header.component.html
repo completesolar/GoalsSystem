@@ -9,8 +9,8 @@
     <!-- Settings Button with Menu -->
     <p-menu [model]="settingsMenu" [popup]="true" #menu></p-menu>
     <div class="flex align-items-center gap-3">
-      <div class="cursor-pointer" (click)="router.navigate(['/goals-metrics'])">Dashboard</div>
-      <div class="cursor-pointer" (click)="router.navigate(['/goals'])">Goals</div>
+      <div class="cursor-pointer" (click)="goToDashboard()">Dashboard</div>
+      <div class="cursor-pointer" (click)="goToGoals()">Goals</div>
       <button
         (click)="menu.toggle($event)"
         class="settings-button"
@@ -20,6 +20,7 @@
         <i class="pi pi-chevron-down"></i>
       </button>
     </div>
+    
     
     
     <!-- Icon + Full Date on same line -->
