@@ -3,6 +3,8 @@ from typing import Optional
 
 class BBase(BaseModel):
     b: Optional[int] = None
+    status: Optional[int] = None
+    remarks: Optional[str] = None
 
 class BCreate(BBase):
     pass
