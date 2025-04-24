@@ -5,6 +5,9 @@ from typing import Optional
 class StatusBase(BaseModel):
     status: Optional[str] = None
     description: Optional[str] = None
+    remarks: Optional[str] = None
+    active_status: Optional[int] = None
+
 
 # Create schema
 class StatusCreate(StatusBase):

@@ -8,19 +8,19 @@ from schemas.schema import GoalsResponse, GoalsUpdate  # Pydantic schema
 from schemas.goalshistory import goalhistoryResponse
 from schemas.who import WhoResponse
 from schemas.action import ActionResponse
-from schemas.status import StatusUpdate, StatusResponse
+from schemas.status import StatusUpdate, StatusResponse,StatusCreate
 from schemas.proj import ProjResponse
 from schemas.vp import VPResponse
 from schemas.p import PCreate, PResponse, PUpdate
-from schemas.b import BResponse
-from schemas.e import EResponse
+from schemas.b import BResponse,BCreate,BUpdate
+from schemas.e import EResponse,EUpdate,ECreate
 from schemas.d import DResponse
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.sql import text
 from json import dumps, loads
 from datetime import datetime
 from copy import deepcopy
-from sqlalchemy import func,extract
+from sqlalchemy import case, func,extract
 
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -60,20 +60,22 @@ def create_status_entry(db: Session, status: Status):
     db.refresh(db_status)
     return db_status
 
-def get_all_status(db: Session):
-    return db.query(Status).all()
+# def get_all_status(db: Session):
+#     return db.query(Status).all()
 
 def get_status_by_id(db: Session, id: int):
     return db.query(Status).filter(Status.id == id).first()
 
-def update_status_entry(db: Session, id: int, status_update: StatusUpdate):
-    db_status = db.query(Status).filter(Status.id == id).first()
-    if db_status:
-        for key, value in status_update.dict(exclude_unset=True).items():
-            setattr(db_status, key, value)
-        db.commit()
-        db.refresh(db_status)
-    return db_status
+def get_B_by_id(db: Session, id: int):
+    return db.query(B).filter(B.id == id).first()
+
+def get_E_by_id(db: Session, id: int):
+    return db.query(E).filter(E.id == id).first()
+
+def get_D_by_id(db: Session, id: int):
+    return db.query(D).filter(D.id == id).first()
+
+
 
 def get_all_who(db: Session, response_model=list[WhoResponse]):
     db_who = db.query(Who).order_by(Who.id.desc()).all()
@@ -194,6 +196,7 @@ def create_proj(db: Session, proj: str):
     db.refresh(db_proj)
     return db_proj
 
+
 def create_p(db: Session, p_data: PCreate):
     db_p = P(**p_data.dict())
     db.add(db_p)
@@ -202,6 +205,7 @@ def create_p(db: Session, p_data: PCreate):
     return db_p
 
 def update_p(db: Session, id: int, p_data: PUpdate):
+    print("p_data",p_data)
     db_p = db.query(P).filter(P.id == id).first()
     if not db_p:
         return None
@@ -392,32 +396,137 @@ def update_goal(db: Session, goal_id: int, goal_update: GoalsUpdate):
     #     createdby=goal_update.updateBy
 
 def get_goals_metrics(db: Session, vp=None, proj=None, priority=None, created_from=None, created_to=None):
-    query = db.query(Goals)
+    base_query = db.query(Goals)
 
     if vp:
-        query = query.filter(Goals.vp == vp)
+        base_query = base_query.filter(Goals.vp == vp)
     if proj:
-        query = query.filter(Goals.proj == proj)
+        base_query = base_query.filter(Goals.proj == proj)
     if priority:
-        query = query.filter(Goals.p == priority)
+        base_query = base_query.filter(Goals.p == priority)
     if created_from:
-        query = query.filter(Goals.createddatetime >= created_from)
+        base_query = base_query.filter(Goals.createddatetime >= created_from)
     if created_to:
-        query = query.filter(Goals.createddatetime <= created_to)
+        base_query = base_query.filter(Goals.createddatetime <= created_to)
 
-    # Year-wise goals using fiscalyear (already a column)
-    yearwise_data = query.with_entities(
+    # 1. Completed and Delinquent Counts
+    completed_delinquent_data = {"Completed": 0, "Delinquent": 0}
+    for row in base_query.with_entities(Goals.s, func.count().label("count")).filter(Goals.s.in_(['C', 'D'])).group_by(Goals.s).all():
+        if row.s == 'C':
+            completed_delinquent_data["Completed"] = row.count
+        elif row.s == 'D':
+            completed_delinquent_data["Delinquent"] = row.count
+
+    # 2. Valid Projects
+    valid_projects = set(proj_row.proj for proj_row in db.query(Proj.proj).all())
+
+    # 3. Project-wise Totals
+    raw_project_data = base_query.with_entities(
+        Goals.proj,
+        func.count().label("total"),
+        func.sum(case((Goals.s == 'C', 1), else_=0)).label("completed"),
+        func.sum(case((Goals.s == 'D', 1), else_=0)).label("delinquent")
+    ).group_by(Goals.proj).all()
+
+    project_data = []
+    unassigned = {"project": "Unassigned", "total": 0, "completed": 0, "delinquent": 0}
+    for row in raw_project_data:
+        proj_value = row.proj or ""
+        if proj_value in valid_projects:
+            project_data.append({
+                "project": proj_value,
+                "total": row.total,
+                "completed": row.completed,
+                "delinquent": row.delinquent
+            })
+        else:
+            unassigned["total"] += row.total
+            unassigned["completed"] += row.completed
+            unassigned["delinquent"] += row.delinquent
+    if unassigned["total"] > 0:
+        project_data.append(unassigned)
+
+    # 4. Year-wise Goals
+    yearwise_data = base_query.with_entities(
         Goals.fiscalyear,
         func.count().label('count')
     ).group_by(Goals.fiscalyear).order_by(Goals.fiscalyear).all()
 
-    # Status-wise goals
-    statuswise_data = query.with_entities(
+    # 5. Status-wise Goals
+    statuswise_data = base_query.with_entities(
         Goals.s,
         func.count().label('count')
     ).group_by(Goals.s).all()
 
     return {
+        "completedAndDelinquent": completed_delinquent_data,
+        "projectWise": project_data,
         "yearWise": [{"year": row.fiscalyear, "count": row.count} for row in yearwise_data],
         "statusWise": [{"status": row.s or "Unassigned", "count": row.count} for row in statuswise_data]
     }
+
+
+def create_b(db: Session, b_data: BCreate):
+    db_b = B(**b_data.dict())
+    db.add(db_b)
+    db.commit()
+    db.refresh(db_b)
+    return db_b
+
+def update_b(db: Session, id: int, b_data: BUpdate):
+    db_b = db.query(B).filter(B.id == id).first()
+    if not db_b:
+        return None
+    for key, value in b_data.dict(exclude_unset=True).items():
+        setattr(db_b, key, value)
+    db.commit()
+    db.refresh(db_b)
+    return db_b
+
+
+def update_status(db: Session, id: int, status_data: StatusUpdate):
+    db_status = db.query(Status).filter(Status.id == id).first()
+    if not db_status:
+        return None
+    for key, value in status_data.dict(exclude_unset=True).items():
+        setattr(db_status, key, value)
+    db.commit()
+    db.refresh(db_status)
+    return db_status
+
+
+def create_E(db: Session, e_data: ECreate):
+    db_e = E(**e_data.dict())
+    db.add(db_e)
+    db.commit()
+    db.refresh(db_e)
+    return db_e
+
+def update_E(db: Session, id: int, e_data: EUpdate):
+    db_e = db.query(E).filter(E.id == id).first()
+    if not db_e:
+        return None
+    for key, value in e_data.dict(exclude_unset=True).items():
+        setattr(db_e, key, value)
+    db.commit()
+    db.refresh(db_e)
+    return db_e
+
+
+def create_D(db: Session, d_data: ECreate):
+    db_d = D(**d_data.dict())
+    db.add(db_d)
+    db.commit()
+    db.refresh(db_d)
+    return db_d
+
+
+def update_D(db: Session, id: int, e_data: EUpdate):
+    db_d = db.query(D).filter(D.id == id).first()
+    if not db_d:
+        return None
+    for key, value in e_data.dict(exclude_unset=True).items():
+        setattr(db_d, key, value)
+    db.commit()
+    db.refresh(db_d)
+    return db_d

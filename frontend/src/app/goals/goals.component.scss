@@ -6,6 +6,9 @@
 // }
 
 /* Set table layout to fixed and cell width to 100px */
+
+
+
 .fixed-table {
   table-layout: fixed;
   width: 100%;
@@ -26,8 +29,11 @@
   border-radius: 5px;
   border: 1px solid gainsboro;
   width: 99%;
+  font-size: 12px;
 }
-
+.export-text{
+  font-size: 12px;
+}
 ::ng-deep .custom-goal-table th:nth-child(9),
 ::ng-deep .custom-goal-table td:nth-child(9) {
   width: 400px;
@@ -119,6 +125,11 @@ font-size: 12px;}
 // }
 
 /* For inputs and dropdowns in cells */
+
+::ng-deep button.p-ripple.p-button.p-component.p-button-icon-only.p-button-secondary.p-button-rounded.p-button-text.p-datatable-column-filter-button {
+  justify-content: flex-start;
+}
+
 
 ::ng-deep td .p-inputtext,
 ::ng-deep td .p-dropdown {
@@ -493,3 +504,5 @@ font-size: 12px;}
 .filter-dropdown {
   min-width: 200px;
 }
+
+

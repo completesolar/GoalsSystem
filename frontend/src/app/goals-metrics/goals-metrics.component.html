@@ -1,34 +1,93 @@
-
-
 <div class="pagetitle">Dashboard</div>
 
+<!-- Project-wise & Completed vs Delinquent Charts (Top Row) -->
+<div class="flex gap-3 p-3">
+  <!-- Project-wise Bar Chart (Scrollable) -->
+  <div class="bg-white p-3 border-round-md" style="flex: 1 1 50%; max-height: 400px; overflow-y: auto;">
+  <apx-chart
+    *ngIf="yearChartOptions?.series?.length && yearChartOptions?.chart"
+    [series]="yearChartOptions.series"
+    [chart]="yearChartOptions.chart"
+    [xaxis]="yearChartOptions.xaxis"
+    [title]="yearChartOptions.title"
+    [legend]="yearChartOptions.legend"
+    [plotOptions]="yearChartOptions.plotOptions"
+    [dataLabels]="yearChartOptions.dataLabels"
+    [colors]="yearChartOptions.colors">
+  </apx-chart>
+  </div>
 
-<div class="flex gap-3 p-5">
-    <div class="bg-white p-3 border-round-md" style="flex-basis: 50%; overflow-x: auto;">
-        <div>
-          <apx-chart
-            *ngIf="yearChartOptions?.series?.length && yearChartOptions?.chart"
-            [series]="yearChartOptions.series"
-            [chart]="yearChartOptions.chart"
-            [xaxis]="yearChartOptions.xaxis"
-            [plotOptions]="yearChartOptions.plotOptions"
-            [dataLabels]="yearChartOptions.dataLabels"
-            [title]="yearChartOptions.title">
-          </apx-chart>
-        </div>
-      </div>
-      
-  
-    <div class="bg-white p-3 border-round-md"  style="flex-basis: 35%;">
-      <!-- Status Pie -->
+  <!-- Completed vs Delinquent Pie -->
+  <div class="bg-white p-3 border-round-md" style="flex: 1 1 50%; max-height: 400px; display: flex; align-items: center; justify-content: center;">
+    <div style="width: 100%; display: flex; align-items: center; justify-content: center;">
       <apx-chart
         *ngIf="statusPieOptions?.series?.length && statusPieOptions?.chart"
         [series]="statusPieOptions.series"
         [labels]="statusPieOptions.labels"
         [chart]="statusPieOptions.chart"
         [title]="statusPieOptions.title"
-        [legend]="statusPieOptions.legend">
+        [legend]="{ position: 'bottom' }"
+        [colors]="yearChartOptions.colors"
+        [plotOptions]="{
+          pie: {
+            donut: {
+              labels: {
+                show: true,
+                name: { show: true },
+                value: { show: true },
+                total: { show: true }
+              }
+            }
+          }
+        }"
+        [dataLabels]="statusPieOptions.dataLabels">
       </apx-chart>
     </div>
   </div>
-  
+</div>
+
+<!-- Year-wise & Status-wise Charts (Bottom Row) -->
+<div class="flex gap-3 p-3">
+  <!-- Year-wise Chart Placeholder -->
+  <div class="bg-white p-3 border-round-md" style="flex: 1 1 50%; max-height: 400px; overflow-y: auto;">
+    <apx-chart
+      *ngIf="yearWiseChartOptions?.series?.length"
+      [series]="yearWiseChartOptions.series"
+      [chart]="yearWiseChartOptions.chart"
+      [xaxis]="yearWiseChartOptions.xaxis"
+      [title]="yearWiseChartOptions.title"
+      [dataLabels]="yearWiseChartOptions.dataLabels"
+      [plotOptions]="yearWiseChartOptions.plotOptions"
+      [legend]="yearWiseChartOptions.legend"
+      [colors]="yearChartOptions.colors">
+    </apx-chart>
+  </div>
+
+  <!-- Status-wise Chart Placeholder -->
+  <div class="bg-white p-3 border-round-md" style="flex: 1 1 50%; max-height: 400px; display: flex; align-items: center; justify-content: center;">
+    <div style="width: 100%; display: flex; align-items: center; justify-content: center;">
+      <apx-chart
+        *ngIf="statusWiseChartOptions?.series?.length"
+        [series]="statusWiseChartOptions.series"
+        [labels]="statusWiseChartOptions.labels"
+        [chart]="statusWiseChartOptions.chart"
+        [title]="statusWiseChartOptions.title"
+        [colors]="yearChartOptions.colors"
+        [legend]="{ position: 'bottom' }"
+        [plotOptions]="{
+          pie: {
+            donut: {
+              labels: {
+                show: true,
+                name: { show: true },
+                value: { show: true },
+                total: { show: true }
+              }
+            }
+          }
+        }"
+        [dataLabels]="statusWiseChartOptions.dataLabels">
+      </apx-chart>
+    </div>
+  </div>
+</div>
