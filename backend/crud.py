@@ -483,12 +483,6 @@ def update_b(db: Session, id: int, b_data: BUpdate):
     db.refresh(db_b)
     return db_b
 
-def create_status(db: Session, status_data: StatusCreate):
-    db_status = B(**status_data.dict())
-    db.add(db_status)
-    db.commit()
-    db.refresh(db_status)
-    return db_status
 
 def update_status(db: Session, id: int, status_data: StatusUpdate):
     db_status = db.query(Status).filter(Status.id == id).first()
