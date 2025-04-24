@@ -218,6 +218,7 @@ def create_p(db: Session, p_data: PCreate):
     return db_p
 
 def update_p(db: Session, id: int, p_data: PUpdate):
+    print("p_data",p_data)
     db_p = db.query(P).filter(P.id == id).first()
     if not db_p:
         return None
