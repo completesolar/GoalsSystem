@@ -61,12 +61,12 @@ export class StatusComponent {
             status: string;
             id: number;
             remarks: string;
-            activeStatus: number;
+            active_status: number;
           }>
         ).map((item) => ({
           id: item.id,
           status: `${item.status}`,
-          activeStatus: item.activeStatus,
+          activeStatus: item.active_status,
           remarks: item.remarks,
           isEditable: false,
           description: item.description,
@@ -127,6 +127,10 @@ export class StatusComponent {
             isEditable: false,
           };
           this.statusList = [newGoal, ...this.statusList];
+          this.initial='';
+          this.name='';
+          this.status=null;
+          this.remarks=''
         }
       },
       error: (err) => {

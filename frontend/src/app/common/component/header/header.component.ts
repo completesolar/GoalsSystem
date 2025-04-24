@@ -48,11 +48,6 @@ export class HeaderComponent {
       icon: 'pi pi-sort-amount-down',
       routerLink: ['/status'],
     },
-    {
-      label: 'Begnning Week',
-      icon: 'pi pi-bullseye',
-      routerLink: ['/b_week']
-    },
     // {
     //   label: 'Goals',
     //   icon: 'pi pi-bullseye',

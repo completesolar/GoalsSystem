@@ -65,7 +65,7 @@
           </td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewStatus">
-              <p-select [options]="statusOptions" [(ngModel)]="editingItem.activeStatus" optionLabel="label"
+              <p-select [options]="statusOptions" [(ngModel)]="editingItem.active_status" optionLabel="label"
                 optionValue="value"></p-select>
             </ng-container>
             <ng-template #viewStatus>{{ item.activeStatus === 1 ? 'Active' : 'Inactive' }}</ng-template>

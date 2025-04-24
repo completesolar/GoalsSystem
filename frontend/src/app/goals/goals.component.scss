@@ -126,6 +126,11 @@ font-size: 12px;}
 
 /* For inputs and dropdowns in cells */
 
+::ng-deep button.p-ripple.p-button.p-component.p-button-icon-only.p-button-secondary.p-button-rounded.p-button-text.p-datatable-column-filter-button {
+  justify-content: flex-start;
+}
+
+
 ::ng-deep td .p-inputtext,
 ::ng-deep td .p-dropdown {
   height: 32px !important;
