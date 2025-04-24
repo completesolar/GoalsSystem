@@ -12,8 +12,8 @@ from schemas.status import StatusUpdate, StatusResponse
 from schemas.proj import ProjResponse
 from schemas.vp import VPResponse
 from schemas.p import PCreate, PResponse, PUpdate
-from schemas.b import BResponse
-from schemas.e import EResponse
+from schemas.b import BResponse,BCreate,BUpdate
+from schemas.e import EResponse,EUpdate,ECreate
 from schemas.d import DResponse
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.sql import text
@@ -65,6 +65,15 @@ def get_all_status(db: Session):
 
 def get_status_by_id(db: Session, id: int):
     return db.query(Status).filter(Status.id == id).first()
+
+def get_B_by_id(db: Session, id: int):
+    return db.query(B).filter(B.id == id).first()
+
+def get_E_by_id(db: Session, id: int):
+    return db.query(E).filter(E.id == id).first()
+
+def get_D_by_id(db: Session, id: int):
+    return db.query(D).filter(D.id == id).first()
 
 def update_status_entry(db: Session, id: int, status_update: StatusUpdate):
     db_status = db.query(Status).filter(Status.id == id).first()
@@ -193,6 +202,13 @@ def create_proj(db: Session, proj: str):
     db.commit()
     db.refresh(db_proj)
     return db_proj
+
+def create_p(db: Session, p_data: PCreate):
+    db_p = P(**p_data.dict())
+    db.add(db_p)
+    db.commit()
+    db.refresh(db_p)
+    return db_p
 
 def create_p(db: Session, p_data: PCreate):
     db_p = P(**p_data.dict())
@@ -421,3 +437,57 @@ def get_goals_metrics(db: Session, vp=None, proj=None, priority=None, created_fr
         "yearWise": [{"year": row.fiscalyear, "count": row.count} for row in yearwise_data],
         "statusWise": [{"status": row.s or "Unassigned", "count": row.count} for row in statuswise_data]
     }
+
+def create_B(db: Session, b_data: BCreate):
+    db_b = B(**b_data.dict())
+    db.add(db_b)
+    db.commit()
+    db.refresh(db_b)
+    return db_b
+
+def update_B(db: Session, id: int, b_data: BUpdate):
+    db_b = db.query(B).filter(B.id == id).first()
+    if not db_b:
+        return None
+    for key, value in b_data.dict(exclude_unset=True).items():
+        setattr(db_b, key, value)
+    db.commit()
+    db.refresh(db_b)
+    return db_b
+
+
+def create_E(db: Session, e_data: ECreate):
+    db_e = E(**e_data.dict())
+    db.add(db_e)
+    db.commit()
+    db.refresh(db_e)
+    return db_e
+
+def update_E(db: Session, id: int, e_data: EUpdate):
+    db_e = db.query(E).filter(E.id == id).first()
+    if not db_e:
+        return None
+    for key, value in e_data.dict(exclude_unset=True).items():
+        setattr(db_e, key, value)
+    db.commit()
+    db.refresh(db_e)
+    return db_e
+
+
+def create_D(db: Session, d_data: ECreate):
+    db_d = D(**d_data.dict())
+    db.add(db_d)
+    db.commit()
+    db.refresh(db_d)
+    return db_d
+
+
+def update_D(db: Session, id: int, e_data: EUpdate):
+    db_d = db.query(D).filter(D.id == id).first()
+    if not db_d:
+        return None
+    for key, value in e_data.dict(exclude_unset=True).items():
+        setattr(db_d, key, value)
+    db.commit()
+    db.refresh(db_d)
+    return db_d
