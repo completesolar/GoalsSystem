@@ -1,96 +1,141 @@
-/* Wraps the table and prevents page overflow */
-.table-container {
-  max-width: 100%;
-  overflow-x: auto;
-  margin-top: 10px;
+// /* Wraps the table and prevents page overflow */
+// .table-container {
+//   max-width: 100%;
+//   overflow-x: auto;
+//   margin-top: 5px;
+// }
+
+/* Set table layout to fixed and cell width to 100px */
+
+
+
+.fixed-table {
+  table-layout: fixed;
+  width: 100%;
 }
 
-/* Force the table to take up full width without unnecessary scroll */
-::ng-deep .custom-goal-table table {
-  width: 100% !important;
-  table-layout: fixed !important;
-}
-
-/* Applies consistent cell sizing and wraps content if needed */
-::ng-deep .custom-goal-table th,
-::ng-deep .custom-goal-table td {
-  white-space: normal !important;
-  word-wrap: break-word;
-  padding: 8px;
-  text-align: left;
-  vertical-align: top;
-  font-size: 14px;
-}
-
-/* Prevent Add button column from shrinking */
-::ng-deep .custom-goal-table td:last-child,
-::ng-deep .custom-goal-table th:last-child {
-  width: 100px;
-  min-width: 100px;
-  text-align: center;
-}
-
-/* Define consistent fixed widths for each column (based on their order) */
-::ng-deep .custom-goal-table th,
-::ng-deep .custom-goal-table td {
-  white-space: normal !important;
-  word-wrap: break-word;
-  padding: 8px;
-  text-align: left;
-
-  vertical-align: top;
-  font-size: 14px;
-}
-
-::ng-deep .custom-goal-table th:nth-child(1),
-::ng-deep .custom-goal-table td:nth-child(1) {
-  width: 120px;
-}
-
-::ng-deep .custom-goal-table th:nth-child(2),
-::ng-deep .custom-goal-table td:nth-child(2),
-::ng-deep .custom-goal-table th:nth-child(5),
-::ng-deep .custom-goal-table td:nth-child(5),
-::ng-deep .custom-goal-table th:nth-child(6),
-::ng-deep .custom-goal-table td:nth-child(6),
-::ng-deep .custom-goal-table th:nth-child(7),
-::ng-deep .custom-goal-table td:nth-child(7) {
-  width: 85px;
-}
-
-::ng-deep .custom-goal-table th:nth-child(3),
-::ng-deep .custom-goal-table td:nth-child(3),
-::ng-deep .custom-goal-table th:nth-child(4),
-::ng-deep .custom-goal-table td:nth-child(4),
-::ng-deep .custom-goal-table th:nth-child(8),
-::ng-deep .custom-goal-table td:nth-child(8) {
-  width: 100px;
-}
-
-::ng-deep .custom-goal-table th:nth-child(9),
-::ng-deep .custom-goal-table td:nth-child(9) {
-  width: 80px;
-}
-
-/* Goal Deliverable Column (assumed 10th column) */
-::ng-deep .custom-goal-table th:nth-child(10),
-::ng-deep .custom-goal-table td:nth-child(10) {
-  white-space: nowrap !important;
+.fixed-table th,
+.fixed-table td {
+  width: 70px;
+  word-wrap: break-word; /* optional: helps break long text */
   overflow: hidden;
   text-overflow: ellipsis;
-  width: 400px;
-  min-width: 300px;
-  max-width: 400px;
-  text-align: left;
+  white-space: nowrap;
 }
 
+.legend-content {
+  padding: 2px;
+  background: #fff;
+  border-radius: 5px;
+  border: 1px solid gainsboro;
+  width: 99%;
+  font-size: 12px;
+}
+.export-text{
+  font-size: 12px;
+}
+::ng-deep .custom-goal-table th:nth-child(9),
+::ng-deep .custom-goal-table td:nth-child(9) {
+  width: 400px;
+}
+.goals-text{
+font-size: 12px;}
+// /* Force the table to take up full width without unnecessary scroll */
+// ::ng-deep .custom-goal-table table {
+//   width: 100% !important;
+//   table-layout: fixed !important;
+// }
+
+// /* Applies consistent cell sizing and wraps content if needed */
+// ::ng-deep .custom-goal-table th,
+// ::ng-deep .custom-goal-table td {
+//   white-space: normal !important;
+//   word-wrap: break-word;
+//   padding: 8px;
+//   text-align: left;
+//   vertical-align: top;
+//   font-size: 14px;
+// }
+
+// /* Prevent Add button column from shrinking */
+// ::ng-deep .custom-goal-table td:last-child,
+// ::ng-deep .custom-goal-table th:last-child {
+//   width: 100px;
+//   min-width: 100px;
+//   text-align: center;
+// }
+
+// /* Define consistent fixed widths for each column (based on their order) */
+// ::ng-deep .custom-goal-table th,
+// ::ng-deep .custom-goal-table td {
+//   white-space: normal !important;
+//   word-wrap: break-word;
+//   padding: 8px;
+//   text-align: left;
+
+//   vertical-align: top;
+//   font-size: 14px;
+// }
+
+// ::ng-deep .custom-goal-table th:nth-child(1),
+// ::ng-deep .custom-goal-table td:nth-child(1) {
+//   width: 60px;
+// }
+
+// ::ng-deep .custom-goal-table th:nth-child(2),
+// ::ng-deep .custom-goal-table td:nth-child(2),
+// ::ng-deep .custom-goal-table th:nth-child(5),
+// ::ng-deep .custom-goal-table td:nth-child(5),
+// ::ng-deep .custom-goal-table th:nth-child(6),
+// ::ng-deep .custom-goal-table td:nth-child(6),
+// ::ng-deep .custom-goal-table th:nth-child(7),
+// ::ng-deep .custom-goal-table td:nth-child(7) {
+//   width: 60px;
+// }
+
+// ::ng-deep .custom-goal-table th:nth-child(3),
+// ::ng-deep .custom-goal-table td:nth-child(3),
+// ::ng-deep .custom-goal-table th:nth-child(4),
+// ::ng-deep .custom-goal-table td:nth-child(4),
+// ::ng-deep .custom-goal-table th:nth-child(8),
+// ::ng-deep .custom-goal-table td:nth-child(8) {
+//   width: 60px;
+// }
+
+// ::ng-deep .custom-goal-table th:nth-child(9),
+// ::ng-deep .custom-goal-table td:nth-child(9) {
+//   width: 185px;
+// }
+
+// ::ng-deep .custom-goal-table th:nth-child(10),
+// ::ng-deep .custom-goal-table td:nth-child(10) {
+//   width: 55px;
+//   text-align: left;
+// }
+
+// /* Goal Deliverable Column (assumed 10th column) */
+// ::ng-deep .custom-goal-table th:nth-child(8),
+// ::ng-deep .custom-goal-table td:nth-child(8) {
+//   white-space: nowrap !important;
+//   overflow: hidden;
+//   text-overflow: ellipsis;
+//   width: 60px;
+
+//   text-align: left;
+// }
+
 /* For inputs and dropdowns in cells */
+
+::ng-deep button.p-ripple.p-button.p-component.p-button-icon-only.p-button-secondary.p-button-rounded.p-button-text.p-datatable-column-filter-button {
+  justify-content: flex-start;
+}
+
+
 ::ng-deep td .p-inputtext,
 ::ng-deep td .p-dropdown {
   height: 32px !important;
   font-size: 13px;
   padding: 4px 8px !important;
-  width: 100% !important;
   box-sizing: border-box;
   vertical-align: middle;
 }
@@ -101,13 +146,11 @@
   line-height: 1.2;
 }
 
-::ng-deep .custom-goal-table th:nth-child(11),
-::ng-deep .custom-goal-table td:nth-child(11) {
-  width: 100px;
-  text-align: center;
-}
-
-/* Set background color for header row */
+// ::ng-deep .custom-goal-table th:nth-child(11),
+// ::ng-deep .custom-goal-table td:nth-child(11) {
+//   width: 100px;
+//   text-align: center;
+// }
 ::ng-deep .custom-goal-table th {
   background-color: rgb(226, 239, 218) !important;
   color: white; /* Optionally set text color */
@@ -144,12 +187,12 @@
 }
 
 /* Prevent Add button column from shrinking */
-::ng-deep .custom-goal-table td:last-child,
-::ng-deep .custom-goal-table th:last-child {
-  width: 100px;
-  min-width: 100px;
-  text-align: left;
-}
+// ::ng-deep .custom-goal-table td:last-child,
+// ::ng-deep .custom-goal-table th:last-child {
+//   width: 100px;
+//   min-width: 100px;
+//   text-align: left;
+// }
 
 /* Ensure inputs inside the table cells don't collapse */
 ::ng-deep .p-inputtext {
@@ -170,7 +213,8 @@
 .saved {
   border: none;
   box-shadow: none;
-  background-color: white !important;
+  cursor: pointer;
+  // background-color: white !important;
 }
 
 ::ng-deep .saved .p-select-dropdown {
@@ -183,9 +227,10 @@
 
 ::ng-deep .custom-goal-table .p-datatable-tbody > tr > td,
 ::ng-deep .custom-goal-table .p-datatable-thead > tr > th {
-  padding: 4px 8px !important;
+  padding: 2px 8px !important;
   font-size: 12px !important; /* reduce font size */
-  line-height: 1 !important; /* tighter row spacing */
+  line-height: 1 !important;
+  height: 28px !important; /* tighter row spacing */
 }
 
 .logo {
@@ -199,15 +244,19 @@
   margin: 0 auto;
   border-radius: 10px;
   padding: 5px 10px 5px 10px;
-  border: 2px solid #333;
+  // border: 2px solid #333;
   border-radius: 5px;
 }
 
 .title-section {
-  background-color: whitesmoke;
-  max-width: 95%;
+  //background-color: whitesmoke;
+  max-width: 99%;
   margin: 0 auto;
   border-radius: 10px;
+}
+.legend-sec {
+  max-width: 95%;
+  margin: 0 auto;
 }
 .body {
   background-color: whitesmoke;
@@ -216,9 +265,6 @@
 }
 .logo-section {
   background-color: #fff;
-  max-width: 95%;
-  margin: 0 auto;
-  border-radius: 10px;
   padding: 6px;
 }
 
@@ -233,16 +279,17 @@
 }
 
 .main-title {
-  font-size: 21px;
+  font-size: 22px;
   font-weight: 700;
   color: #333;
+  letter-spacing: 1px;
 }
 
-.sub-title {
-  font-size: 12px;
-  // color: #4caf50;
-  margin-top: 4px;
-}
+// .sub-title {
+//   font-size: 12px;
+//   // color: #4caf50;
+//   margin-top: 4px;
+// }
 
 .date {
   font-size: 10px;
@@ -265,30 +312,30 @@
   height: 100%;
 }
 
-/* Goal Deliverable column in the dialog */
-::ng-deep .goal-history-table th:nth-child(10),
-::ng-deep .goal-history-table td:nth-child(10) {
-  white-space: normal !important;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 600px;
-  min-width: 400px;
-  max-width: 600px;
-}
+// /* Goal Deliverable column in the dialog */
+// ::ng-deep .goal-history-table th:nth-child(10),
+// ::ng-deep .goal-history-table td:nth-child(10) {
+//   white-space: normal !important;
+//   overflow: hidden;
+//   text-overflow: ellipsis;
+//   width: 100px;
+//   // min-width: 400px;
+//   // max-width: 600px;
+// }
 
-::ng-deep .goal-history-table th:nth-child(11),
-::ng-deep .goal-history-table td:nth-child(11) {
-  width: 150px;
-  min-width: 150px;
-  max-width: 200px;
-}
+// ::ng-deep .goal-history-table th:nth-child(11),
+// ::ng-deep .goal-history-table td:nth-child(11) {
+//   width: 150px;
+//   min-width: 150px;
+//   max-width: 200px;
+// }
 
 .custom-goal-table th:last-child {
   text-align: left;
 }
 
 ::ng-deep .p-datatable-table-container {
-  border-radius: 20px 20px;
+  border-radius: 5px;
 }
 
 .settingSelect {
@@ -359,6 +406,103 @@
 }
 
 /* Optional: If you want more space between icon and date, you can adjust the margin */
-.sub-title {
-  margin-left: 2px; /* Adds left margin if needed */
+// .sub-title {
+//   margin-left: 2px; /* Adds left margin if needed */
+// }
+
+.legend-toggle {
+  background-color: transparent;
+  color: #4caf50;
+  border: none; /* Removes the border */
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
 }
+
+.legend-toggle i {
+  margin-right: 5px; /* Space between the arrow and the label */
+}
+
+.legend-toggle:hover {
+  color: #45a049;
+  background-color: transparent; /* Ensures no background color when hovered */
+}
+// ::ng-deep .filter-dropdown-wrapper {
+//   position: absolute;
+//   z-index: 999;
+//   background: white;
+//   border: 1px solid #ccc;
+//   padding: 0.5rem;
+//   border-radius: 4px;
+//   left: auto;
+//   right: 100%; /* Push it to the left of the icon */
+//   margin-right: 10px;
+// }
+
+::ng-deep
+  .custom-goal-table
+  .p-datatable-tbody
+  > tr.add-row.head.first-data-row {
+  background-color: rgb(139, 139, 212) !important;
+}
+
+.test {
+  align-items: center;
+  display: flex;
+}
+
+.calendar-icon {
+  vertical-align: middle;
+  margin-bottom: 1px; /* optional fine-tuning */
+}
+.settingSelect .p-dropdown-label {
+  vertical-align: middle;
+}
+
+::ng-deep .p-multiselect {
+  min-height: 30px !important;
+}
+
+::ng-deep .p-multiselect-label-container {
+  max-height: 30px;
+}
+.icon-actions-column {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px; /* Adjust spacing between icons as needed */
+}
+
+.actions {
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.highlight-change {
+  background-color: yellow;
+  color: black;
+}
+
+::ng-deep .filter-active button.p-datatable-column-filter-button {
+  background-color: #c9c9c9 !important;
+  color: black !important;
+}
+
+::ng-deep .filter-active .pi-filter {
+  color: #007ad9; 
+  font-size: 12px;
+}
+.filter-icon-button {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.filter-dropdown {
+  min-width: 200px;
+}
+
+

@@ -1,0 +1,20 @@
+.charts-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+    padding: 1rem;
+  }
+  
+  .chart-box {
+    flex: 1 1 45%;
+    min-width: 300px;
+  }
+  
+  .full-width {
+    flex: 1 1 100%;
+  }
+
+  ::ng-deep body{
+    height: 100vh;
+  }

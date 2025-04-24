@@ -4,7 +4,7 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  font-size: 14px;
+  font-size: 12px;
   color: black;
   background-color: whitesmoke;
 }
@@ -22,20 +22,380 @@ input,
 .p-datatable-tbody,
 .custom-goal-table .p-datatable-tbody .p-table th {
   font-family: Arial, sans-serif !important;
-  font-size: 14px !important;
+  font-size: 12px !important;
   color: black !important;
-  height: 32px !important;
-  padding: 4px 8px !important;
   line-height: 1.2 !important;
   box-sizing: border-box;
   vertical-align: middle !important;
-  width: 100% !important;
+  height: 28px !important;
+
+}
+.custom-goal-table .p-datatable-tbody > tr > td, .custom-goal-table .p-datatable-thead > tr > th {
+  border-bottom: 0px solid gainsboro !important ;
 }
 
+.p-datatable-sortable-column:not(.p-datatable-column-sorted):hover {
+  background: none !important;
+}
 table {
   table-layout: fixed;
 }
-
+.p-paginator {
+  padding: 2px !important;
+}
+.pi {
+  font-size: 14px;
+}
+.p-button-success{
+font-size: 12px !important;
+}
+.pi-plus:before {
+  font-size: 12px;
+}
 html {
   background-color: whitesmoke;
+}
+
+.p-datatable-flex-scrollable {
+  height: 100% !important;
+}
+.p-select-label{
+  overflow: visible !important;
+}
+/* Apply to all tooltip positions */
+body .p-tooltip {
+  animation: fadeOutTooltip 0s ease-in 3s forwards !important;
+}
+
+@keyframes fadeOutTooltip {
+  to {
+    visibility: hidden;
+    opacity: 0;
+  }
+}
+
+.p-datatable-column-filter-button {
+  justify-content: flex-start;
+  margin-top: -2px;
+}
+.p-iconwrapper svg {
+  width: 12px;
+}
+
+.whoselect .p-select-label{
+  width: 78px;
+padding-left: 4px;
+  padding-right: 0px;
+}
+.p-selectitem .p-select-label{
+  width: 78px;
+padding-left: 4px;
+  padding-right: 0px;
+}
+
+.projselect .p-select-label{
+  width: 85px;
+padding-left: 4px;
+  padding-right: 0px;
+}
+
+.vpselect .p-select-label{
+  width: 78px;
+padding-left: 4px;
+  padding-right: 0px;
+}
+
+.bselect .p-select-label{
+  width: 78px;
+padding-left: 4px;
+  padding-right: 0px;
+}
+
+.eselect .p-select-label{
+  width: 78px;
+padding-left: 4px;
+  padding-right: 0px;
+}
+.dselect .p-select-label{
+  width: 78px;
+padding-left: 4px;
+  padding-right: 0px;
+}
+
+.sselect .p-select-label{
+  width: 78px;
+padding-left: 4px;
+  padding-right: 0px;
+}
+
+.actionselect .p-select-label{
+  width: 78px;
+padding-left: 4px;
+  padding-right: 0px;
+}
+span.p-multiselect-dropdown-icon.pi.pi-filter {
+  font-size: 13px;
+}
+.menu-button{
+  font-size: 12px !important;
+}
+
+.p-multiselect-dropdown{
+  justify-content: flex-start !important;
+}
+@media only screen and (min-width: 1199px) and (max-width: 1550px){
+  .custom-goal-table th:nth-child(10) {
+    width: 100px ;
+  }
+
+  #action-select{
+    width: 140px !important;
+  }
+
+  #goal-select{
+    width: 320px !important;
+    height: 28px !important;
+  }
+#spec-select{
+  width: 140px !important;
+  height: 28px !important;
+}
+#year-input{
+  width: 100px !important;
+}
+  .p-datatable-table{
+  width: min-content;
+  }
+
+.p-select-label{
+  overflow: visible;
+  }
+.pi{
+font-size: 12px !important;
+}
+
+  .custom-goal-table td:nth-child(1) .p-select {
+    width: 76px;
+  }
+
+  .custom-goal-table td:nth-child(3) .p-select {
+    width: 76px;
+  }
+
+  .custom-goal-table td:nth-child(4) .p-select {
+    width: 70px;
+  }
+
+  .custom-goal-table td:nth-child(5) .p-select {
+    width: 63px;
+  }
+  .custom-goal-table td:nth-child(6) .p-select {
+    width: 62px;
+  }
+
+  .custom-goal-table td:nth-child(7) .p-select {
+    width: 62px;
+  }
+
+  .custom-goal-table td:nth-child(8) .p-select {
+    width: 62px;
+  }
+
+  .custom-goal-table td:nth-child(9) .p-select {
+    width: 65px;
+  }
+  .custom-goal-table th:nth-child(1),
+ .custom-goal-table td:nth-child(1) {
+  width: 80px;
+}
+
+.custom-goal-table th:nth-child(2),
+.custom-goal-table td:nth-child(2) {
+ width: 80px;
+}
+
+
+.custom-goal-table th:nth-child(3),
+.custom-goal-table td:nth-child(3) {
+ width: 90px;
+}
+
+.custom-goal-table th:nth-child(4),
+.custom-goal-table td:nth-child(4) {
+ width: 80px;
+}
+
+.custom-goal-table th:nth-child(5),
+.custom-goal-table td:nth-child(5) {
+ width: 80px;
+}
+
+.custom-goal-table th:nth-child(6),
+.custom-goal-table td:nth-child(6) {
+ width: 80px;
+}
+
+.custom-goal-table th:nth-child(7),
+.custom-goal-table td:nth-child(7) {
+ width: 80px;
+}
+
+.custom-goal-table th:nth-child(8),
+.custom-goal-table td:nth-child(8) {
+ width: 80px;
+}
+.custom-goal-table th:nth-child(9),
+ .custom-goal-table td:nth-child(9) {
+  width: 634px !important;
+}
+
+.custom-goal-table th:last-child,
+.custom-goal-table td:last-child {
+ width: 100px;
+}
+
+}
+
+
+
+
+
+@media(min-width:1600px){
+
+  .custom-goal-table th:nth-child(10) {
+    width: 100px ;
+  }
+
+  #action-select{
+    width: 140px !important;
+  }
+
+  #goal-select{
+    width: 320px !important;
+    height: 28px !important;
+  }
+#spec-select{
+  width: 140px !important;
+  height: 28px !important;
+}
+#year-input{
+  width: 100px !important;
+}
+  .p-datatable-table{
+  width: min-content;
+  }
+
+.p-select-label{
+  overflow: visible;
+  }
+.pi{
+font-size: 12px !important;
+}
+
+  .custom-goal-table td:nth-child(1) .p-select {
+    width: 76px;
+  }
+  .custom-goal-table td:nth-child(2) .p-select {
+    width: 55px;
+  }
+
+  .custom-goal-table td:nth-child(3) .p-select {
+    width: 76px;
+  }
+
+  .custom-goal-table td:nth-child(4) .p-select {
+    width: 62px;
+  }
+
+  .custom-goal-table td:nth-child(5) .p-select {
+    width: 55px;
+  }
+  .custom-goal-table td:nth-child(6) .p-select {
+    width: 55px;
+  }
+
+  .custom-goal-table td:nth-child(7) .p-select {
+    width: 55px;
+  }
+
+  .custom-goal-table td:nth-child(8) .p-select {
+    width: 55px;
+  }
+
+  .custom-goal-table td:nth-child(9) .p-select {
+    width: 65px;
+  }
+  .custom-goal-table th:nth-child(1),
+ .custom-goal-table td:nth-child(1) {
+  width: 58px;
+}
+
+.custom-goal-table th:nth-child(2),
+.custom-goal-table td:nth-child(2) {
+ width: 45px;
+}
+
+
+.custom-goal-table th:nth-child(3),
+.custom-goal-table td:nth-child(3) {
+ width: 58px;
+}
+
+.custom-goal-table th:nth-child(4),
+.custom-goal-table td:nth-child(4) {
+ width: 53px;
+}
+
+.custom-goal-table th:nth-child(5),
+.custom-goal-table td:nth-child(5) {
+ width: 45px;
+}
+
+.custom-goal-table th:nth-child(6),
+.custom-goal-table td:nth-child(6) {
+ width: 45px;
+}
+
+.custom-goal-table th:nth-child(7),
+.custom-goal-table td:nth-child(7) {
+ width: 45px;
+}
+
+.custom-goal-table th:nth-child(8),
+.custom-goal-table td:nth-child(8) {
+ width: 45px;
+}
+.custom-goal-table th:nth-child(9),
+ .custom-goal-table td:nth-child(9) {
+  width: 800px !important;
+}
+
+.custom-goal-table th:last-child,
+.custom-goal-table td:last-child {
+ width: 100px;
+}
+}
+.highlight {
+  background-color: yellow;
+  font-weight: bold;
+}
+
+.pagetitle{
+  font-size: 16px;
+  font-weight: 600;
+  padding: 35px;
+  padding-bottom: 0px;
+  padding-top: 10px;
+}
+
+.logo-section {
+ background: #fff;
+}
+
+.title-section{
+  font-size: 20px;
+}
+
+.menu-button .pi{
+  font-size: 15px !important;
 }

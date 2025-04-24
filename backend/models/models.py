@@ -1,32 +1,52 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text, func
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    ForeignKey,
+    DateTime,
+    BigInteger,
+    Date,
+    Boolean,
+    Text,
+    func,
+)
 from sqlalchemy.orm import relationship
 from database import Base
 from datetime import datetime
-
 
 class B(Base):
     __tablename__ = "b"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     b = Column(Integer, unique=True, index=True)
+    status = Column(Integer, default=1)  
+    remarks = Column(String, nullable=True)
+
 
 
 class E(Base):
-    __tablename__ = "e"
+    __tablename__ = "e" 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     e = Column(Integer, unique=True, index=True)
+    status = Column(Integer, default=1)  
+    remarks = Column(String, nullable=True)
+
 
 
 class D(Base):
     __tablename__ = "d"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     d = Column(Integer, unique=True, index=True)
+    status = Column(Integer, default=1)  
+    remarks = Column(String, nullable=True)
+
 
 
 class P(Base):
     __tablename__ = "p"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     p = Column(Integer, unique=True, index=True)
-
+    status = Column(Integer, default=1)  
+    remarks = Column(String, nullable=True)
 
 class Goals(Base):
     __tablename__ = "goals"
@@ -40,47 +60,62 @@ class Goals(Base):
     e = Column(String)
     d = Column(String)
     s = Column(String)
-    gdb = Column(String)
+    action = Column(String)  # renamed from gdb
+    memo = Column(String)    # new field
+    description = Column(String)  # Allows long text descriptions
     fiscalyear = Column(Integer)
     updateBy = Column(String)
     createddatetime = Column(DateTime, default=func.now())  # Auto-set on insert
     updateddatetime = Column(
         DateTime, default=func.now(), onupdate=func.now()
     )  # Auto-update on row update
-    description = Column(Text, nullable=True)
-
+    
 
 class Status(Base):
-    __tablename__ = "status"
+    __tablename__ = 'status'
     id = Column(Integer, primary_key=True, index=True)
     status = Column(String, unique=True, index=True)
     description = Column(String, nullable=True)
+    remarks = Column(String, nullable=True)
+    active_status = Column(Integer)
 
 
 class Who(Base):
     __tablename__ = "who"
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    slno = Column(Integer, nullable=False)
-    ee_id = Column(Integer, unique=True, nullable=False)
-    last_name = Column(String(255), nullable=False)
-    first_name = Column(String(255), nullable=False)
-    middle_name = Column(String(255), nullable=True)
-    decoder = Column(String(50), nullable=True)
-    mobile = Column(String(20), nullable=True)
-    work_email = Column(String(255), unique=True, nullable=True)
-    title = Column(String(255), nullable=True)
 
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    employee_id = Column(BigInteger, nullable=True)
+    employee_name = Column(String(255), nullable=True)
+    last_name = Column(String(100), nullable=False)
+    first_name = Column(String(100), nullable=False)
+    initials = Column(String(10), nullable=True)
+    primary_email = Column(String(255), unique=True, nullable=True)
+    employee_status = Column(String(50), nullable=True)
+    client_hire_date = Column(Date, nullable=True)
+    employee_reference_id = Column(BigInteger, nullable=True)
+    job_title = Column(String(255), nullable=True)
+    employee_level = Column(Integer, nullable=True)
+    supervisor_name = Column(String(255), nullable=True)
+    is_manager = Column(Boolean, nullable=True)
+    manager_level = Column(Integer, nullable=True)
+    worksite_state = Column(String(10), nullable=True)
+    division = Column(String(100), nullable=True)
+    manager_level_1 = Column(String(255), nullable=True)
+    manager_level_2 = Column(String(255), nullable=True)
+    manager_level_3 = Column(String(255), nullable=True)
+    manager_level_4 = Column(String(255), nullable=True)
 
 class Proj(Base):
     __tablename__ = "proj"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     proj = Column(String, unique=True, index=True)
 
-
 class VP(Base):
     __tablename__ = "vp"
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    vp = Column(String, unique=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
+    last_name = Column(String, index=True)
+    first_name = Column(String, index=True)
+    decoder = Column(String, nullable=True)
 
 
 class goalshistory(Base):
@@ -98,16 +133,22 @@ class goalshistory(Base):
     e = Column(String, nullable=True)
     d = Column(String, nullable=True)
     s = Column(String, nullable=True)
-    gdb = Column(String, nullable=True)
+    action = Column(String, nullable=True)
+    memo = Column(String, nullable=True)
     fiscalyear = Column(Integer, nullable=True)
     updateBy = Column(String, nullable=True)
-    description = Column(Text, nullable=True)
-
+    description = Column(String, nullable=True)
     class Config:
         orm_mode = True
-
+        
     table_goal = relationship("Goals", back_populates="table_history_items")
 
     Goals.table_history_items = relationship(
         "goalshistory", back_populates="table_goal"
     )
+
+
+class Action(Base):
+    __tablename__ = "action"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    action = Column(String, unique=True, index=True)

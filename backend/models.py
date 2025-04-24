@@ -28,10 +28,12 @@ class Proj(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     proj = Column(String, unique=True, index=True)
 
-class Vp(Base):
+class VP(Base):
     __tablename__ = "vp"
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    vp = Column(String, unique=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
+    last_name = Column(String, index=True)
+    first_name = Column(String, index=True)
+    decoder = Column(String, nullable=True)
 
 class Status(Base):
     __tablename__ = "status"
@@ -42,7 +44,7 @@ class goalshistory(Base):
     __tablename__ = "goalshistory"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     goalid = Column(Integer, ForeignKey("goals.goalid"), index=True)
-    createddate = Column(DateTime, default=datetime.utcnow)
+    createddate = Column(DateTime, default=DateTime.utcnow)
     createdby = Column(String, nullable=True)
     who = Column(String, nullable=True)
     p = Column(Integer, nullable=True)
@@ -55,7 +57,7 @@ class goalshistory(Base):
     gdb = Column(String, nullable=True)
     fiscalyear = Column(Integer, nullable=True)
     updateBy = Column(String, nullable=True)
-    description = Column(Text, nullable=True)
+    description = Column(String, nullable=True)
 
     #  id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     # goalid = Column(Integer, ForeignKey("goals.goalid"), index=True)
@@ -65,4 +67,10 @@ class goalshistory(Base):
     # createdby = Column(String, unique=False, index=True)
     # table_goal = relationship("Goals", back_populates="table_history_items")
 
-    Goals.table_history_items = relationship("goalshistory", back_populates="table_goal")
+    Goals.table_history_items = relationship(
+        "goalshistory", back_populates="table_goal")
+
+class Action(Base):
+    __tablename__ = "action"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    action = Column(String, unique=True, index=True)
