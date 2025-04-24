@@ -481,6 +481,7 @@ def create_D(db: Session, d_data: ECreate):
     db.refresh(db_d)
     return db_d
 
+
 def update_D(db: Session, id: int, e_data: EUpdate):
     db_d = db.query(D).filter(D.id == id).first()
     if not db_d:
