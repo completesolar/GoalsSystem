@@ -1,6 +1,7 @@
 <div class="body">
   <p-toast position="top-right"></p-toast>
 
+
   <div class="mb-1 title-section flex items-center">
     <div>
       <button class="legend-toggle" (click)="toggleLegend()">
@@ -27,7 +28,7 @@
       </div>
     </div>
     <div class="flex items-center gap-2 ml-auto align-items-center">
-      <span class="white-space-nowrap">Export to</span>
+      <span class="white-space-nowrap export-text">Export to</span>
       <p-select
         class="custom-select-width"
         [options]="exportOptions"
@@ -221,6 +222,7 @@
                 placeholder="Goal Description"
                 [pTooltip]="'Select Description'"
                 tooltipPosition="bottom"
+                class="goal-select"
               />
             </div>
         
@@ -232,6 +234,7 @@
                 placeholder="SPEC/MEMO"
                 [pTooltip]="'Select SPEC/MEMO'"
                 tooltipPosition="bottom"
+                class="spec-select"
               />
             </div>
           </div>
@@ -242,7 +245,7 @@
           <input class="yearinput"
             pInputText
             [(ngModel)]="newRow.fiscalyear"
-            placeholder="year"
+            placeholder="year" 
           />
         </div>
 
@@ -277,12 +280,12 @@
       [sortMode]="'multiple'"
       scrollable="false"
       [style]="{ width: '100%', height: 'auto', tableLayout: 'fixed' }"
-      tableStyleClass="custom-goal-table fixed-table"
+      [tableStyleClass]="isEdit ? 'custom-goal-table fixed-table edit' : 'custom-goal-table fixed-table'"
       
     >
     <ng-template pTemplate="header">
       <tr>
-      <th *ngFor="let col of columns" [hidden]="col.field === 'fiscalyear' && !isAnyRowEditable()" class="" >
+      <th *ngFor="let col of columns" [hidden]="col.field === 'fiscalyear' && !isAnyRowEditable()" class=""  >
         <div class="flex items-center justify-between">
             <div
               class="test"
@@ -353,7 +356,7 @@
 
       <ng-template pTemplate="body" let-row let-rowIndex="rowIndex">
         <tr *ngIf="goal.length">
-          <td>
+              <td>
             <div #whoSelectWrapper>
             <p-select
               [options]="whoOptions"
@@ -502,6 +505,7 @@
                 optionLabel="label"
                 optionValue="value"
                 [tabindex]="rowIndex * 100 + 9"
+                id="action-select"
                 >
               </p-select>
               <input
@@ -510,9 +514,9 @@
                 [disabled]="!row.isEditable"
                 [pTooltip]="row.description"
                 tooltipPosition="bottom"
-                style="width: 100px !important"
                 placeholder="Goal Description"
                 [tabindex]="rowIndex * 100 + 10"
+                id="goal-select"
                 />
               <input
                 pInputText
@@ -520,9 +524,9 @@
                 [disabled]="!row.isEditable"
                 [pTooltip]="row.memo"
                 tooltipPosition="bottom"
-                style="width: 100px !important"
                 placeholder="SPEC/MEMO"
                 [tabindex]="rowIndex * 100 + 11"
+                id="spec-select"
 
               />
             </div>
@@ -559,6 +563,7 @@
               [disabled]="!row.isEditable"
               tooltipPosition="bottom"
               tabindex="12"
+              id="year-input"
 
             />
           </td>

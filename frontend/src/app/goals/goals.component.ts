@@ -197,6 +197,7 @@ export class GoalsComponent implements AfterViewInit {
   ];
   settingDropdownOpen: boolean=false;
   selectedSettingOption:string | undefined;
+   isEdit: boolean=false;
   constructor(
     @Inject(PLATFORM_ID) private platform: Object,
     private goalsService: GoalsService,
@@ -237,6 +238,8 @@ export class GoalsComponent implements AfterViewInit {
     }
   }
 
+
+  
   loadInitialData() {
     this.loadGoals();
     this.loadWhoOptions();
@@ -890,6 +893,7 @@ export class GoalsComponent implements AfterViewInit {
   //   }, 100);
   // }
   enableEdit(row: any): void {
+    this.isEdit=true
     row.isEditable = true;
     this.previousRow = JSON.parse(JSON.stringify(row));
     this.cdr.detectChanges();
