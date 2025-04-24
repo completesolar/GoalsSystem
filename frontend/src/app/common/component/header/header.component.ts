@@ -33,11 +33,11 @@ export class HeaderComponent {
   ) {}
 
   settingsMenu = [
-    {
-      label: 'Dashboard',
-      icon: 'pi pi-home',
-      routerLink: ['/goals-metrics'],
-    },
+    // {
+    //   label: 'Dashboard',
+    //   icon: 'pi pi-home',
+    //   routerLink: ['/goals-metrics'],
+    // },
     {
       label: 'Priority',
       icon: 'pi pi-sort-amount-down',
@@ -48,11 +48,11 @@ export class HeaderComponent {
       icon: 'pi pi-sort-amount-down',
       routerLink: ['/status'],
     },
-    {
-      label: 'Goals',
-      icon: 'pi pi-bullseye',
-      routerLink: ['/goals'],
-    },
+    // {
+    //   label: 'Goals',
+    //   icon: 'pi pi-bullseye',
+    //   routerLink: ['/goals'],
+    // },
     // {
     //   label: 'Metrics',
     //   icon: 'pi pi-chart-line',

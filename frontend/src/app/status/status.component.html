@@ -9,25 +9,25 @@
   <div class="p-2 mx-2 bg-white mb-2 border-round-md border-1 border-green-400">
     <div class="pl-2 w-full">
       <div class="flex gap-2 items-end justify-between">
-        <div class="flex-1 text-center">
+        <div class=" text-center">
           <div class="font-bold">Initial</div>
           <input type="text" pInputText [(ngModel)]="initial" />
         </div>
-        <div class="flex-1 text-center">
+        <div class=" text-center">
           <div class="font-bold">Name</div>
           <input type="text" pInputText [(ngModel)]="name" />
         </div>
-        <div class="flex-1 text-center">
+        <div class=" text-center">
           <div class="font-bold">Status</div>
           <p-select [options]="statusOptions" [(ngModel)]="status" optionLabel="label"
             placeholder="Select a status"></p-select>
         </div>
-        <div class="flex-1 text-center">
+        <div class="text-center">
           <div class="font-bold">Remarks</div>
           <input pInputText [(ngModel)]="remarks" />
         </div>
         <p-button icon="pi pi-plus" (click)="saveNewStatus()" severity="success" size="small" label="Add"
-          [style]="{ height: '24px', fontSize: '12px' }" class="ml-auto"></p-button>
+          [style]="{ height: '24px', fontSize: '12px' }"></p-button>
       </div>
     </div>
   </div>
@@ -72,17 +72,23 @@
           <td>{{ rowIndex + 1 }}</td>
           <td>{{ item.id }}</td>
           <td>
-            <ng-container *ngIf="editingItem?.id === item.id; else viewB">
-              <input type="number" pInputText [(ngModel)]="editingItem.p" style="width: 100px" />
+            <ng-container *ngIf="editingItem?.id === item.id; else viewInitial">
+              <input type="text" pInputText [(ngModel)]="editingItem.status" style="width: 100px" />
             </ng-container>
-            <ng-template #viewB>{{ item.p }}</ng-template>
+            <ng-template #viewInitial>{{ item.status }}</ng-template>
+          </td>
+          <td>
+            <ng-container *ngIf="editingItem?.id === item.id; else viewDescription">
+              <input type="text" pInputText [(ngModel)]="editingItem.description" style="width: 100px" />
+            </ng-container>
+            <ng-template #viewDescription>{{ item.description }}</ng-template>
           </td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewStatus">
-              <p-select [options]="statusOptions" [(ngModel)]="editingItem.status" optionLabel="label"
+              <p-select [options]="statusOptions" [(ngModel)]="editingItem.activeStatus" optionLabel="label"
                 optionValue="value"></p-select>
             </ng-container>
-            <ng-template #viewStatus>{{ item.status === 1 ? 'Active' : 'Inactive' }}</ng-template>
+            <ng-template #viewStatus>{{ item.activeStatus === 1 ? 'Active' : 'Inactive' }}</ng-template>
           </td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewRenarks">

@@ -20,6 +20,9 @@ import { SelectModule } from 'primeng/select';
   styleUrl: './status.component.scss',
 })
 export class StatusComponent {
+  updateP(_t73: any) {
+    throw new Error('Method not implemented.');
+  }
   columns = [
     { field: 's.no', header: 'S.No', tooltip: '' },
     { field: 'statusId', header: 'Status ID', tooltip: '' },
@@ -52,18 +55,23 @@ export class StatusComponent {
   }
 
   getPriority() {
-    this.goalsService.getP().subscribe({
+    this.goalsService.getStatus().subscribe({
       next: (response) => {
-        // console.log("response", response);
-        this.statusList = (response as Array<{ p: number; id: number }>).map(
-          (item) => ({
-            id: item.id,
-            p: `${item.p}`,
-            status: 1,
-            remarks: '',
-            isEditable: false,
-          })
-        );
+        console.log('response', response);
+        this.statusList = (
+          response as Array<{
+            status: string;
+            id: number;
+            remarks: string;
+            activeStatus: number;
+          }>
+        ).map((item) => ({
+          id: item.id,
+          status: `${item.status}`,
+          activeStatus: item.activeStatus,
+          remarks: item.remarks,
+          isEditable: false,
+        }));
       },
       error: (error) => {
         console.error('Error fetching priorities:', error);

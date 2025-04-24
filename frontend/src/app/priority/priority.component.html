@@ -23,7 +23,7 @@
           <input pInputText [(ngModel)]="remarks" />
         </div>
         <p-button icon="pi pi-plus" (click)="saveNewPriority()" severity="success" size="small" label="Add"
-          [style]="{ height: '24px', fontSize: '12px' }" ></p-button>
+          [style]="{ height: '24px', fontSize: '12px' }"></p-button>
       </div>
     </div>
   </div>
@@ -36,13 +36,9 @@
         <tr>
           <th *ngFor="let col of columns" class="">
             <div class="flex items-center justify-between">
-              <div class="test" [pSortableColumn]="col.field" *ngIf="col.field !== 'action'; else noSort">
+              <div class="test">
                 <b>{{ col.header }}</b>
-                <p-sortIcon [field]="col.field"></p-sortIcon>
               </div>
-              <ng-template #noSort>
-                <b>{{ col.header }}</b>
-              </ng-template>
               <div class="relative" *ngIf="col.field !== 'action' && col.field !== 'gdb'">
 
               </div>
