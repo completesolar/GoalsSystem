@@ -9,7 +9,10 @@
   margin: 0 auto;
   border-radius: 10px;
 }
-
+.input-style{
+  border: 1px solid gainsboro;
+  border-radius: 5px;
+}
 ::ng-deep .custom-table .p-datatable-tbody>tr,
 ::ng-deep .custom-table .p-datatable-thead>tr {
   height: 10px !important;

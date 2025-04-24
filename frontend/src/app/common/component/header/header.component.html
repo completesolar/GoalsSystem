@@ -1,6 +1,8 @@
 <div class="mb-2 logo-section flex p-2 items-center justify-content-between">
-  <div class="px-2 title-section flex items-center align-items-center justify-content-between gap-5">
+
   <img src="assets/cslr-logo 1.svg" alt="Complete Solar" class="logo h-10" />
+
+  <div class="px-2 title-section flex items-center align-items-center justify-content-between gap-5">
  <div class="main-title">GOALS SYSTEM</div>
   </div>
 
@@ -9,13 +11,13 @@
     <!-- Settings Button with Menu -->
     <p-menu [model]="settingsMenu" [popup]="true" #menu></p-menu>
     <div class="flex align-items-center gap-3">
-      <div class="cursor-pointer" (click)="goToDashboard()">Dashboard</div>
-      <div class="cursor-pointer" (click)="goToGoals()">Goals</div>
+      <div class="cursor-pointer" [ngClass]="{ 'active-background': currentRoute === '/goals-metrics' }"  (click)="goToDashboard()">Dashboard</div>
+      <div class="cursor-pointer" [ngClass]="{ 'active-background': currentRoute === '/goals' }" (click)="goToGoals()">Goals</div>
       <button
         (click)="menu.toggle($event)"
         class="settings-button"
       >
-        <i class="pi pi-cog"></i>
+        <!-- <i class="pi pi-cog"></i> -->
         Settings
         <i class="pi pi-chevron-down"></i>
       </button>
