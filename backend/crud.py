@@ -60,8 +60,8 @@ def create_status_entry(db: Session, status: Status):
     db.refresh(db_status)
     return db_status
 
-def get_all_status(db: Session):
-    return db.query(Status).all()
+# def get_all_status(db: Session):
+#     return db.query(Status).all()
 
 def get_status_by_id(db: Session, id: int):
     return db.query(Status).filter(Status.id == id).first()
