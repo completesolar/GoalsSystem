@@ -20,9 +20,6 @@ import { SelectModule } from 'primeng/select';
   styleUrl: './status.component.scss',
 })
 export class StatusComponent {
-  updateP(_t73: any) {
-    throw new Error('Method not implemented.');
-  }
   columns = [
     { field: 's.no', header: 'S.No', tooltip: '' },
     { field: 'statusId', header: 'Status ID', tooltip: '' },
@@ -51,15 +48,16 @@ export class StatusComponent {
   constructor(private goalsService: GoalsService) {}
 
   ngOnInit() {
-    this.getPriority();
+    this.getStatus();
   }
 
-  getPriority() {
+  getStatus() {
     this.goalsService.getStatus().subscribe({
       next: (response) => {
         console.log('response', response);
         this.statusList = (
           response as Array<{
+            description: string;
             status: string;
             id: number;
             remarks: string;
@@ -71,10 +69,11 @@ export class StatusComponent {
           activeStatus: item.activeStatus,
           remarks: item.remarks,
           isEditable: false,
+          description: item.description,
         }));
       },
       error: (error) => {
-        console.error('Error fetching priorities:', error);
+        console.error('Error fetching status:', error);
       },
     });
   }
@@ -84,14 +83,18 @@ export class StatusComponent {
   }
 
   async updateStatus(item: any) {
+    console.log('editingItem', this.editingItem);
     const isChanged = await this.isObjectChanged(item, this.editingItem);
     if (!this.editingItem && isChanged) return;
-    this.goalsService.updateP(this.editingItem).subscribe({
+    this.goalsService.updateStatus(this.editingItem).subscribe({
       next: (response: any) => {
+        console.log('Response', response);
         if (response && response.id) {
           this.statusList = this.statusList.map((p: any) =>
             p.id === response.id ? { ...response } : p
           );
+          console.log('statusList edit', this.statusList);
+          this.getStatus();
           this.editingItem = null;
         }
       },
@@ -107,12 +110,14 @@ export class StatusComponent {
 
   saveNewStatus() {
     let data = {
-      // p: this.priority?.toString(),
-      status: this.status.value,
+      status: this.initial,
+      description: this.name,
+      active_status: this.status.value,
       remarks: this.remarks,
     };
+    console.log('Data', data);
 
-    this.goalsService.createP(data).subscribe({
+    this.goalsService.createStatus(data).subscribe({
       next: (response: any) => {
         if (response && response.id) {
           const newGoal = {
