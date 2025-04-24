@@ -20,9 +20,6 @@ import { SelectModule } from 'primeng/select';
   styleUrl: './status.component.scss',
 })
 export class StatusComponent {
-  updateP(_t73: any) {
-    throw new Error('Method not implemented.');
-  }
   columns = [
     { field: 's.no', header: 'S.No', tooltip: '' },
     { field: 'statusId', header: 'Status ID', tooltip: '' },
@@ -76,7 +73,7 @@ export class StatusComponent {
         }));
       },
       error: (error) => {
-        console.error('Error fetching priorities:', error);
+        console.error('Error fetching status:', error);
       },
     });
   }
