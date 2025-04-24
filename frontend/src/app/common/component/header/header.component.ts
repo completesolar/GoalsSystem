@@ -40,14 +40,16 @@ export class HeaderComponent {
     // },
     {
       label: 'Priority',
-      icon: 'pi pi-sort-amount-down',
       routerLink: ['/priority'],
     },
     {
       label: 'Status',
-      icon: 'pi pi-sort-amount-down',
       routerLink: ['/status'],
     },
+    // {
+    //   label: 'Begnning Week',
+    //   routerLink: ['/b_week']
+    // },
     // {
     //   label: 'Goals',
     //   icon: 'pi pi-bullseye',
@@ -127,5 +129,8 @@ export class HeaderComponent {
     if (selectedRoute) {
       this.router.navigate([selectedRoute]);
     }
+  }
+  get currentRoute(): string {
+    return this.router.url;
   }
 }

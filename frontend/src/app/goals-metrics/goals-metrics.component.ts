@@ -27,6 +27,7 @@ export type PieChartOptions = {
 };
 
 export type BarChartOptions = {
+colors: any[];
   series: { name: string; data: number[] }[];
   chart: ApexChart;
   xaxis: ApexXAxis;
@@ -78,7 +79,8 @@ export class GoalsMetricsComponent implements OnInit {
       },
       offsetX: 25
     },
-    legend: { show: true, position: 'bottom' }
+    legend: { show: true, position: 'bottom' },
+    colors: []
   };
 
   statusPieOptions: PieChartOptions = {
@@ -103,13 +105,15 @@ export class GoalsMetricsComponent implements OnInit {
         columnWidth: '50%'
       }
     },
+    colors: [] ,
     dataLabels: {
       enabled: true,
       formatter: val => val === 0 ? '' : val.toString(),
       style: { fontSize: '12px', colors: ['#000'] },
       offsetX: 0
     },
-    legend: { show: false }
+    legend: { show: false },
+   
   };
 
   statusWiseChartOptions: PieChartOptions = {
@@ -207,6 +211,7 @@ export class GoalsMetricsComponent implements OnInit {
             }
           }
         },
+        colors: [] ,
         dataLabels: {
           enabled: true,
           formatter: function (val: number) {

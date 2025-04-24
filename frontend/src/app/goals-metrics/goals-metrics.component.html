@@ -4,16 +4,17 @@
 <div class="flex gap-3 p-3">
   <!-- Project-wise Bar Chart (Scrollable) -->
   <div class="bg-white p-3 border-round-md" style="flex: 1 1 50%; max-height: 400px; overflow-y: auto;">
-    <apx-chart
-      *ngIf="yearChartOptions?.series?.length && yearChartOptions?.chart"
-      [series]="yearChartOptions.series"
-      [chart]="yearChartOptions.chart"
-      [xaxis]="yearChartOptions.xaxis"
-      [title]="yearChartOptions.title"
-      [legend]="yearChartOptions.legend"
-      [plotOptions]="yearChartOptions.plotOptions"
-      [dataLabels]="yearChartOptions.dataLabels">
-    </apx-chart>
+  <apx-chart
+    *ngIf="yearChartOptions?.series?.length && yearChartOptions?.chart"
+    [series]="yearChartOptions.series"
+    [chart]="yearChartOptions.chart"
+    [xaxis]="yearChartOptions.xaxis"
+    [title]="yearChartOptions.title"
+    [legend]="yearChartOptions.legend"
+    [plotOptions]="yearChartOptions.plotOptions"
+    [dataLabels]="yearChartOptions.dataLabels"
+    [colors]="yearChartOptions.colors">
+  </apx-chart>
   </div>
 
   <!-- Completed vs Delinquent Pie -->
@@ -26,6 +27,7 @@
         [chart]="statusPieOptions.chart"
         [title]="statusPieOptions.title"
         [legend]="{ position: 'bottom' }"
+        [colors]="yearChartOptions.colors"
         [plotOptions]="{
           pie: {
             donut: {
@@ -56,7 +58,8 @@
       [title]="yearWiseChartOptions.title"
       [dataLabels]="yearWiseChartOptions.dataLabels"
       [plotOptions]="yearWiseChartOptions.plotOptions"
-      [legend]="yearWiseChartOptions.legend">
+      [legend]="yearWiseChartOptions.legend"
+      [colors]="yearChartOptions.colors">
     </apx-chart>
   </div>
 
@@ -69,6 +72,7 @@
         [labels]="statusWiseChartOptions.labels"
         [chart]="statusWiseChartOptions.chart"
         [title]="statusWiseChartOptions.title"
+        [colors]="yearChartOptions.colors"
         [legend]="{ position: 'bottom' }"
         [plotOptions]="{
           pie: {
