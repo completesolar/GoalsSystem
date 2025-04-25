@@ -9,12 +9,12 @@ from schemas.goalshistory import goalhistoryResponse
 from schemas.who import WhoResponse
 from schemas.action import ActionResponse
 from schemas.status import StatusUpdate, StatusResponse,StatusCreate
-from schemas.proj import ProjResponse
+from schemas.proj import ProjResponse,ProjCreate,ProjUpdate
 from schemas.vp import VPResponse
 from schemas.p import PCreate, PResponse, PUpdate
 from schemas.b import BResponse,BCreate,BUpdate
 from schemas.e import EResponse,EUpdate,ECreate
-from schemas.d import DResponse
+from schemas.d import DResponse,DUpdate,DCreate
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.sql import text
 from json import dumps, loads
@@ -66,6 +66,9 @@ def create_status_entry(db: Session, status: Status):
 def get_status_by_id(db: Session, id: int):
     return db.query(Status).filter(Status.id == id).first()
 
+def get_p_by_id(db: Session, id: int):
+    return db.query(P).filter(P.id == id).first()
+
 def get_B_by_id(db: Session, id: int):
     return db.query(B).filter(B.id == id).first()
 
@@ -74,6 +77,10 @@ def get_E_by_id(db: Session, id: int):
 
 def get_D_by_id(db: Session, id: int):
     return db.query(D).filter(D.id == id).first()
+
+
+def get_proj_by_id(db: Session, id: int):
+    return db.query(Proj).filter(P.id == id).first()
 
 
 
@@ -189,13 +196,22 @@ def create_who(db: Session, who: str):
     db.refresh(db_who)
     return db_who
 
-def create_proj(db: Session, proj: str):
-    db_proj = Proj(proj=proj)
+def create_proj(db: Session, proj_data: ProjCreate):
+    db_proj = Proj(**proj_data.dict())
     db.add(db_proj)
     db.commit()
     db.refresh(db_proj)
     return db_proj
 
+def update_proj(db: Session, id: int, proj_data: ProjUpdate):
+    db_proj = db.query(Proj).filter(Proj.id == id).first()
+    if not db_proj:
+        return None
+    for key, value in proj_data.dict(exclude_unset=True).items():
+        setattr(db_proj, key, value)
+    db.commit()
+    db.refresh(db_proj)
+    return db_proj
 
 def create_p(db: Session, p_data: PCreate):
     db_p = P(**p_data.dict())
@@ -513,7 +529,7 @@ def update_E(db: Session, id: int, e_data: EUpdate):
     return db_e
 
 
-def create_D(db: Session, d_data: ECreate):
+def create_D(db: Session, d_data: DCreate):
     db_d = D(**d_data.dict())
     db.add(db_d)
     db.commit()
@@ -521,11 +537,11 @@ def create_D(db: Session, d_data: ECreate):
     return db_d
 
 
-def update_D(db: Session, id: int, e_data: EUpdate):
+def update_d(db: Session, id: int, d_data: DUpdate):
     db_d = db.query(D).filter(D.id == id).first()
     if not db_d:
         return None
-    for key, value in e_data.dict(exclude_unset=True).items():
+    for key, value in d_data.dict(exclude_unset=True).items():
         setattr(db_d, key, value)
     db.commit()
     db.refresh(db_d)

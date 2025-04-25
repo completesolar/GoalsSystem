@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { GoalsService } from '../services/goals.service';
+import { GoalsService } from '../../services/goals.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -7,6 +7,8 @@ import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-beginning-week',
@@ -19,20 +21,21 @@ import { InputTextModule } from 'primeng/inputtext';
     SelectModule,
     DialogModule,
     InputTextModule,
+    ToastModule
   ],
+  providers:[MessageService],
   templateUrl: './beginning-week.component.html',
   styleUrl: './beginning-week.component.scss',
   standalone: true,
-
 })
 export class BeginningWeekComponent {
-
   bList: {
     id: number;
     b: string;
     status: number;
     remarks: string;
   }[] = [];
+
   editingItem: any = null;
   statusOptions: any = [
     { label: 'Active', value: 1 },
@@ -40,24 +43,22 @@ export class BeginningWeekComponent {
   ];
   selectedStatus: { label: string; value: number } | undefined;
 
-  addDialogVisible: boolean = false;
-
   b: number | undefined;
   remarks: any;
   status: any;
 
+  isValid = true;
+
   columns = [
     { field: 's.no', header: 'S.No', tooltip: '' },
-    { field: 'bId', header: 'b ID', tooltip: '' },
-    { field: 'b', header: 'b', tooltip: '' },
+    { field: 'bId', header: 'B ID', tooltip: '' },
+    { field: 'b', header: 'B', tooltip: '' },
     { field: 'status', header: 'Status', tooltip: '' },
     { field: 'remarks', header: 'Remarks', tooltip: '' },
     { field: 'action', header: 'ACTION', tooltip: '' },
   ];
 
-  constructor(
-    private goalsService: GoalsService,
-  ) {}
+  constructor(private goalsService: GoalsService,public messageService: MessageService) {}
 
   ngOnInit() {
     this.getb();
@@ -66,16 +67,21 @@ export class BeginningWeekComponent {
   getb() {
     this.goalsService.getB().subscribe({
       next: (response) => {
-        console.log("response", response);
-        this.bList = (response as Array<{ b: number; id: number;status:number;remarks:string }>).map(
-          (item) => ({
-            id: item.id,
-            b: `${item.b}`,
-            status: item.status,
-            remarks: item.remarks,
-            isEditable: false,
-          })
-        );
+        console.log('response', response);
+        this.bList = (
+          response as Array<{
+            b: number;
+            id: number;
+            status: number;
+            remarks: string;
+          }>
+        ).map((item) => ({
+          id: item.id,
+          b: `${item.b}`,
+          status: item.status,
+          remarks: item.remarks,
+          isEditable: false,
+        }));
         console.log('bList', this.bList);
       },
       error: (error) => {
@@ -98,6 +104,11 @@ export class BeginningWeekComponent {
             p.id === response.id ? { ...response } : p
           );
           this.editingItem = null;
+          this.messageService.add({
+            severity: 'success',
+            summary: 'B',
+            detail: 'updated successfully!.',
+          });
         }
       },
       error: (err) => {
@@ -112,13 +123,14 @@ export class BeginningWeekComponent {
 
   saveNewb() {
     if (this.b === undefined) {
+      this.isValid = false;
       return;
     }
     let data = {
       b: this.b?.toString(),
-      status: this.status.value,
-      remarks: this.remarks,
-    };
+      status: this.status?.value || 1,
+      remarks: this.remarks || '',
+    }
 
     this.goalsService.createB(data).subscribe({
       next: (response: any) => {
@@ -130,10 +142,24 @@ export class BeginningWeekComponent {
             isEditable: false,
           };
           this.bList = [newGoal, ...this.bList];
+          this.b = undefined;
+          this.status = undefined;
+          this.remarks = '';
+          this.isValid = true;
+          this.messageService.add({
+            severity: 'success',
+            summary: 'B',
+            detail: 'Added successfully!.',
+          });
         }
       },
       error: (err) => {
         console.error('Create failed', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'B',
+          detail: `${this.b} already exist.`,
+        });
       },
     });
   }

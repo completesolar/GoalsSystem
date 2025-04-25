@@ -1,10 +1,11 @@
+from sqlalchemy.exc import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException,Query
 from sqlalchemy.orm import Session
 from schemas.schema import Goals, GoalsResponse, GoalsUpdate
 from schemas.goalshistory import goalshistory, goalhistoryResponse
 from schemas.who import WhoCreate, WhoResponse
 from schemas.status import StatusCreate, StatusUpdate, StatusResponse
-from schemas.proj import ProjResponse
+from schemas.proj import ProjResponse,ProjUpdate,ProjCreate
 from schemas.vp import VPResponse
 from schemas.p import PCreate, PResponse, PUpdate
 from schemas.b import BResponse,BCreate,BUpdate
@@ -42,28 +43,26 @@ from crud import (
     create_E,
     update_E,
     create_D,
-    update_D,
+    update_d,
     get_B_by_id,
     get_E_by_id,
     get_D_by_id,
-    update_status
+    update_status,
+    get_p_by_id,
+    get_proj_by_id,
+    create_proj,
+    update_proj
 )
 from typing import Annotated
 
 router = APIRouter()
 
 
-@router.get("/api/p", response_model=list[PResponse])
-def read_p(db: Session = Depends(get_db)):
-    return get_all_p(db)
+
 
 @router.get("/api/vp", response_model=list[VPResponse])
 def read_vp(db: Session = Depends(get_db)):
     return get_all_vp(db)
-
-@router.get("/api/proj", response_model=list[ProjResponse])
-def read_proj(db: Session = Depends(get_db)):
-    return get_all_proj(db)
 
 @router.get("/api/who", response_model=list[WhoResponse])
 def read_who(db: Session = Depends(get_db)):
@@ -136,12 +135,36 @@ def read_goals_history(db: Session = Depends(get_db)):
 def read_action(db: Session = Depends(get_db)):
     return get_action(db)
 
+# p
+@router.get("/api/p", response_model=list[PResponse])
+def read_p(db: Session = Depends(get_db)):
+    return get_all_p(db)
+
+@router.get("/api/p/{id}", response_model=PResponse)
+def read_p(id: int, db: Session = Depends(get_db)):
+    db_p = get_p_by_id(db, id=id)
+    if db_p is None:
+        raise HTTPException(status_code=404, detail="Status not found")
+    return db_p
+
+# @router.post("/api/p", response_model=PResponse)
+# def create_p_endpoint(p: PCreate, db: Session = Depends(get_db)):
+#     return create_p(db=db, p_data=p)
+
 @router.post("/api/p", response_model=PResponse)
 def create_p_endpoint(p: PCreate, db: Session = Depends(get_db)):
-    return create_p(db=db, p_data=p)
-
+    try:
+        return create_p(db=db, p_data=p)
+    except IntegrityError as e:
+        db.rollback() 
+        if 'duplicate key value violates unique constraint' in str(e):
+            raise HTTPException(status_code=400, detail="Duplicate data: this entry already exists.")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
+    
+    
 @router.put("/api/p/{id}", response_model=PResponse)
 def update_p_endpoint(id: int, p: PUpdate, db: Session = Depends(get_db)):
+    print("status type:",p) 
     db_p = update_p(db=db, id=id, p_data=p)
     if not db_p:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -152,9 +175,19 @@ def update_p_endpoint(id: int, p: PUpdate, db: Session = Depends(get_db)):
 def read_status(db: Session = Depends(get_db)):
     return get_all_status(db)
 
+# @router.post("/api/status", response_model=StatusResponse)
+# def create_status(status: StatusCreate, db: Session = Depends(get_db)):
+#     return create_status_entry(db=db, status=status)
+
 @router.post("/api/status", response_model=StatusResponse)
 def create_status(status: StatusCreate, db: Session = Depends(get_db)):
-    return create_status_entry(db=db, status=status)
+    try:
+        return create_status_entry(db=db, status=status)
+    except IntegrityError as e:
+        db.rollback()
+        if 'duplicate key value violates unique constraint' in str(e):
+            raise HTTPException(status_code=400, detail="Duplicate data")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/api/status/{id}", response_model=StatusResponse)
 def read_status(id: int, db: Session = Depends(get_db)):
@@ -175,10 +208,20 @@ def update_status_route(id: int, status_update: StatusUpdate, db: Session = Depe
 def read_b(db: Session = Depends(get_db)):
     return get_all_b(db)
 
+# @router.post("/api/b", response_model=BResponse)
+# def create_B(b: BCreate, db: Session = Depends(get_db)):
+#     return create_b(db=db, b_data=b)
+
 @router.post("/api/b", response_model=BResponse)
 def create_B(b: BCreate, db: Session = Depends(get_db)):
-    return create_b(db=db, b=b)
-
+    try:
+        return create_b(db=db, b_data=b)
+    except IntegrityError as e:
+        db.rollback()
+        if 'duplicate key value violates unique constraint' in str(e):
+            raise HTTPException(status_code=400, detail="Duplicate data")
+        raise HTTPException(status_code=500, detail="Internal server error")
+    
 @router.get("/api/b/{id}", response_model=BResponse)
 def read_b(id: int, db: Session = Depends(get_db)):
     db_b = get_B_by_id(db, id=id)
@@ -198,10 +241,20 @@ def update_b_endpoint(id: int, b: BUpdate, db: Session = Depends(get_db)):
 def read_e(db: Session = Depends(get_db)):
     return get_all_e(db)
 
-@router.post("/api/e", response_model=EResponse)
-def create_e(e: ECreate, db: Session = Depends(get_db)):
-    return create_E(db=db, e=e)
+# @router.post("/api/e", response_model=EResponse)
+# def create_e_endpoint(e: ECreate, db: Session = Depends(get_db)):
+#     return create_E(db=db, e_data=e)
 
+@router.post("/api/e", response_model=EResponse)
+def create_e_endpoint(e: ECreate, db: Session = Depends(get_db)):
+    try:
+        return create_E(db=db, e_data=e)
+    except IntegrityError as ex:
+        db.rollback()
+        if 'duplicate key value violates unique constraint' in str(ex):
+            raise HTTPException(status_code=400, detail="Duplicate data")
+        raise HTTPException(status_code=500, detail="Internal server error")
+    
 @router.get("/api/e/{id}", response_model=EResponse)
 def read_(id: int, db: Session = Depends(get_db)):
     db_e = get_E_by_id(db, id=id)
@@ -209,19 +262,31 @@ def read_(id: int, db: Session = Depends(get_db)):
         raise HTTPException(b_code=404, detail="B not found")
     return db_e
 
-@router.put("/api/e/{id}", response_model=BUpdate)
-def update_e(id: int, b_update: EUpdate, db: Session = Depends(get_db)):
-    return update_E(db=db, id=id, b_update=b_update)
+@router.put("/api/e/{id}", response_model=EResponse)
+def update_e_endpoint(id: int, e: PUpdate, db: Session = Depends(get_db)):
+    db_e = update_E(db=db, id=id, e_data=e)
+    if not db_e:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return db_e
 
 # D
 @router.get("/api/d", response_model=list[DResponse])
 def read_d(db: Session = Depends(get_db)):
     return get_all_d(db)
 
+# @router.post("/api/d", response_model=DResponse)
+# def create_d(D: DCreate, db: Session = Depends(get_db)):
+#     return create_D(db=db, d_data=D)
 @router.post("/api/d", response_model=DResponse)
 def create_d(D: DCreate, db: Session = Depends(get_db)):
-    return create_D(db=db, D=D)
-
+    try:
+        return create_D(db=db, d_data=D)
+    except IntegrityError as ex:
+        db.rollback()
+        if 'duplicate key value violates unique constraint' in str(ex):
+            raise HTTPException(status_code=400, detail="Duplicate data")
+        raise HTTPException(status_code=500, detail="Internal server error")
+    
 @router.get("/api/d/{id}", response_model=DResponse)
 def read_D(id: int, db: Session = Depends(get_db)):
     db_D = get_D_by_id(db, id=id)
@@ -229,6 +294,41 @@ def read_D(id: int, db: Session = Depends(get_db)):
         raise HTTPException(D_code=404, detail="D not found")
     return db_D
 
-@router.put("/api/d/{id}", response_model=DUpdate)
-def update_d(id: int, D_update: DUpdate, db: Session = Depends(get_db)):
-    return update_D(db=db, id=id, D_update=D_update)
+@router.put("/api/d/{id}", response_model=DResponse)
+def update_D_endpoint(id: int, d: DUpdate, db: Session = Depends(get_db)):
+    db_d = update_d(db=db, id=id, d_data=d)
+    if not db_d:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return db_d
+ 
+
+#  proj
+@router.get("/api/proj", response_model=list[ProjResponse])
+def read_proj(db: Session = Depends(get_db)):
+    return get_all_proj(db)
+
+@router.get("/api/proj/{id}", response_model=ProjResponse)
+def read_proj(id: int, db: Session = Depends(get_db)):
+    db_proj = get_proj_by_id(db, id=id)
+    if db_proj is None:
+        raise HTTPException(status_code=404, detail="Status not found")
+    return db_proj
+
+
+@router.post("/api/proj", response_model=ProjResponse)
+def create_proj_endpoint(proj: ProjCreate, db: Session = Depends(get_db)):
+    try:
+        return create_proj(db=db, proj_data=proj)
+    except IntegrityError as e:
+        db.rollback() 
+        if 'duplicate key value violates unique constraint' in str(e):
+            raise HTTPException(status_code=400, detail="Duplicate data: this entry already exists.")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
+    
+    
+@router.put("/api/proj/{id}", response_model=ProjResponse)
+def update_proj_endpoint(id: int, proj: ProjUpdate, db: Session = Depends(get_db)):
+    db_proj = update_proj(db=db, id=id, proj_data=proj)
+    if not db_proj:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return db_proj

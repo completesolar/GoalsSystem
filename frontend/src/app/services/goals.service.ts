@@ -1,9 +1,13 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpParams,
+} from '@angular/common/http';
 import { environment } from '../../environments/enivornments';
 import { Goals } from '../models/goals';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -40,7 +44,9 @@ export class GoalsService {
   }
 
   createStatus(p: any) {
-    return this.http.post(`${this.baseURL}/status`, p);
+    return this.http
+      .post(`${this.baseURL}/status`, p)
+      .pipe(catchError(this.handleError));
   }
 
   updateStatus(p: any) {
@@ -49,6 +55,14 @@ export class GoalsService {
 
   getD() {
     return this.http.get(`${this.baseURL}/d`);
+  }
+
+  updateD(d: any) {
+    return this.http.put(`${this.baseURL}/d/${d.id}`, d);
+  }
+
+  createD(d: any) {
+    return this.http.post(`${this.baseURL}/d`, d);
   }
   getP() {
     return this.http.get(`${this.baseURL}/p`);
@@ -99,11 +113,26 @@ export class GoalsService {
   getProj() {
     return this.http.get(`${this.baseURL}/proj`);
   }
+  updateProj(Proj: any) {
+    return this.http.put(`${this.baseURL}/proj/${Proj.id}`, Proj);
+  }
+
+  createProj(Proj: any) {
+    return this.http.post(`${this.baseURL}/proj`, Proj);
+  }
   getB() {
     return this.http.get(`${this.baseURL}/b`);
   }
   getE() {
-    return this.http.get(`${this.baseURL}/b`);
+    return this.http.get(`${this.baseURL}/e`);
+  }
+
+  updateE(e: any) {
+    return this.http.put(`${this.baseURL}/e/${e.id}`, e);
+  }
+
+  createE(e: any) {
+    return this.http.post(`${this.baseURL}/e`, e);
   }
 
   getAction() {
@@ -126,5 +155,9 @@ export class GoalsService {
 
   updateB(b: any) {
     return this.http.put(`${this.baseURL}/b/${b.id}`, b);
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    return throwError(() => new Error(error.message || 'Server error'));
   }
 }
