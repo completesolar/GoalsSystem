@@ -1,15 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { GoalsService } from '../../services/goals.service';
-import { MessageService } from 'primeng/api';
 
 @Component({
-  selector: 'app-delinquent',
+  selector: 'app-projects',
   imports: [
     ToastModule,
     CommonModule,
@@ -20,20 +20,20 @@ import { MessageService } from 'primeng/api';
     FormsModule,
   ],
   providers: [MessageService],
-  templateUrl: './delinquent.component.html',
-  styleUrl: './delinquent.component.scss',
+  templateUrl: './projects.component.html',
+  styleUrl: './projects.component.scss',
 })
-export class DelinquentComponent {
+export class ProjectsComponent {
   columns = [
     { field: 's.no', header: 'S.No', tooltip: '' },
-    { field: 'dId', header: 'D ID', tooltip: '' },
-    { field: 'd', header: 'D', tooltip: '' },
+    { field: 'projectId', header: 'Proj ID', tooltip: '' },
+    { field: 'project', header: 'Project', tooltip: '' },
     { field: 'status', header: 'Status', tooltip: '' },
     { field: 'remarks', header: 'Remarks', tooltip: '' },
     { field: 'action', header: 'ACTION', tooltip: '' },
   ];
 
-  DList: any[] = [];
+  projList: any[] = [];
   editingItem: any = null;
   statusOptions: any = [
     { label: 'Active', value: 1 },
@@ -43,7 +43,7 @@ export class DelinquentComponent {
 
   isValid: boolean = true;
 
-  d: number | undefined;
+  project: string | undefined;
   remarks: any;
   status: any;
 
@@ -53,27 +53,27 @@ export class DelinquentComponent {
   ) {}
 
   ngOnInit() {
-    this.getD();
+    this.getProj();
   }
 
-  getD() {
-    this.goalsService.getD().subscribe({
+  getProj() {
+    this.goalsService.getProj().subscribe({
       next: (response) => {
         console.log('response', response);
-        this.DList = (
-          response as Array<{
-            d: number;
-            id: number;
-            status: number;
-            remarks: string;
-          }>
-        ).map((item) => ({
-          id: item.id,
-          d: `${item.d}`,
-          status: item.status,
-          remarks: item.remarks,
-          isEditable: false,
-        }));
+        // this.projList = (
+        //   response as Array<{
+        //     d: number;
+        //     id: number;
+        //     status: number;
+        //     remarks: string;
+        //   }>
+        // ).map((item) => ({
+        //   id: item.id,
+        //   d: `${item.d}`,
+        //   status: item.status,
+        //   remarks: item.remarks,
+        //   isEditable: false,
+        // }));
       },
       error: (error) => {
         console.error('Error fetching status:', error);
@@ -87,7 +87,7 @@ export class DelinquentComponent {
     this.editingItem = { ...item };
   }
 
-  async updateD(item: any) {
+  async updateProject(item: any) {
     console.log('editingItem', this.editingItem);
     const isChanged = await this.isObjectChanged(item, this.editingItem);
     if (!this.editingItem && isChanged) return;
@@ -95,14 +95,14 @@ export class DelinquentComponent {
       next: (response: any) => {
         console.log('Response', response);
         if (response && response.id) {
-          this.DList = this.DList.map((p: any) =>
+          this.projList = this.projList.map((p: any) =>
             p.id === response.id ? { ...response } : p
           );
-          console.log('statusList edit', this.DList);
-          this.getD();
+          console.log('statusList edit', this.projList);
+          this.getProj();
           this.messageService.add({
             severity: 'success',
-            summary: 'D',
+            summary: 'Project',
             detail: 'updated successfully!.',
           });
           this.editingItem = null;
@@ -118,19 +118,19 @@ export class DelinquentComponent {
     this.editingItem = null;
   }
 
-  saveNewD() {
-    if (this.d === undefined) {
+  saveNewProject() {
+    if (this.project === undefined) {
       this.isValid = false;
       console.log('isValid:', this.isValid);
       return;
     }
     let data = {
-      d: this.d,
+      d: this.project,
       active_status: this.status !== undefined ? this.status.value : 1,
       remarks: this.remarks,
     };
 
-    this.goalsService.createD(data).subscribe({
+    this.goalsService.createProj(data).subscribe({
       next: (response: any) => {
         console.log('Response', response);
 
@@ -141,14 +141,14 @@ export class DelinquentComponent {
             createddatetime: new Date(),
             isEditable: false,
           };
-          this.DList = [newGoal, ...this.DList];
-          this.d = undefined;
+          this.projList = [newGoal, ...this.projList];
+          this.project = '';
           this.status = null;
           this.remarks = '';
           this.isValid = true;
           this.messageService.add({
             severity: 'success',
-            summary: 'D',
+            summary: 'Project',
             detail: 'Added successfully!.',
           });
         }
@@ -157,8 +157,8 @@ export class DelinquentComponent {
         console.error('Create failed', err);
         this.messageService.add({
           severity: 'error',
-          summary: 'D',
-          detail: `${this.d} already exist.`,
+          summary: 'Project',
+          detail: `${this.project} already exist.`,
         });
       },
     });

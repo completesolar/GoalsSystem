@@ -54,6 +54,14 @@ export class HeaderComponent {
       label: 'End Week',
       routerLink: ['/e_week'],
     },
+    {
+      label: 'Delinquent',
+      routerLink: ['/delinquent'],
+    },
+    {
+      label: 'Project',
+      routerLink: ['/project'],
+    },
     // {
     //   label: 'Goals',
     //   icon: 'pi pi-bullseye',

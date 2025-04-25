@@ -2,16 +2,16 @@
   <div class="mb-2 logo-section flex p-2 items-center justify-content-between">
 
     <div class="px-2 title-section flex items-center justify-between  w-full">
-      <div class="main-title font-semibold " style="font-size: 16px;font-weight: 600;">D Master</div>
+      <div class="main-title font-semibold " style="font-size: 16px;font-weight: 600;">Projects Master</div>
     </div>
   </div>
   <div class="p-2 mx-2 bg-white mb-2 border-round-md border-1 border-green-400">
     <div class="pl-2 w-full">
       <div class="flex gap-2 items-end justify-between align-items-end">
         <div class=" text-center">
-          <div class="font-bold">D</div>
-          <input type="number" pInputText [(ngModel)]="d" [ngClass]="{'invalid-border': !isValid && d ===undefined}"
-            class="no-spinner" />
+          <div class="font-bold">project</div>
+          <input type="text" pInputText [(ngModel)]="project"
+            [ngClass]="{'invalid-border': !isValid && !project?.trim()}" class="no-spinner" />
         </div>
         <div class=" text-center">
           <div class="font-bold">Status</div>
@@ -22,13 +22,13 @@
           <div class="font-bold">Remarks</div>
           <input pInputText [(ngModel)]="remarks" />
         </div>
-        <p-button icon="pi pi-plus" (click)="saveNewD()" severity="success" size="small" label="Add"
+        <p-button icon="pi pi-plus" (click)="saveNewProject()" severity="success" size="small" label="Add"
           [style]="{ height: '24px', fontSize: '12px' }"></p-button>
       </div>
     </div>
   </div>
   <div class="table-container pr-3 pl-3">
-    <p-table #dataTable [value]="DList" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
+    <p-table #dataTable [value]="projList" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
       [rowsPerPageOptions]="[10, 20, 50]" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} goals"
       [paginatorPosition]="'bottom'" [sortMode]="'multiple'" scrollable="false"
       [style]="{ width: '100%', height: 'auto', tableLayout: 'fixed' }" tableStyleClass="custom-goal-table fixed-table">
@@ -47,7 +47,7 @@
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
-        <tr *ngIf="DList.length">
+        <tr *ngIf="projList.length">
           <td>{{ rowIndex + 1 }}</td>
           <td>{{ item.id }}</td>
           <td>
@@ -71,7 +71,7 @@
           </td>
           <td class="icon-actions-column">
             <i [ngClass]="editingItem?.id === item.id ? 'pi pi-save actions' : 'pi pi-pencil actions'"
-              (click)="editingItem?.id === item.id ? updateD(item) : onEdit(item)" tabindex="13"></i>
+              (click)="editingItem?.id === item.id ? updateProject(item) : onEdit(item)" tabindex="13"></i>
             <i *ngIf="editingItem?.id === item.id" class="pi pi-times actions" (click)="cancelEdit()"
               pTooltip="Cancel Edit" tooltipPosition="bottom"></i>
           </td>
