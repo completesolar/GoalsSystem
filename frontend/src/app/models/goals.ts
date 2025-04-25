@@ -6,7 +6,7 @@ export interface Goals {
   vp: string | null;
   b: number | null;
   e: number | null;
-  d: string;
+  d: number | null
   s: string;
   memo: string;
   fiscalyear: number;

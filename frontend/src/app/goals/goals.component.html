@@ -1,7 +1,15 @@
 <div class="body">
   <p-toast position="top-right"></p-toast>
 
-
+  <!-- <div class="flex justify-content-end mb-2 pr-3 pl-3">
+    <p-button
+      label="Clear All Filters"
+      icon="pi pi-filter-slash"
+      class="p-button-danger p-button-sm"
+      (click)="clearAllFilters()"
+    ></p-button>
+  </div>
+   -->
   <div class="mb-1 title-section flex items-center">
     <div>
       <button class="legend-toggle" (click)="toggleLegend()">
@@ -21,9 +29,7 @@
         </p>
 
         <p class="my-1">
-          <strong>PROJ TYPES:</strong> ADMN, AGE, AOP, AVL, BOM, CCC, COMM,
-          COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL,
-          RCCA, SALES, SOX, TJRS
+          <strong>PROJ TYPES:</strong>TJRM, TJRS, SHIP, SOX, BATT, ADMN, RCCA, SLES
         </p>
       </div>
     </div>
@@ -128,7 +134,7 @@
           <p-select
           #bSelect
           class="bselect"
-          [options]="weekOptions"
+          [options]="priorityOptionsB"
           [(ngModel)]="newRow.b"
           placeholder="B"
           [pTooltip]="'WW goal was given'"
@@ -136,7 +142,7 @@
           optionLabel="label"
           optionValue="value"
           filter
-  (keydown)="onKeydownGeneric($event, weekOptions, 'b', bSelect)"
+  (keydown)="onKeydownGeneric($event, priorityOptionsB, 'b', bSelect)"
           [style]="{ width: '100%' }"
           [autofocusFilter]="true"
         ></p-select>
@@ -182,7 +188,7 @@
         <div  style="width:74px">
           <div class="mb-2 font-bold text-center">S</div>
           <p-select
-          class="sselect"
+          class="select"
             [options]="statusOptions"
             [(ngModel)]="newRow.s"
             placeholder="S"
@@ -268,7 +274,10 @@
       </div>
     </div>
   </div>
+
   <div class="table-container pr-3 pl-3">
+  
+    
     <p-table #dataTable
       [value]="goal"
       [paginator]="true"
@@ -321,17 +330,29 @@
 
 <div class="relative" *ngIf="col.field === 'gdb'">
   <p-columnFilter
+  #gdbColumnFilter
   field="gdb"
   matchMode="contains"
   [showMatchModes]="false"
   [showOperator]="false"
   [showAddButton]="false"
-  display="menu"  
+  display="menu"
   [showApplyButton]="false"
   [showClearButton]="false"
 >
   <ng-template #filter let-value let-filter="filterCallback">
     <div class="flex flex-column gap-2 p-2" style="min-width: 14rem">
+      <div class="flex justify-content-between align-items-center">
+        <strong>Goal Description</strong>
+        <button
+          type="button"
+          pButton
+          icon="pi pi-times"
+          class="p-button-sm p-button-text"
+          (click)="gdbColumnFilter?.hide()"
+        ></button>
+      </div>
+
       <input
         type="text"
         pInputText
@@ -339,9 +360,10 @@
         (ngModelChange)="onGdbFilterChange()"
         placeholder="Search GDB"
       />
+
       <div class="flex gap-2 justify-content-between">
         <p-button type="button" label="Clear" size="small" (click)="clearFilter('gdb')"></p-button>
-        <p-button type="button" label="Apply" size="small" (click)="applyFilters()"></p-button>
+        <!-- <p-button type="button" label="Apply" size="small" (click)="applyFilters()"></p-button> -->
       </div>
     </div>
   </ng-template>
@@ -356,30 +378,34 @@
 
       <ng-template pTemplate="body" let-row let-rowIndex="rowIndex">
         <tr *ngIf="goal.length">
-              <td>
-            <div #whoSelectWrapper>
-            <p-select
-              [options]="whoOptions"
-              [(ngModel)]="row.who"
-              [disabled]="!row.isEditable"
-              optionLabel="label"
-              optionValue="value"
-              filter
-              [ngClass]="{ saved: !row.isEditable }"
+          <td>
+            <div
+              #whoSelectWrapper
+              [pTooltip]="getLabelForValue(row.who)"
               tooltipPosition="bottom"
-              [tabindex]="rowIndex * 100 + 1"
             >
-              <ng-template let-option pTemplate="item">
-                {{ option.label }}
-              </ng-template>
-              <ng-template let-selectedOption pTemplate="selectedItem">
-                {{
-                  row.isEditable ? selectedOption?.value : selectedOption?.value
-                }}
-              </ng-template>
-            </p-select>
+              <p-select
+                [options]="whoOptions"
+                [(ngModel)]="row.who"
+                [disabled]="!row.isEditable"
+                optionLabel="label"
+                optionValue="value"
+                filter
+                [ngClass]="{ saved: !row.isEditable }"
+                [tabindex]="rowIndex * 100 + 1"
+              >
+                <ng-template let-option pTemplate="item">
+                  {{ option.label }}
+                </ng-template>
+                <ng-template let-selectedOption pTemplate="selectedItem">
+                  {{
+                    row.isEditable ? selectedOption?.value : selectedOption?.value
+                  }}
+                </ng-template>
+              </p-select>
             </div>
           </td>
+          
 
           <td>
             <p-select
@@ -411,32 +437,36 @@
           </td>
 
           <td>
-            <p-select
-              [options]="vpOptions"
-              [(ngModel)]="row.vp"
-              [disabled]="!row.isEditable"
-              optionLabel="label"
-              optionValue="value"
-              filter
-              [ngClass]="{ saved: !row.isEditable }"
+            <div
+              [pTooltip]="getLabelForVpValue(row.vp)"
               tooltipPosition="bottom"
-              [tabindex]="rowIndex * 100 + 4"
-
             >
-              <ng-template let-option pTemplate="item">
-                {{ option.label }}
-              </ng-template>
-              <ng-template let-selectedOption pTemplate="selectedItem">
-                {{
-                  row.isEditable ? selectedOption?.value : selectedOption?.value
-                }}
-              </ng-template>
-            </p-select>
+              <p-select
+                [options]="vpOptions"
+                [(ngModel)]="row.vp"
+                [disabled]="!row.isEditable"
+                optionLabel="label"
+                optionValue="value"
+                filter
+                [ngClass]="{ saved: !row.isEditable }"
+                [tabindex]="rowIndex * 100 + 4"
+              >
+                <ng-template let-option pTemplate="item">
+                  {{ option.label }}
+                </ng-template>
+                <ng-template let-selectedOption pTemplate="selectedItem">
+                  {{
+                    row.isEditable ? selectedOption?.value : selectedOption?.value
+                  }}
+                </ng-template>
+              </p-select>
+            </div>
           </td>
+          
 
           <td>
             <p-select
-              [options]="weekOptions"
+              [options]="priorityOptionsB"
               [(ngModel)]="row.b"
               [disabled]="!row.isEditable"
               optionLabel="label"
@@ -478,18 +508,30 @@
           </td>
 
           <td>
-            <p-select
-              [options]="statusOptions"
-              [(ngModel)]="row.s"
-              [disabled]="!row.isEditable"
-              optionLabel="label"
-              optionValue="value"
-              filter
-              [ngClass]="{ saved: !row.isEditable }"
-              [tabindex]="rowIndex * 100 + 8"
-              ></p-select>
+            <div
+              [pTooltip]="!row.isEditable ? getLabelForStatusValue(row.s) : undefined"
+              tooltipPosition="bottom"
+            >
+              <p-select
+                [options]="statusOptions"
+                [(ngModel)]="row.s"
+                [disabled]="!row.isEditable"
+                optionLabel="label"
+                optionValue="value"
+                filter
+                [ngClass]="{ saved: !row.isEditable }"
+                [tabindex]="rowIndex * 100 + 8"
+              >
+                <ng-template let-option pTemplate="item">
+                  {{ option.label }}
+                </ng-template>
+                <ng-template let-selectedOption pTemplate="selectedItem">
+                  {{ selectedOption?.value }}
+                </ng-template>
+              </p-select>
+            </div>
           </td>
-
+          
           <td>
             <div
               *ngIf="row.isEditable; else viewMode"
