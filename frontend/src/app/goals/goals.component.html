@@ -1,15 +1,6 @@
 <div class="body">
   <p-toast position="top-right"></p-toast>
-
-  <!-- <div class="flex justify-content-end mb-2 pr-3 pl-3">
-    <p-button
-      label="Clear All Filters"
-      icon="pi pi-filter-slash"
-      class="p-button-danger p-button-sm"
-      (click)="clearAllFilters()"
-    ></p-button>
-  </div>
-   -->
+  
   <div class="mb-1 title-section flex items-center">
     <div>
       <button class="legend-toggle" (click)="toggleLegend()">
@@ -48,7 +39,7 @@
 
   <div class="p-2 mx-2 bg-white mb-2 border-round-md border-1 border-green-400">
    
-    <div class=" pl-2 w-full">
+    <div class=" w-full">
       <div class="flex gap-2 align-items-end ">
         <div style="width:76px">
           <div class="mb-2 font-bold text-center">WHO</div>
@@ -256,7 +247,18 @@
         </div>
 
 
-        <div class="flex-1" style="margin-bottom: 2px;">
+        <div class="flex ialign-items-center justify-content-center flex-column gap-1" style="margin-bottom: 2px;">
+
+          <p-button
+          icon="pi pi-filter-slash"
+          (click)="clearAllFilters()"
+          severity="success"
+          size="small"
+          label="Clear"
+          class="mb-2"
+          [style]="{ height: '24px', fontSize: '12px' }"
+        ></p-button>
+
           <p-button
           icon="pi pi-plus"
           (click)="addGoal()"
