@@ -4,6 +4,8 @@ from typing import Optional
 # Base schema shared by create & update
 class ProjBase(BaseModel):
     proj: Optional[str] = None
+    status: Optional[int] = None
+    remarks: Optional[str] = None
 
 # Create schema
 class ProjCreate(ProjBase):

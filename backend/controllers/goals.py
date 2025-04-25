@@ -5,7 +5,7 @@ from schemas.schema import Goals, GoalsResponse, GoalsUpdate
 from schemas.goalshistory import goalshistory, goalhistoryResponse
 from schemas.who import WhoCreate, WhoResponse
 from schemas.status import StatusCreate, StatusUpdate, StatusResponse
-from schemas.proj import ProjResponse
+from schemas.proj import ProjResponse,ProjUpdate,ProjCreate
 from schemas.vp import VPResponse
 from schemas.p import PCreate, PResponse, PUpdate
 from schemas.b import BResponse,BCreate,BUpdate
@@ -48,7 +48,10 @@ from crud import (
     get_E_by_id,
     get_D_by_id,
     update_status,
-    get_p_by_id
+    get_p_by_id,
+    get_proj_by_id,
+    create_proj,
+    update_proj
 )
 from typing import Annotated
 
@@ -60,10 +63,6 @@ router = APIRouter()
 @router.get("/api/vp", response_model=list[VPResponse])
 def read_vp(db: Session = Depends(get_db)):
     return get_all_vp(db)
-
-@router.get("/api/proj", response_model=list[ProjResponse])
-def read_proj(db: Session = Depends(get_db)):
-    return get_all_proj(db)
 
 @router.get("/api/who", response_model=list[WhoResponse])
 def read_who(db: Session = Depends(get_db)):
@@ -302,3 +301,34 @@ def update_D_endpoint(id: int, d: DUpdate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Item not found")
     return db_d
  
+
+#  proj
+@router.get("/api/proj", response_model=list[ProjResponse])
+def read_proj(db: Session = Depends(get_db)):
+    return get_all_proj(db)
+
+@router.get("/api/proj/{id}", response_model=ProjResponse)
+def read_proj(id: int, db: Session = Depends(get_db)):
+    db_proj = get_proj_by_id(db, id=id)
+    if db_proj is None:
+        raise HTTPException(status_code=404, detail="Status not found")
+    return db_proj
+
+
+@router.post("/api/proj", response_model=ProjResponse)
+def create_proj_endpoint(proj: ProjCreate, db: Session = Depends(get_db)):
+    try:
+        return create_proj(db=db, proj_data=proj)
+    except IntegrityError as e:
+        db.rollback() 
+        if 'duplicate key value violates unique constraint' in str(e):
+            raise HTTPException(status_code=400, detail="Duplicate data: this entry already exists.")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
+    
+    
+@router.put("/api/proj/{id}", response_model=ProjResponse)
+def update_proj_endpoint(id: int, proj: ProjUpdate, db: Session = Depends(get_db)):
+    db_proj = update_proj(db=db, id=id, proj_data=proj)
+    if not db_proj:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return db_proj

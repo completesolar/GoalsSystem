@@ -31,7 +31,7 @@ import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { CheckboxModule } from 'primeng/checkbox';
 
-import { weekConstant } from '../common/common';
+// import { weekConstant } from '../common/common';
 import { DropdownModule } from 'primeng/dropdown';
 import { SelectModule } from 'primeng/select';
 import { Goals } from '../models/goals';
@@ -92,18 +92,20 @@ export class GoalsComponent implements AfterViewInit {
   private readonly _destroying$ = new Subject<void>();
   selectedSettings: string | undefined;
   isLegendVisible = false;
-  weekOptions = weekConstant.map((value) => ({
-    label: value.toString(),
-    value,
-  }));
-  weekOptionsseb = weekConstant.map((value) => ({
-    label: value.toString(),
-    value: value.toString(),
-  }));
+  // weekOptions = weekConstant.map((value) => ({
+  //   label: value.toString(),
+  //   value,
+  // }));
+  // weekOptionsseb = weekConstant.map((value) => ({
+  //   label: value.toString(),
+  //   value: value.toString(),
+  // }));
   statusOptions: { label: string; value: string }[] = [];
   priorityOptions: { label: number; value: number }[] = [];
-  priorityOptionsE: { label: string; value: number }[] = [];
-  priorityOptionsD: { label: string; value: string }[] = [];
+  priorityOptionsE: { label: number; value: number }[] = [];
+  priorityOptionsD: { label: number; value: number }[] = [];
+  priorityOptionsB: { label: number; value: number }[] = [];
+  weekOptions: { label: string; value: string }[] = [];
   projOptions: { label: string; value: string }[] = [];
   filterOpenField: string | null = null;
   selectedFilters: any = [];
@@ -154,7 +156,7 @@ export class GoalsComponent implements AfterViewInit {
     vp: '',
     b: null,
     e: null,
-    d: '',
+    d: null,
     s: '',
     fiscalyear: this.currentYear,
     gdb: '',
@@ -245,7 +247,9 @@ export class GoalsComponent implements AfterViewInit {
     this.loadWhoOptions();
     this.getStatus();
     this.getProj();
-    this.getNumData();
+    this.getDData();
+    this.getBData();
+    this.getEData();
     this.loadVpOptions();
     this.getPriority();
     this.getActions();
@@ -259,13 +263,30 @@ export class GoalsComponent implements AfterViewInit {
           label: `${item.initials ?? ''} (${item.employee_name ?? ''})`,
           value: item.initials,
         })).sort((a, b) => a.label.localeCompare(b.label));;
+
       },
       error: (err) => {
         console.error('Failed to load WHO options:', err);
       },
     });
   }
-
+  getLabelForValue(value: any): string | undefined {
+    const selected = this.whoOptions?.find(opt => opt.value === value);
+    return selected ? selected.label : undefined;
+  }
+  
+  getLabelForVpValue(value: any): string | undefined {
+    const selected = this.vpOptions?.find(opt => opt.value === value);
+    return selected ? selected.label : undefined;
+  }
+  
+  getLabelForStatusValue(value: any): string | undefined {
+    const selected = this.statusOptions?.find(opt => opt.value === value);
+    return selected ? selected.label : undefined;
+  }
+  
+  
+  
   loadVpOptions(): void {
     this.goalsService.getVpOptions().subscribe({
       next: (data) => {
@@ -327,7 +348,8 @@ export class GoalsComponent implements AfterViewInit {
           ...g,
           goalid: g.goalid,
           e: g.e ? +g.e : '',
-          d: g.d?.toString() ?? '',
+          b: g.b ? +g.b : '',
+          d: g.d ? +g.d : '',
           s: g.s ?? '',
           p: g.p ? g.p : 1,
           proj: g.proj ? g.proj.toUpperCase() : '',
@@ -377,55 +399,6 @@ export class GoalsComponent implements AfterViewInit {
     }
   }
 
-  // loadGoalsHistory(id: number) {
-  //   this.goalsService.getGoalHistory(id).subscribe(
-  //     (goalsHistory) => {
-  //       let sortedHistory = (goalsHistory as any[])
-  //         .map(g => ({
-  //           ...g,
-  //           createddateMST: moment(g.createddate)
-  //             .tz('America/Denver')
-  //             .format('MM/DD/YYYY hh:mm:ss A')
-  //         }))
-  //         .sort((a, b) => new Date(a.createddate).getTime() - new Date(b.createddate).getTime());
-  
-  //       const coloredHistory = [];
-  
-  //       for (let i = 0; i < sortedHistory.length; i++) {
-  //         const current = sortedHistory[i];
-  //         const previous = sortedHistory[i - 1];
-  //         const cyclePalette = this.colorPalette.slice(1); 
-  //         const color = cyclePalette[(i - 1) % cyclePalette.length] || cyclePalette[0];
-  
-  //         const rowDisplay: any = {
-  //           ...current,
-  //           display: {
-  //             action: [],
-  //             description: [],
-  //             memo: []
-  //           }
-  //         };
-  
-  //         if (i === 0) {
-  //           rowDisplay.display.action.push({ text: current.action || '', color: this.colorPalette[0] });
-  //           rowDisplay.display.description.push({ text: current.description || '', color: this.colorPalette[0] });
-  //           rowDisplay.display.memo.push({ text: current.memo || '', color: this.colorPalette[0] });
-  //         } else {
-  //           rowDisplay.display.memo = this.getSmartDiffChunks(current.memo || '', previous.memo || '', color);
-  //           rowDisplay.display.action = this.getSmartDiffChunksForAction(current.action || '', previous.action || '', color);
-  //           rowDisplay.display.description = this.getSmartDiffChunks(current.description || '', previous.description || '', color);
-  //                   }
-  
-  //         coloredHistory.push(rowDisplay);
-  //       }
-  
-  //       this.goalHistory = coloredHistory.reverse();
-  //     },
-  //     error => {
-  //       console.error('Error fetching goal history for ID:', id);
-  //     }
-  //   );
-  // }
   loadGoalsHistory(id: number) {
     this.goalsService.getGoalHistory(id).subscribe(
       (goalsHistory) => {
@@ -440,17 +413,11 @@ export class GoalsComponent implements AfterViewInit {
   
         const coloredHistory = [];
   
-        const getRandomBrightColor = (): string => {
-          const r = Math.floor(128 + Math.random() * 127);
-          const g = Math.floor(128 + Math.random() * 127);
-          const b = Math.floor(128 + Math.random() * 127);
-          return `rgb(${r}, ${g}, ${b})`;
-        };
-  
         for (let i = 0; i < sortedHistory.length; i++) {
           const current = sortedHistory[i];
           const previous = sortedHistory[i - 1];
-          const color = i === 0 ? '#000000' : getRandomBrightColor();
+          const cyclePalette = this.colorPalette.slice(1); 
+          const color = cyclePalette[(i - 1) % cyclePalette.length] || cyclePalette[0];
   
           const rowDisplay: any = {
             ...current,
@@ -462,14 +429,14 @@ export class GoalsComponent implements AfterViewInit {
           };
   
           if (i === 0) {
-            rowDisplay.display.action.push({ text: current.action || '', color });
-            rowDisplay.display.description.push({ text: current.description || '', color });
-            rowDisplay.display.memo.push({ text: current.memo || '', color });
+            rowDisplay.display.action.push({ text: current.action || '', color: this.colorPalette[0] });
+            rowDisplay.display.description.push({ text: current.description || '', color: this.colorPalette[0] });
+            rowDisplay.display.memo.push({ text: current.memo || '', color: this.colorPalette[0] });
           } else {
             rowDisplay.display.memo = this.getSmartDiffChunks(current.memo || '', previous.memo || '', color);
             rowDisplay.display.action = this.getSmartDiffChunksForAction(current.action || '', previous.action || '', color);
             rowDisplay.display.description = this.getSmartDiffChunks(current.description || '', previous.description || '', color);
-          }
+                    }
   
           coloredHistory.push(rowDisplay);
         }
@@ -481,6 +448,7 @@ export class GoalsComponent implements AfterViewInit {
       }
     );
   }
+
   
 
 
@@ -512,7 +480,7 @@ export class GoalsComponent implements AfterViewInit {
       vp: '',
       b: null,
       e: null,
-      d: '',
+      d: null,
       s: '',
       fiscalyear: this.currentYear,
       memo: '',
@@ -538,7 +506,7 @@ export class GoalsComponent implements AfterViewInit {
     }
 
     this.newRow.e = this.newRow.e;
-    this.newRow.d = this.newRow.d.toString();
+    this.newRow.d = this.newRow.d;
     this.newRow.action = `${this.newRow.action}:`;
 
     this.goalsService.createGoal(this.newRow).subscribe((response: any) => {
@@ -574,7 +542,7 @@ export class GoalsComponent implements AfterViewInit {
   exportExcelData(): void {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Goals');
-    const imageUrl = 'assets/cslr-logo 1.png';
+    const imageUrl = 'assets/SunPower.png';
 
     fetch(imageUrl)
       .then((response) => response.blob())
@@ -744,14 +712,13 @@ export class GoalsComponent implements AfterViewInit {
         });
       });
   }
-
   exportPdfData(): void {
     const doc = new jsPDF('landscape');
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
   
     const logo = new Image();
-    logo.src = 'assets/cslr-logo 1.png';
+    logo.src = 'assets/SunPower.png';
   
     logo.onload = () => {
       const logoX = 10;
@@ -765,11 +732,10 @@ export class GoalsComponent implements AfterViewInit {
   
       const title = 'GOALS SYSTEM REPORT';
       const titleX = (pageWidth - doc.getTextWidth(title)) / 2;
-      const titleY = logoY + logoHeight / 2 + 5; 
+      const titleY = logoY + logoHeight / 2 + 5;
   
       doc.text(title, titleX, titleY);
   
-      // Date + Sort Order block
       const currentMSTTime = moment().tz('America/Denver');
       const fileNameDate = currentMSTTime.format('MM-DD-YY');
       const formattedTime = currentMSTTime.format('hh-mm-ss A');
@@ -785,7 +751,6 @@ export class GoalsComponent implements AfterViewInit {
       doc.text('SORT Order: This report is sorted on WHO P', infoStartX, infoStartY);
       doc.text(`Reported Date & time: ${displayTime} (MST)`, infoStartX, infoStartY + lineGap);
   
-      // Legend
       const keyText = [
         'Key:',
         'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
@@ -829,6 +794,8 @@ export class GoalsComponent implements AfterViewInit {
         `${goal.action ?? ''} ${goal.description ?? ''} ${goal.memo ?? ''}`.trim()
       ]);
   
+      const totalPagesExp = "{total_pages_count_string}";
+  
       autoTable(doc, {
         startY: tableStartY,
         head: [columns],
@@ -849,14 +816,19 @@ export class GoalsComponent implements AfterViewInit {
         },
         margin: { top: 10 },
         didDrawPage: (data) => {
-          const pageNumber = data.pageNumber;
+          const pageNumber = doc.getCurrentPageInfo().pageNumber;
           doc.setFontSize(9);
           doc.text(`Reported: ${displayTime}`, 14, pageHeight - 10, { align: 'left' });
           doc.text('Company Confidential', pageWidth / 2, pageHeight - 10, { align: 'center' });
   
-          doc.text(`Page ${pageNumber}`, pageWidth - 14, pageHeight - 10, { align: 'right' });
+          const footerText = `Page ${pageNumber} of ${totalPagesExp}`;
+          doc.text(footerText, pageWidth - 14, pageHeight - 10, { align: 'right' });
         },
       });
+  
+      if (typeof doc.putTotalPages === 'function') {
+        doc.putTotalPages(totalPagesExp);
+      }
   
       const fileName = `Goals_${fileNameDate}_${formattedTime}.pdf`;
       doc.save(fileName);
@@ -969,7 +941,7 @@ export class GoalsComponent implements AfterViewInit {
     }
 
     row.e = row.e;
-    row.d = row.d.toString(); 
+    row.d = row.d; 
 
     const goalid = row.goalid;
     const updatedGoal: Goals = {
@@ -1085,24 +1057,26 @@ export class GoalsComponent implements AfterViewInit {
           status: string;
           description: string;
           id: number;
+          active_status: number
         }>;
-        //console.log("statusList", statusList)
-        this.statusOptions = statusList.map((item) => ({
-          label: item.status,
-          value: item.status,
-        })).sort((a, b) => a.label.localeCompare(b.label));;
+        const filteredStatus = statusList.filter(item => item.active_status == 1);
+        this.statusOptions = filteredStatus.map((item) => ({
+          label: `${item.status}(${item.description})`,
+          value: item.status, // Store only the status code
+        })).sort((a, b) => a.label.localeCompare(b.label));
       },
       error: (error) => {
         console.error('Error fetching status:', error);
       },
     });
   }
+
   getPriority() {
     this.goalsService.getP().subscribe({
       next: (response) => {
-        const priority = response as Array<{ p: number; id: number }>;
-        //console.log("priority", priority)
-        this.priorityOptions = priority.map((item) => ({
+        const priority = response as Array<{ p: number; id: number; status: number }>;
+         const filteredP = priority.filter(item => item.status == 1);
+        this.priorityOptions = filteredP.map((item) => ({
           label: item.p,
           value: item.p,
         })).sort((a, b) => a.value - b.value);;
@@ -1112,20 +1086,25 @@ export class GoalsComponent implements AfterViewInit {
       },
     });
   }
+
   getProj() {
     this.goalsService.getProj().subscribe({
       next: (response) => {
-        const proj = response as Array<{ proj: string; id: number }>;
-        this.projOptions = proj.map((item) => ({
-          label: item.proj,
-          value: item.proj,
-        })).sort((a, b) => a.label.localeCompare(b.label));;
+        const proj = (response as Array<{ proj: string; id: number; status: number }>);
+        const filteredProj = proj.filter(item => item.status == 1);
+          this.projOptions = filteredProj
+          .map((item) => ({
+            label: item.proj,
+            value: item.proj,
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label));
       },
       error: (error) => {
         console.error('Error fetching status:', error);
       },
     });
   }
+  
   getActions() {
     this.goalsService.getAction().subscribe({
       next: (response) => {
@@ -1140,22 +1119,52 @@ export class GoalsComponent implements AfterViewInit {
       },
     });
   }
-  getNumData() {
+
+  getDData() {
     this.goalsService.getD().subscribe({
       next: (response) => {
-        const numData = response as Array<{ d: string; id: number }>;
-  
-        // Sort numerically by converting to number during sort
-        const sortedNumData = [...numData].sort((a, b) => +a.d - +b.d);
-  
-        this.priorityOptionsE = sortedNumData.map((item) => ({
-          label: item.d,
-          value: Number(item.d), // 'e' expects number
-        }));
-  
+        // console.log(" d response",response)
+        const numData = response as Array<{ d: number; id: number;status: number }>;
+        const filterednumData = numData.filter(item => item.status == 1);
+        const sortedNumData = [...filterednumData].sort((a, b) => +a.d - +b.d);
         this.priorityOptionsD = sortedNumData.map((item) => ({
           label: item.d,
-          value: item.d, // 'd' expects string
+          value: item.d, 
+        }));
+      },
+      error: (error) => {
+        console.error('Error fetching values:', error);
+      },
+    });
+  }
+  getEData() {
+    this.goalsService.getE().subscribe({
+      next: (response) => {
+        // console.log(" e response",response)
+        const numData = response as Array<{ e: number; id: number;status: number }>;
+        const filterednumData = numData.filter(item => item.status == 1);
+        const sortedNumData = [...filterednumData].sort((a, b) => +a.e - +b.e);
+        this.priorityOptionsE = sortedNumData.map((item) => ({
+          label: item.e,
+          value: item.e, 
+        }));
+      },
+      error: (error) => {
+        console.error('Error fetching values:', error);
+      },
+    });
+  }
+  
+  getBData() {
+    this.goalsService.getB().subscribe({
+      next: (response) => {
+        console.log("b response",response)
+        const numData = response as Array<{ b: number; id: number;status: number }>;
+        const filterednumData = numData.filter(item => item.status == 1);
+        const sortedNumData = [...filterednumData].sort((a, b) => +a.b - +b.b);
+        this.priorityOptionsB = sortedNumData.map((item) => ({
+          label: item.b,
+          value: item.b, 
         }));
       },
       error: (error) => {
@@ -1304,9 +1313,9 @@ export class GoalsComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    if (!this.dataTable) {
-      console.error('dataTable not found');
-    }
+    // if (!this.dataTable) {
+    //   console.error('dataTable not found');
+    // }
   }
 
   showDescription(event: Event, fullDescription: string) {
@@ -1388,7 +1397,7 @@ onHistoryExportChange(option: any,goalHistory:[]) {
 exportHistoryExcelData(goalHistory:[]): void {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet('Goals');
-  const imageUrl = 'assets/cslr-logo 1.png';
+  const imageUrl = 'assets/SunPower.png';
 
   fetch(imageUrl)
     .then((response) => response.blob())
@@ -1565,7 +1574,7 @@ exportHistoryPdfData(goalHistory:[]): void {
   const pageHeight = doc.internal.pageSize.getHeight();
 
   const logo = new Image();
-  logo.src = 'assets/cslr-logo 1.png';
+  logo.src = 'assets/SunPower.png';
 
   logo.onload = () => {
     const logoX = 10;
@@ -1677,6 +1686,28 @@ exportHistoryPdfData(goalHistory:[]): void {
   };
 }
 
+// clearAllFilters(): void {
+//   this.selectedFilters = {};
+//   this.activeFilters = {};
+//   this.dataTable?.reset();
+//   }
 
+// hasActiveFilters(): boolean {
+//   return Object.values(this.activeFilters || {}).some((v) => v === true);
+// }
+clearAllFilters(): void {
+  this.selectedFilters = {};
+  this.activeFilters = {};
+  if (this.dataTable) {
+    this.dataTable.reset();
+  }
+  this.loadUnfilteredData();
+}
 
+loadUnfilteredData(): void {
+  this.goal = [...this.originalGoal]; 
+  if (this.dataTable) {
+    this.dataTable.first = 0; 
+  }
+}
 }

@@ -103,7 +103,7 @@ export class GoalsService {
     return this.http.get(`${this.baseURL}/b`);
   }
   getE() {
-    return this.http.get(`${this.baseURL}/b`);
+    return this.http.get(`${this.baseURL}/e`);
   }
 
   getAction() {

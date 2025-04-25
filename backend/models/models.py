@@ -109,6 +109,8 @@ class Proj(Base):
     __tablename__ = "proj"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     proj = Column(String, unique=True, index=True)
+    status = Column(Integer, default=1)  
+    remarks = Column(String, nullable=True)
 
 class VP(Base):
     __tablename__ = "vp"
