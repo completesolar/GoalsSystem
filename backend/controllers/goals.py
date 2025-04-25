@@ -42,20 +42,19 @@ from crud import (
     create_E,
     update_E,
     create_D,
-    update_D,
+    update_d,
     get_B_by_id,
     get_E_by_id,
     get_D_by_id,
-    update_status
+    update_status,
+    get_p_by_id
 )
 from typing import Annotated
 
 router = APIRouter()
 
 
-@router.get("/api/p", response_model=list[PResponse])
-def read_p(db: Session = Depends(get_db)):
-    return get_all_p(db)
+
 
 @router.get("/api/vp", response_model=list[VPResponse])
 def read_vp(db: Session = Depends(get_db)):
@@ -136,12 +135,25 @@ def read_goals_history(db: Session = Depends(get_db)):
 def read_action(db: Session = Depends(get_db)):
     return get_action(db)
 
+# p
+@router.get("/api/p", response_model=list[PResponse])
+def read_p(db: Session = Depends(get_db)):
+    return get_all_p(db)
+
+@router.get("/api/p/{id}", response_model=PResponse)
+def read_p(id: int, db: Session = Depends(get_db)):
+    db_p = get_p_by_id(db, id=id)
+    if db_p is None:
+        raise HTTPException(status_code=404, detail="Status not found")
+    return db_p
+
 @router.post("/api/p", response_model=PResponse)
 def create_p_endpoint(p: PCreate, db: Session = Depends(get_db)):
     return create_p(db=db, p_data=p)
 
 @router.put("/api/p/{id}", response_model=PResponse)
 def update_p_endpoint(id: int, p: PUpdate, db: Session = Depends(get_db)):
+    print("status type:",p) 
     db_p = update_p(db=db, id=id, p_data=p)
     if not db_p:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -177,7 +189,7 @@ def read_b(db: Session = Depends(get_db)):
 
 @router.post("/api/b", response_model=BResponse)
 def create_B(b: BCreate, db: Session = Depends(get_db)):
-    return create_b(db=db, b=b)
+    return create_b(db=db, b_data=b)
 
 @router.get("/api/b/{id}", response_model=BResponse)
 def read_b(id: int, db: Session = Depends(get_db)):
@@ -199,8 +211,8 @@ def read_e(db: Session = Depends(get_db)):
     return get_all_e(db)
 
 @router.post("/api/e", response_model=EResponse)
-def create_e(e: ECreate, db: Session = Depends(get_db)):
-    return create_E(db=db, e=e)
+def create_e_endpoint(e: ECreate, db: Session = Depends(get_db)):
+    return create_E(db=db, e_data=e)
 
 @router.get("/api/e/{id}", response_model=EResponse)
 def read_(id: int, db: Session = Depends(get_db)):
@@ -209,9 +221,12 @@ def read_(id: int, db: Session = Depends(get_db)):
         raise HTTPException(b_code=404, detail="B not found")
     return db_e
 
-@router.put("/api/e/{id}", response_model=BUpdate)
-def update_e(id: int, b_update: EUpdate, db: Session = Depends(get_db)):
-    return update_E(db=db, id=id, b_update=b_update)
+@router.put("/api/e/{id}", response_model=EResponse)
+def update_e_endpoint(id: int, e: PUpdate, db: Session = Depends(get_db)):
+    db_e = update_E(db=db, id=id, e_data=e)
+    if not db_e:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return db_e
 
 # D
 @router.get("/api/d", response_model=list[DResponse])
@@ -220,7 +235,7 @@ def read_d(db: Session = Depends(get_db)):
 
 @router.post("/api/d", response_model=DResponse)
 def create_d(D: DCreate, db: Session = Depends(get_db)):
-    return create_D(db=db, D=D)
+    return create_D(db=db, d_data=D)
 
 @router.get("/api/d/{id}", response_model=DResponse)
 def read_D(id: int, db: Session = Depends(get_db)):
@@ -229,6 +244,10 @@ def read_D(id: int, db: Session = Depends(get_db)):
         raise HTTPException(D_code=404, detail="D not found")
     return db_D
 
-@router.put("/api/d/{id}", response_model=DUpdate)
-def update_d(id: int, D_update: DUpdate, db: Session = Depends(get_db)):
-    return update_D(db=db, id=id, D_update=D_update)
+@router.put("/api/d/{id}", response_model=DResponse)
+def update_D_endpoint(id: int, d: DUpdate, db: Session = Depends(get_db)):
+    db_d = update_d(db=db, id=id, d_data=d)
+    if not db_d:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return db_d
+ 
