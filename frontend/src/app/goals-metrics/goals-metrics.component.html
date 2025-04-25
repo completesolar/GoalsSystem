@@ -27,7 +27,7 @@
         [chart]="statusPieOptions.chart"
         [title]="statusPieOptions.title"
         [legend]="{ position: 'bottom' }"
-        [colors]="yearChartOptions.colors"
+        [colors]="statusPieOptions.colors"
         [plotOptions]="{
           pie: {
             donut: {
@@ -40,7 +40,8 @@
             }
           }
         }"
-        [dataLabels]="statusPieOptions.dataLabels">
+        [dataLabels]="statusPieOptions.dataLabels"
+        [stroke]="{ show: false }" >
       </apx-chart>
     </div>
   </div>
@@ -59,7 +60,7 @@
       [dataLabels]="yearWiseChartOptions.dataLabels"
       [plotOptions]="yearWiseChartOptions.plotOptions"
       [legend]="yearWiseChartOptions.legend"
-      [colors]="yearChartOptions.colors">
+      [colors]="yearWiseChartOptions.colors">
     </apx-chart>
   </div>
 
@@ -72,7 +73,7 @@
         [labels]="statusWiseChartOptions.labels"
         [chart]="statusWiseChartOptions.chart"
         [title]="statusWiseChartOptions.title"
-        [colors]="yearChartOptions.colors"
+        [colors]="statusWiseChartOptions.colors"
         [legend]="{ position: 'bottom' }"
         [plotOptions]="{
           pie: {
@@ -86,7 +87,9 @@
             }
           }
         }"
-        [dataLabels]="statusWiseChartOptions.dataLabels">
+        [dataLabels]="statusWiseChartOptions.dataLabels"
+        [stroke]="{ show: false }" 
+        >
       </apx-chart>
     </div>
   </div>

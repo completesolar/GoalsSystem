@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { GoalsService } from '../services/goals.service';
 import { SelectModule } from 'primeng/select';
@@ -16,6 +15,8 @@ import {
 } from 'ng-apexcharts';
 
 export type PieChartOptions = {
+colors: any[];
+theme: ApexTheme;
   series: number[];
   chart: ApexChart;
   labels: string[];
@@ -42,7 +43,7 @@ colors: any[];
   selector: 'app-goals-metrics',
   templateUrl: './goals-metrics.component.html',
   styleUrls: ['./goals-metrics.component.scss'],
-  imports: [CommonModule, FormsModule, HttpClientModule, NgApexchartsModule, SelectModule]
+  imports: [CommonModule, FormsModule, NgApexchartsModule, SelectModule]
 })
 export class GoalsMetricsComponent implements OnInit {
   public filters: any = {
@@ -80,7 +81,7 @@ export class GoalsMetricsComponent implements OnInit {
       offsetX: 25
     },
     legend: { show: true, position: 'bottom' },
-    colors: []
+    colors: ['#82a3a1', '#607744', '#768948', '#76c893', '#52b69a', '#34a0a4', '#9cc5a1', '#77bfa3'],
   };
 
   statusPieOptions: PieChartOptions = {
@@ -89,23 +90,36 @@ export class GoalsMetricsComponent implements OnInit {
     chart: { type: 'pie', width: 420 },
     title: { text: '' },
     legend: { position: 'right' },
-    fill: { type: 'gradient' },
+    fill: { type: 'none' },
+    colors: ['#82a3a1', '#607744', '#768948', '#76c893', '#52b69a', '#34a0a4', '#9cc5a1', '#77bfa3'],
     dataLabels: { enabled: true },
-    plotOptions: { pie: { expandOnClick: false } }
+    plotOptions: { pie: { expandOnClick: false } },
+    theme: {
+      mode: undefined,
+      palette: undefined,
+      monochrome: undefined
+    },
+    
   };
 
   yearWiseChartOptions: BarChartOptions = {
     series: [],
     chart: { type: 'bar', height: 350, toolbar: { show: false } },
     xaxis: { categories: [] },
-    title: { text: 'Year-wise Goal Distribution' },
+    title: { text: 'Year-wise Goal Distribution',
+      align: 'center',
+      style: {
+        fontFamily: 'Arial'
+      }
+
+     },
     plotOptions: {
       bar: {
         horizontal: false,
         columnWidth: '50%'
       }
     },
-    colors: [] ,
+    colors: ['#82a3a1', '#607744', '#768948', '#76c893', '#52b69a', '#34a0a4', '#9cc5a1', '#77bfa3'],
     dataLabels: {
       enabled: true,
       formatter: val => val === 0 ? '' : val.toString(),
@@ -120,12 +134,41 @@ export class GoalsMetricsComponent implements OnInit {
     series: [],
     labels: [],
     chart: { type: 'pie', width: 420 },
-    title: { text: 'Status-wise Goal Distribution' },
+    title: {
+      text: 'Status-wise Goal Distribution',
+      align: 'center',
+      style: {
+        fontFamily: 'Arial'
+      }
+    },
+
     legend: { position: 'right' },
-    fill: { type: 'gradient' },
     dataLabels: { enabled: true },
-    plotOptions: { pie: { expandOnClick: false } }
+    plotOptions: {
+      pie: {
+        expandOnClick: false,
+        donut: {
+          labels: {
+            show: true,
+            name: { show: true },
+            value: { show: true },
+            total: { show: true }
+          }
+        }
+      }
+    },
+    colors: ['#d9ed92', '#b5e48c', '#99d98c', '#76c893', '#52b69a', '#34a0a4', '#9cc5a1', '#77bfa3'],
+    fill: {
+      type: 'none',
+    },
+    
+    theme: {
+      mode: undefined,
+      palette: undefined,
+      monochrome: undefined
+    }
   };
+
 
   constructor(private goalsService: GoalsService) {}
 
@@ -158,14 +201,24 @@ export class GoalsMetricsComponent implements OnInit {
       this.statusPieOptions = {
         series: [cd.Completed, cd.Delinquent],
         labels: ['Completed', 'Delinquent'],
-        chart: { type: 'pie', width: 420 },
-        title: { text: `Completed vs Delinquent (Total: ${cd.Completed + cd.Delinquent})` },
-        fill: { type: 'gradient' },
+        chart: { type: 'donut', width: 420 },
+        title: { text: `Completed vs Delinquent (Total: ${cd.Completed + cd.Delinquent})`,
+        align: 'center',
+        style: {
+          fontFamily: 'Arial'
+        }
+      },
+        fill: { type: 'none' },
+        colors: ['#66a182', '#b5e48c', '#99d98c', '#76c893', '#52b69a', '#34a0a4', '#9cc5a1', '#77bfa3'],
+        theme: {
+          mode: undefined,
+          palette: undefined,
+          monochrome: undefined
+        },
         dataLabels: {
           enabled: true,
           style: {
-            fontSize: '12px',
-            colors: ['#000']
+            fontSize: '12px'
           }
         },
         legend: {
@@ -199,7 +252,11 @@ export class GoalsMetricsComponent implements OnInit {
           categories: sortedProjects.map((p: any) => p.project || 'Unassigned')
         },
         title: {
-          text: `Goals by Project: Total, Completed, Delinquent (Total: ${sortedProjects.reduce((sum: number, p: any) => sum + p.total, 0)})`
+          text: `Goals by Project: Total, Completed, Delinquent (Total: ${sortedProjects.reduce((sum: number, p: any) => sum + p.total, 0)})`,
+          align: 'center',
+          style: {
+            fontFamily: 'Arial'
+          }
         },
         plotOptions: {
           bar: {
@@ -211,7 +268,7 @@ export class GoalsMetricsComponent implements OnInit {
             }
           }
         },
-        colors: [] ,
+        colors: ['#99d19c', '#596f62', '#bec5ad', '#76c893', '#52b69a', '#34a0a4', '#9cc5a1', '#77bfa3'],
         dataLabels: {
           enabled: true,
           formatter: function (val: number) {
