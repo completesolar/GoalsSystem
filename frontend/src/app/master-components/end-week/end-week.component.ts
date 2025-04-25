@@ -80,7 +80,7 @@ export class EndWeekComponent {
     });
   }
 
-  onEdit(item: any) {
+  onEdit(item: any) {    
     this.editingItem = { ...item };
   }
 

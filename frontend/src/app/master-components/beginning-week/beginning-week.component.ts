@@ -7,6 +7,8 @@ import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-beginning-week',
@@ -19,7 +21,9 @@ import { InputTextModule } from 'primeng/inputtext';
     SelectModule,
     DialogModule,
     InputTextModule,
+    ToastModule
   ],
+  providers:[MessageService],
   templateUrl: './beginning-week.component.html',
   styleUrl: './beginning-week.component.scss',
   standalone: true,
@@ -54,7 +58,7 @@ export class BeginningWeekComponent {
     { field: 'action', header: 'ACTION', tooltip: '' },
   ];
 
-  constructor(private goalsService: GoalsService) {}
+  constructor(private goalsService: GoalsService,public messageService: MessageService) {}
 
   ngOnInit() {
     this.getb();
@@ -100,6 +104,11 @@ export class BeginningWeekComponent {
             p.id === response.id ? { ...response } : p
           );
           this.editingItem = null;
+          this.messageService.add({
+            severity: 'success',
+            summary: 'B',
+            detail: 'updated successfully!.',
+          });
         }
       },
       error: (err) => {
@@ -121,9 +130,7 @@ export class BeginningWeekComponent {
       b: this.b?.toString(),
       status: this.status?.value || 1,
       remarks: this.remarks || '',
-    };
-
-    console.log('Data', data);
+    }
 
     this.goalsService.createB(data).subscribe({
       next: (response: any) => {
@@ -139,10 +146,20 @@ export class BeginningWeekComponent {
           this.status = undefined;
           this.remarks = '';
           this.isValid = true;
+          this.messageService.add({
+            severity: 'success',
+            summary: 'B',
+            detail: 'Added successfully!.',
+          });
         }
       },
       error: (err) => {
         console.error('Create failed', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'B',
+          detail: `${this.b} already exist.`,
+        });
       },
     });
   }

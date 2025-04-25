@@ -155,7 +155,7 @@ export class StatusComponent {
         this.messageService.add({
           severity: 'error',
           summary: 'Status',
-          detail: `${this.status} already exist.`,
+          detail: `${this.initial} already exist.`,
         });
       },
     });

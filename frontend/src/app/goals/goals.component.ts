@@ -1061,7 +1061,7 @@ export class GoalsComponent implements AfterViewInit {
         }>;
         const filteredStatus = statusList.filter(item => item.active_status == 1);
         this.statusOptions = filteredStatus.map((item) => ({
-          label: `${item.status}(${item.description})`,
+          label: `${item.status} ${item.description}`,
           value: item.status, // Store only the status code
         })).sort((a, b) => a.label.localeCompare(b.label));
       },
