@@ -1,3 +1,4 @@
+from sqlalchemy.exc import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException,Query
 from sqlalchemy.orm import Session
 from schemas.schema import Goals, GoalsResponse, GoalsUpdate
@@ -147,10 +148,21 @@ def read_p(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Status not found")
     return db_p
 
+# @router.post("/api/p", response_model=PResponse)
+# def create_p_endpoint(p: PCreate, db: Session = Depends(get_db)):
+#     return create_p(db=db, p_data=p)
+
 @router.post("/api/p", response_model=PResponse)
 def create_p_endpoint(p: PCreate, db: Session = Depends(get_db)):
-    return create_p(db=db, p_data=p)
-
+    try:
+        return create_p(db=db, p_data=p)
+    except IntegrityError as e:
+        db.rollback() 
+        if 'duplicate key value violates unique constraint' in str(e):
+            raise HTTPException(status_code=400, detail="Duplicate data: this entry already exists.")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
+    
+    
 @router.put("/api/p/{id}", response_model=PResponse)
 def update_p_endpoint(id: int, p: PUpdate, db: Session = Depends(get_db)):
     print("status type:",p) 
@@ -164,9 +176,19 @@ def update_p_endpoint(id: int, p: PUpdate, db: Session = Depends(get_db)):
 def read_status(db: Session = Depends(get_db)):
     return get_all_status(db)
 
+# @router.post("/api/status", response_model=StatusResponse)
+# def create_status(status: StatusCreate, db: Session = Depends(get_db)):
+#     return create_status_entry(db=db, status=status)
+
 @router.post("/api/status", response_model=StatusResponse)
 def create_status(status: StatusCreate, db: Session = Depends(get_db)):
-    return create_status_entry(db=db, status=status)
+    try:
+        return create_status_entry(db=db, status=status)
+    except IntegrityError as e:
+        db.rollback()
+        if 'duplicate key value violates unique constraint' in str(e):
+            raise HTTPException(status_code=400, detail="Duplicate data")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/api/status/{id}", response_model=StatusResponse)
 def read_status(id: int, db: Session = Depends(get_db)):
@@ -187,10 +209,20 @@ def update_status_route(id: int, status_update: StatusUpdate, db: Session = Depe
 def read_b(db: Session = Depends(get_db)):
     return get_all_b(db)
 
+# @router.post("/api/b", response_model=BResponse)
+# def create_B(b: BCreate, db: Session = Depends(get_db)):
+#     return create_b(db=db, b_data=b)
+
 @router.post("/api/b", response_model=BResponse)
 def create_B(b: BCreate, db: Session = Depends(get_db)):
-    return create_b(db=db, b_data=b)
-
+    try:
+        return create_b(db=db, b_data=b)
+    except IntegrityError as e:
+        db.rollback()
+        if 'duplicate key value violates unique constraint' in str(e):
+            raise HTTPException(status_code=400, detail="Duplicate data")
+        raise HTTPException(status_code=500, detail="Internal server error")
+    
 @router.get("/api/b/{id}", response_model=BResponse)
 def read_b(id: int, db: Session = Depends(get_db)):
     db_b = get_B_by_id(db, id=id)
@@ -210,10 +242,20 @@ def update_b_endpoint(id: int, b: BUpdate, db: Session = Depends(get_db)):
 def read_e(db: Session = Depends(get_db)):
     return get_all_e(db)
 
+# @router.post("/api/e", response_model=EResponse)
+# def create_e_endpoint(e: ECreate, db: Session = Depends(get_db)):
+#     return create_E(db=db, e_data=e)
+
 @router.post("/api/e", response_model=EResponse)
 def create_e_endpoint(e: ECreate, db: Session = Depends(get_db)):
-    return create_E(db=db, e_data=e)
-
+    try:
+        return create_E(db=db, e_data=e)
+    except IntegrityError as ex:
+        db.rollback()
+        if 'duplicate key value violates unique constraint' in str(ex):
+            raise HTTPException(status_code=400, detail="Duplicate data")
+        raise HTTPException(status_code=500, detail="Internal server error")
+    
 @router.get("/api/e/{id}", response_model=EResponse)
 def read_(id: int, db: Session = Depends(get_db)):
     db_e = get_E_by_id(db, id=id)
@@ -233,10 +275,19 @@ def update_e_endpoint(id: int, e: PUpdate, db: Session = Depends(get_db)):
 def read_d(db: Session = Depends(get_db)):
     return get_all_d(db)
 
+# @router.post("/api/d", response_model=DResponse)
+# def create_d(D: DCreate, db: Session = Depends(get_db)):
+#     return create_D(db=db, d_data=D)
 @router.post("/api/d", response_model=DResponse)
 def create_d(D: DCreate, db: Session = Depends(get_db)):
-    return create_D(db=db, d_data=D)
-
+    try:
+        return create_D(db=db, d_data=D)
+    except IntegrityError as ex:
+        db.rollback()
+        if 'duplicate key value violates unique constraint' in str(ex):
+            raise HTTPException(status_code=400, detail="Duplicate data")
+        raise HTTPException(status_code=500, detail="Internal server error")
+    
 @router.get("/api/d/{id}", response_model=DResponse)
 def read_D(id: int, db: Session = Depends(get_db)):
     db_D = get_D_by_id(db, id=id)
