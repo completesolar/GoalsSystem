@@ -38,7 +38,7 @@ export class StatusComponent {
   ];
   selectedStatus: { label: string; value: number } | undefined;
 
-  addDialogVisible: boolean = false;
+  isValid: boolean = true;
 
   initial: string | undefined;
   name: string | undefined;
@@ -109,13 +109,20 @@ export class StatusComponent {
   }
 
   saveNewStatus() {
+    console.log('initial', this.initial);
+    console.log('name', this.name);
+
+    if (!this.initial?.trim() || !this.name?.trim()) {
+      this.isValid = false;
+      console.log('isValid:', this.isValid);
+      return;
+    }
     let data = {
       status: this.initial,
       description: this.name,
-      active_status: this.status.value,
+      active_status: this.status !== undefined ? this.status.value : 1,
       remarks: this.remarks,
     };
-    console.log('Data', data);
 
     this.goalsService.createStatus(data).subscribe({
       next: (response: any) => {
@@ -127,10 +134,11 @@ export class StatusComponent {
             isEditable: false,
           };
           this.statusList = [newGoal, ...this.statusList];
-          this.initial='';
-          this.name='';
-          this.status=null;
-          this.remarks=''
+          this.initial = '';
+          this.name = '';
+          this.status = null;
+          this.remarks = '';
+          this.isValid = true;
         }
       },
       error: (err) => {

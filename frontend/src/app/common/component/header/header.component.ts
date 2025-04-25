@@ -46,10 +46,10 @@ export class HeaderComponent {
       label: 'Status',
       routerLink: ['/status'],
     },
-    // {
-    //   label: 'Begnning Week',
-    //   routerLink: ['/b_week']
-    // },
+    {
+      label: 'Begnning Week',
+      routerLink: ['/b_week'],
+    },
     // {
     //   label: 'Goals',
     //   icon: 'pi pi-bullseye',
@@ -74,7 +74,7 @@ export class HeaderComponent {
   goToDashboard(): void {
     this.router.navigate(['/goals-metrics']);
   }
-  
+
   goToGoals(): void {
     this.router.navigate(['/goals']);
   }
