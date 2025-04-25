@@ -1,15 +1,17 @@
 import { Component } from '@angular/core';
-import { GoalsService } from '../services/goals.service';
+import { GoalsService } from '../../services/goals.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import { DialogModule } from 'primeng/dialog';
+import { MessageService } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
-  selector: 'app-beginning-week',
+  selector: 'app-priority',
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -19,17 +21,17 @@ import { InputTextModule } from 'primeng/inputtext';
     SelectModule,
     DialogModule,
     InputTextModule,
+    ToastModule,
   ],
-  templateUrl: './beginning-week.component.html',
-  styleUrl: './beginning-week.component.scss',
+  providers: [MessageService],
+  templateUrl: './priority.component.html',
+  styleUrl: './priority.component.scss',
   standalone: true,
-
 })
-export class BeginningWeekComponent {
-
-  bList: {
+export class PriorityComponent {
+  priorityList: {
     id: number;
-    b: string;
+    p: string;
     status: number;
     remarks: string;
   }[] = [];
@@ -41,15 +43,15 @@ export class BeginningWeekComponent {
   selectedStatus: { label: string; value: number } | undefined;
 
   addDialogVisible: boolean = false;
-
-  b: number | undefined;
+  isValid: boolean = true;
+  priority: number | undefined;
   remarks: any;
   status: any;
 
   columns = [
     { field: 's.no', header: 'S.No', tooltip: '' },
-    { field: 'bId', header: 'b ID', tooltip: '' },
-    { field: 'b', header: 'b', tooltip: '' },
+    { field: 'priorityId', header: 'Priority ID', tooltip: '' },
+    { field: 'priority', header: 'Priority', tooltip: '' },
     { field: 'status', header: 'Status', tooltip: '' },
     { field: 'remarks', header: 'Remarks', tooltip: '' },
     { field: 'action', header: 'ACTION', tooltip: '' },
@@ -57,26 +59,30 @@ export class BeginningWeekComponent {
 
   constructor(
     private goalsService: GoalsService,
+    private messageService: MessageService
   ) {}
 
   ngOnInit() {
-    this.getb();
+    this.getPriority();
   }
 
-  getb() {
-    this.goalsService.getB().subscribe({
+  getPriority() {
+    this.goalsService.getP().subscribe({
       next: (response) => {
-        console.log("response", response);
-        this.bList = (response as Array<{ b: number; id: number;status:number;remarks:string }>).map(
-          (item) => ({
-            id: item.id,
-            b: `${item.b}`,
-            status: item.status,
-            remarks: item.remarks,
-            isEditable: false,
-          })
-        );
-        console.log('bList', this.bList);
+        this.priorityList = (
+          response as Array<{
+            p: number;
+            id: number;
+            status: number;
+            remarks: string;
+          }>
+        ).map((item) => ({
+          id: item.id,
+          p: `${item.p}`,
+          status: item.status,
+          remarks: item.remarks,
+          isEditable: false,
+        }));
       },
       error: (error) => {
         console.error('Error fetching priorities:', error);
@@ -88,16 +94,21 @@ export class BeginningWeekComponent {
     this.editingItem = { ...item };
   }
 
-  async updateB(item: any) {
+  async updateP(item: any) {
     const isChanged = await this.isObjectChanged(item, this.editingItem);
     if (!this.editingItem && isChanged) return;
-    this.goalsService.updateB(this.editingItem).subscribe({
+    this.goalsService.updateP(this.editingItem).subscribe({
       next: (response: any) => {
         if (response && response.id) {
-          this.bList = this.bList.map((p: any) =>
+          this.priorityList = this.priorityList.map((p: any) =>
             p.id === response.id ? { ...response } : p
           );
           this.editingItem = null;
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Priority',
+            detail: 'updated successfully!.',
+          });
         }
       },
       error: (err) => {
@@ -110,17 +121,18 @@ export class BeginningWeekComponent {
     this.editingItem = null;
   }
 
-  saveNewb() {
-    if (this.b === undefined) {
+  saveNewPriority() {
+    if (this.priority === undefined) {
+      this.isValid = false;
       return;
     }
     let data = {
-      b: this.b?.toString(),
+      p: this.priority?.toString(),
       status: this.status.value,
       remarks: this.remarks,
     };
 
-    this.goalsService.createB(data).subscribe({
+    this.goalsService.createP(data).subscribe({
       next: (response: any) => {
         if (response && response.id) {
           const newGoal = {
@@ -129,21 +141,32 @@ export class BeginningWeekComponent {
             createddatetime: new Date(),
             isEditable: false,
           };
-          this.bList = [newGoal, ...this.bList];
+          this.priorityList = [newGoal, ...this.priorityList];
+          (this.priority = undefined),
+            (this.status = undefined),
+            (this.remarks = ''),
+            (this.isValid = true);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Priority',
+            detail: 'Added successfully!.',
+          });
         }
       },
       error: (err) => {
         console.error('Create failed', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Priority',
+          detail: `${this.priority} already exist.`,
+        });
       },
     });
   }
 
   isObjectChanged(objA: any, objB: any): boolean {
-    // Destructure objects to exclude `isEditable`
     const { isEditable: _, ...restA } = objA;
     const { isEditable: __, ...restB } = objB;
-
-    // Compare remaining properties
     return JSON.stringify(restA) !== JSON.stringify(restB);
   }
 }

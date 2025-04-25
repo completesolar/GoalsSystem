@@ -1,36 +1,37 @@
-import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { GoalsService } from '../../services/goals.service';
+import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
-import { GoalsService } from '../services/goals.service';
+import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
-  selector: 'app-status',
+  selector: 'app-beginning-week',
   imports: [
-    ButtonModule,
     FormsModule,
     ReactiveFormsModule,
-    TableModule,
     CommonModule,
+    TableModule,
+    ButtonModule,
     SelectModule,
+    DialogModule,
+    InputTextModule,
   ],
-  templateUrl: './status.component.html',
-  styleUrl: './status.component.scss',
+  templateUrl: './beginning-week.component.html',
+  styleUrl: './beginning-week.component.scss',
+  standalone: true,
 })
-export class StatusComponent {
-  columns = [
-    { field: 's.no', header: 'S.No', tooltip: '' },
-    { field: 'statusId', header: 'Status ID', tooltip: '' },
-    { field: 'initial', header: 'Initial', tooltip: '' },
-    { field: 'name', header: 'Name', tooltip: '' },
-    { field: 'status', header: 'Status', tooltip: '' },
-    { field: 'remarks', header: 'Remarks', tooltip: '' },
-    { field: 'action', header: 'ACTION', tooltip: '' },
-  ];
+export class BeginningWeekComponent {
+  bList: {
+    id: number;
+    b: string;
+    status: number;
+    remarks: string;
+  }[] = [];
 
-  statusList: any[] = [];
   editingItem: any = null;
   statusOptions: any = [
     { label: 'Active', value: 1 },
@@ -38,42 +39,49 @@ export class StatusComponent {
   ];
   selectedStatus: { label: string; value: number } | undefined;
 
-  addDialogVisible: boolean = false;
-
-  initial: string | undefined;
-  name: string | undefined;
+  b: number | undefined;
   remarks: any;
   status: any;
+
+  isValid = true;
+
+  columns = [
+    { field: 's.no', header: 'S.No', tooltip: '' },
+    { field: 'bId', header: 'B ID', tooltip: '' },
+    { field: 'b', header: 'B', tooltip: '' },
+    { field: 'status', header: 'Status', tooltip: '' },
+    { field: 'remarks', header: 'Remarks', tooltip: '' },
+    { field: 'action', header: 'ACTION', tooltip: '' },
+  ];
 
   constructor(private goalsService: GoalsService) {}
 
   ngOnInit() {
-    this.getStatus();
+    this.getb();
   }
 
-  getStatus() {
-    this.goalsService.getStatus().subscribe({
+  getb() {
+    this.goalsService.getB().subscribe({
       next: (response) => {
         console.log('response', response);
-        this.statusList = (
+        this.bList = (
           response as Array<{
-            description: string;
-            status: string;
+            b: number;
             id: number;
+            status: number;
             remarks: string;
-            active_status: number;
           }>
         ).map((item) => ({
           id: item.id,
-          status: `${item.status}`,
-          activeStatus: item.active_status,
+          b: `${item.b}`,
+          status: item.status,
           remarks: item.remarks,
           isEditable: false,
-          description: item.description,
         }));
+        console.log('bList', this.bList);
       },
       error: (error) => {
-        console.error('Error fetching status:', error);
+        console.error('Error fetching priorities:', error);
       },
     });
   }
@@ -82,19 +90,15 @@ export class StatusComponent {
     this.editingItem = { ...item };
   }
 
-  async updateStatus(item: any) {
-    console.log('editingItem', this.editingItem);
+  async updateB(item: any) {
     const isChanged = await this.isObjectChanged(item, this.editingItem);
     if (!this.editingItem && isChanged) return;
-    this.goalsService.updateStatus(this.editingItem).subscribe({
+    this.goalsService.updateB(this.editingItem).subscribe({
       next: (response: any) => {
-        console.log('Response', response);
         if (response && response.id) {
-          this.statusList = this.statusList.map((p: any) =>
+          this.bList = this.bList.map((p: any) =>
             p.id === response.id ? { ...response } : p
           );
-          console.log('statusList edit', this.statusList);
-          this.getStatus();
           this.editingItem = null;
         }
       },
@@ -108,16 +112,20 @@ export class StatusComponent {
     this.editingItem = null;
   }
 
-  saveNewStatus() {
+  saveNewb() {
+    if (this.b === undefined) {
+      this.isValid = false;
+      return;
+    }
     let data = {
-      status: this.initial,
-      description: this.name,
-      active_status: this.status.value,
-      remarks: this.remarks,
+      b: this.b?.toString(),
+      status: this.status?.value || 1,
+      remarks: this.remarks || '',
     };
+
     console.log('Data', data);
 
-    this.goalsService.createStatus(data).subscribe({
+    this.goalsService.createB(data).subscribe({
       next: (response: any) => {
         if (response && response.id) {
           const newGoal = {
@@ -126,11 +134,11 @@ export class StatusComponent {
             createddatetime: new Date(),
             isEditable: false,
           };
-          this.statusList = [newGoal, ...this.statusList];
-          this.initial='';
-          this.name='';
-          this.status=null;
-          this.remarks=''
+          this.bList = [newGoal, ...this.bList];
+          this.b = undefined;
+          this.status = undefined;
+          this.remarks = '';
+          this.isValid = true;
         }
       },
       error: (err) => {
@@ -140,8 +148,11 @@ export class StatusComponent {
   }
 
   isObjectChanged(objA: any, objB: any): boolean {
+    // Destructure objects to exclude `isEditable`
     const { isEditable: _, ...restA } = objA;
     const { isEditable: __, ...restB } = objB;
+
+    // Compare remaining properties
     return JSON.stringify(restA) !== JSON.stringify(restB);
   }
 }

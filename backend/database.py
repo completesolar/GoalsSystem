@@ -3,7 +3,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 # SQLALCHEMY_DATABASE_URL = 'postgresql://postgres:Excel.123@127.0.0.1/retail_db'
-SQLALCHEMY_DATABASE_URL = 'postgresql://postgres:jQ78tjx+:P2o@goals-dev.csfuxz3a9n5z.us-west-2.rds.amazonaws.com/goals-dev'
+# SQLALCHEMY_DATABASE_URL = 'postgresql://postgres:jQ78tjx+:P2o@goals-dev.csfuxz3a9n5z.us-west-2.rds.amazonaws.com/goals-dev'
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:Excel.123@localhost:5433/Goals"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

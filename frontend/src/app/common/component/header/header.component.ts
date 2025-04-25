@@ -46,10 +46,22 @@ export class HeaderComponent {
       label: 'Status',
       routerLink: ['/status'],
     },
-    // {
-    //   label: 'Begnning Week',
-    //   routerLink: ['/b_week']
-    // },
+    {
+      label: 'Begnning Week',
+      routerLink: ['/b_week'],
+    },
+    {
+      label: 'End Week',
+      routerLink: ['/e_week'],
+    },
+    {
+      label: 'Delinquent',
+      routerLink: ['/delinquent'],
+    },
+    {
+      label: 'Project',
+      routerLink: ['/project'],
+    },
     // {
     //   label: 'Goals',
     //   icon: 'pi pi-bullseye',
@@ -74,7 +86,7 @@ export class HeaderComponent {
   goToDashboard(): void {
     this.router.navigate(['/goals-metrics']);
   }
-  
+
   goToGoals(): void {
     this.router.navigate(['/goals']);
   }

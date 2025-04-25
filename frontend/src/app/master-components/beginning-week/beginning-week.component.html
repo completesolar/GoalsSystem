@@ -2,7 +2,7 @@
   <div class="mb-2 logo-section flex p-2 items-center justify-content-between">
 
     <div class="px-2 title-section flex items-center justify-between  w-full">
-      <div class="main-title text-lg font-semibold ">Priority Master</div>
+      <div class="main-title font-semibold " style="font-size: 16px;font-weight: 600;">B Master</div>
     </div>
   </div>
 
@@ -10,8 +10,9 @@
     <div class="pl-2 w-full">
       <div class="flex gap-2 items-end justify-between align-items-end">
         <div class=" text-center">
-          <div class="font-bold">Priority</div>
-          <input type="number" pInputText [(ngModel)]="priority" class="no-spinner" />
+          <div class="font-bold">B</div>
+          <input type="number" pInputText [(ngModel)]="b" [ngClass]="{'invalid-border': !isValid && !b}"
+            class="no-spinner" />
         </div>
         <div class=" text-center">
           <div class="font-bold">Status</div>
@@ -22,13 +23,13 @@
           <div class="font-bold">Remarks</div>
           <input pInputText [(ngModel)]="remarks" />
         </div>
-        <p-button icon="pi pi-plus" (click)="saveNewPriority()" severity="success" size="small" label="Add"
+        <p-button icon="pi pi-plus" (click)="saveNewb()" severity="success" size="small" label="Add"
           [style]="{ height: '24px', fontSize: '12px' }"></p-button>
       </div>
     </div>
   </div>
   <div class="table-container pr-3 pl-3">
-    <p-table #dataTable [value]="priorityList" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
+    <p-table #dataTable [value]="bList" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
       [rowsPerPageOptions]="[10, 20, 50]" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} goals"
       [paginatorPosition]="'bottom'" [sortMode]="'multiple'" scrollable="false"
       [style]="{ width: '100%', height: 'auto', tableLayout: 'fixed' }" tableStyleClass="custom-goal-table fixed-table">
@@ -47,14 +48,14 @@
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
-        <tr *ngIf="priorityList.length">
+        <tr *ngIf="bList.length">
           <td>{{ rowIndex + 1 }}</td>
           <td>{{ item.id }}</td>
           <td>
-            <ng-container *ngIf="editingItem?.id === item.id; else viewPriority">
-              <input type="number" pInputText [(ngModel)]="editingItem.p" style="width: 100px" />
+            <ng-container *ngIf="editingItem?.id === item.id; else viewb">
+              <input type="number" pInputText [(ngModel)]="editingItem.b" style="width: 100px" />
             </ng-container>
-            <ng-template #viewPriority>{{ item.p }}</ng-template>
+            <ng-template #viewb>{{ item.b }}</ng-template>
           </td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewStatus">
@@ -71,7 +72,7 @@
           </td>
           <td class="icon-actions-column">
             <i [ngClass]="editingItem?.id === item.id ? 'pi pi-save actions' : 'pi pi-pencil actions'"
-              (click)="editingItem?.id === item.id ? updateP(item) : onEdit(item)" tabindex="13"></i>
+              (click)="editingItem?.id === item.id ? updateB(item) : onEdit(item)" tabindex="13"></i>
             <i *ngIf="editingItem?.id === item.id" class="pi pi-times actions" (click)="cancelEdit()"
               pTooltip="Cancel Edit" tooltipPosition="bottom"></i>
           </td>
