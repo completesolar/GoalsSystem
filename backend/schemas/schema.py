@@ -13,7 +13,7 @@ class Goals(BaseModel):
     vp: Optional[str]
     b: Optional[int]
     e: Optional[int]
-    d: Optional[str]
+    d: Optional[int]
     s: Optional[str]
     action: Optional[str]
     memo: Optional[str]  # new field
@@ -35,7 +35,7 @@ class GoalsCreate(Goals):
      vp: Optional[str]
      b: Optional[int]
      e: Optional[int]
-     d: Optional[str]
+     d: Optional[int]
      s: Optional[str]
      action: Optional[str]
      memo: Optional[str]  # new field
@@ -52,7 +52,7 @@ class GoalsUpdate(Goals):
      vp: Optional[str] = None
      b: Optional[int] = None
      e: Optional[int] = None
-     d: Optional[str] = None
+     d: Optional[int] = None
      s: Optional[str] = None
      action: Optional[str] = None
      memo: Optional[str] = None
@@ -69,7 +69,7 @@ class GoalsResponse(BaseModel):
     vp: Optional[str]
     b: Optional[int]
     e: Optional[int]
-    d: Optional[str]
+    d: Optional[int]
     s: Optional[str]
     action: Optional[str]
     memo: Optional[str]

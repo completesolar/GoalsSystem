@@ -3,8 +3,10 @@ import { Component } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
-import { GoalsService } from '../services/goals.service';
+import { GoalsService } from '../../services/goals.service';
 import { SelectModule } from 'primeng/select';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-status',
@@ -15,7 +17,9 @@ import { SelectModule } from 'primeng/select';
     TableModule,
     CommonModule,
     SelectModule,
+    ToastModule,
   ],
+  providers: [MessageService],
   templateUrl: './status.component.html',
   styleUrl: './status.component.scss',
 })
@@ -38,14 +42,17 @@ export class StatusComponent {
   ];
   selectedStatus: { label: string; value: number } | undefined;
 
-  addDialogVisible: boolean = false;
+  isValid: boolean = true;
 
   initial: string | undefined;
   name: string | undefined;
   remarks: any;
   status: any;
 
-  constructor(private goalsService: GoalsService) {}
+  constructor(
+    private goalsService: GoalsService,
+    public messageService: MessageService
+  ) {}
 
   ngOnInit() {
     this.getStatus();
@@ -54,7 +61,6 @@ export class StatusComponent {
   getStatus() {
     this.goalsService.getStatus().subscribe({
       next: (response) => {
-        console.log('response', response);
         this.statusList = (
           response as Array<{
             description: string;
@@ -83,18 +89,20 @@ export class StatusComponent {
   }
 
   async updateStatus(item: any) {
-    console.log('editingItem', this.editingItem);
     const isChanged = await this.isObjectChanged(item, this.editingItem);
     if (!this.editingItem && isChanged) return;
     this.goalsService.updateStatus(this.editingItem).subscribe({
       next: (response: any) => {
-        console.log('Response', response);
         if (response && response.id) {
           this.statusList = this.statusList.map((p: any) =>
             p.id === response.id ? { ...response } : p
           );
-          console.log('statusList edit', this.statusList);
           this.getStatus();
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Status',
+            detail: 'updated successfully!.',
+          });
           this.editingItem = null;
         }
       },
@@ -109,13 +117,16 @@ export class StatusComponent {
   }
 
   saveNewStatus() {
+    if (!this.initial?.trim() || !this.name?.trim()) {
+      this.isValid = false;
+      return;
+    }
     let data = {
       status: this.initial,
       description: this.name,
-      active_status: this.status.value,
+      active_status: this.status !== undefined ? this.status.value : 1,
       remarks: this.remarks,
     };
-    console.log('Data', data);
 
     this.goalsService.createStatus(data).subscribe({
       next: (response: any) => {
@@ -127,14 +138,25 @@ export class StatusComponent {
             isEditable: false,
           };
           this.statusList = [newGoal, ...this.statusList];
-          this.initial='';
-          this.name='';
-          this.status=null;
-          this.remarks=''
+          this.initial = '';
+          this.name = '';
+          this.status = null;
+          this.remarks = '';
+          this.isValid = true;
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Status',
+            detail: 'Added successfully!.',
+          });
         }
       },
       error: (err) => {
         console.error('Create failed', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Status',
+          detail: `${this.initial} already exist.`,
+        });
       },
     });
   }

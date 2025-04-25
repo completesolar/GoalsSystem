@@ -1,21 +1,17 @@
 <div class="body">
   <div class="mb-2 logo-section flex p-2 items-center justify-content-between">
 
-    <div class="px-2 title-section flex items-center justify-between w-full">
-      <div class="main-title text-lg font-semibold ">Status Master</div>
+    <div class="px-2 title-section flex items-center justify-between  w-full">
+      <div class="main-title font-semibold " style="font-size: 16px;font-weight: 600;">D Master</div>
     </div>
   </div>
-
   <div class="p-2 mx-2 bg-white mb-2 border-round-md border-1 border-green-400">
     <div class="pl-2 w-full">
-      <div class="flex gap-2 items-end justify-between" style="align-items: end;">
+      <div class="flex gap-2 items-end justify-between align-items-end">
         <div class=" text-center">
-          <div class="font-bold">Initial</div>
-          <input class="input-style" type="text" pInputText [(ngModel)]="initial" />
-        </div>
-        <div class=" text-center">
-          <div class="font-bold">Name</div>
-          <input class="input-style" type="text" pInputText [(ngModel)]="name" />
+          <div class="font-bold">D</div>
+          <input type="number" pInputText [(ngModel)]="d" [ngClass]="{'invalid-border': !isValid && d ===undefined}"
+            class="no-spinner" />
         </div>
         <div class=" text-center">
           <div class="font-bold">Status</div>
@@ -24,17 +20,17 @@
         </div>
         <div class="text-center">
           <div class="font-bold">Remarks</div>
-          <input class="input-style" pInputText [(ngModel)]="remarks" />  
+          <input pInputText [(ngModel)]="remarks" />
         </div>
-        <p-button icon="pi pi-plus" (click)="saveNewStatus()" severity="success" size="small" label="Add"
+        <p-button icon="pi pi-plus" (click)="saveNewD()" severity="success" size="small" label="Add"
           [style]="{ height: '24px', fontSize: '12px' }"></p-button>
       </div>
     </div>
   </div>
   <div class="table-container pr-3 pl-3">
-    <p-table #dataTable [value]="statusList" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
+    <p-table #dataTable [value]="DList" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
       [rowsPerPageOptions]="[10, 20, 50]" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} goals"
-      [paginatorPosition]="'bottom'" scrollable="false"
+      [paginatorPosition]="'bottom'" [sortMode]="'multiple'" scrollable="false"
       [style]="{ width: '100%', height: 'auto', tableLayout: 'fixed' }" tableStyleClass="custom-goal-table fixed-table">
       <ng-template pTemplate="header">
         <tr>
@@ -43,32 +39,29 @@
               <div class="test">
                 <b>{{ col.header }}</b>
               </div>
+              <div class="relative" *ngIf="col.field !== 'action' && col.field !== 'gdb'">
+
+              </div>
             </div>
           </th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
-        <tr *ngIf="statusList.length">
+        <tr *ngIf="DList.length">
           <td>{{ rowIndex + 1 }}</td>
           <td>{{ item.id }}</td>
           <td>
-            <ng-container *ngIf="editingItem?.id === item.id; else viewInitial">
-              <input type="text" pInputText [(ngModel)]="editingItem.status" style="width: 100px" />
+            <ng-container *ngIf="editingItem?.id === item.id; else viewD">
+              <input type="number" pInputText [(ngModel)]="editingItem.d" style="width: 100px" />
             </ng-container>
-            <ng-template #viewInitial>{{ item.status }}</ng-template>
-          </td>
-          <td>
-            <ng-container *ngIf="editingItem?.id === item.id; else viewDescription">
-              <input type="text" pInputText [(ngModel)]="editingItem.description" style="width: 100px" />
-            </ng-container>
-            <ng-template #viewDescription>{{ item.description }}</ng-template>
+            <ng-template #viewD>{{ item.d }}</ng-template>
           </td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewStatus">
-              <p-select [options]="statusOptions" [(ngModel)]="editingItem.active_status" optionLabel="label"
+              <p-select [options]="statusOptions" [(ngModel)]="editingItem.status" optionLabel="label"
                 optionValue="value"></p-select>
             </ng-container>
-            <ng-template #viewStatus>{{ item.activeStatus === 1 ? 'Active' : 'Inactive' }}</ng-template>
+            <ng-template #viewStatus>{{ item.status === 1 ? 'Active' : 'Inactive' }}</ng-template>
           </td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewRenarks">
@@ -78,7 +71,7 @@
           </td>
           <td class="icon-actions-column">
             <i [ngClass]="editingItem?.id === item.id ? 'pi pi-save actions' : 'pi pi-pencil actions'"
-              (click)="editingItem?.id === item.id ? updateStatus(item) : onEdit(item)" tabindex="13"></i>
+              (click)="editingItem?.id === item.id ? updateD(item) : onEdit(item)" tabindex="13"></i>
             <i *ngIf="editingItem?.id === item.id" class="pi pi-times actions" (click)="cancelEdit()"
               pTooltip="Cancel Edit" tooltipPosition="bottom"></i>
           </td>
@@ -87,3 +80,4 @@
     </p-table>
   </div>
 </div>
+<p-toast></p-toast>

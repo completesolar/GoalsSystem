@@ -27,8 +27,8 @@ class E(Base):
     __tablename__ = "e" 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     e = Column(Integer, unique=True, index=True)
-    # status = Column(Integer, default=1)  
-    # remarks = Column(String, nullable=True)
+    status = Column(Integer, default=1)  
+    remarks = Column(String, nullable=True)
 
 
 
@@ -36,8 +36,8 @@ class D(Base):
     __tablename__ = "d"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     d = Column(Integer, unique=True, index=True)
-    # status = Column(Integer, default=1)  
-    # remarks = Column(String, nullable=True)
+    status = Column(Integer, default=1)  
+    remarks = Column(String, nullable=True)
 
 
 
@@ -76,8 +76,8 @@ class Status(Base):
     id = Column(Integer, primary_key=True, index=True)
     status = Column(String, unique=True, index=True)
     description = Column(String, nullable=True)
-    # remarks = Column(String, nullable=True)
-    # active_status = Column(Integer)
+    remarks = Column(String, nullable=True)
+    active_status = Column(Integer)
 
 
 class Who(Base):
@@ -109,6 +109,8 @@ class Proj(Base):
     __tablename__ = "proj"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     proj = Column(String, unique=True, index=True)
+    status = Column(Integer, default=1)  
+    remarks = Column(String, nullable=True)
 
 class VP(Base):
     __tablename__ = "vp"
