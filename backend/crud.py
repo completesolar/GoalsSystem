@@ -14,7 +14,7 @@ from schemas.vp import VPResponse
 from schemas.p import PCreate, PResponse, PUpdate
 from schemas.b import BResponse,BCreate,BUpdate
 from schemas.e import EResponse,EUpdate,ECreate
-from schemas.d import DResponse
+from schemas.d import DResponse,DUpdate,DCreate
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.sql import text
 from json import dumps, loads
@@ -65,6 +65,9 @@ def create_status_entry(db: Session, status: Status):
 
 def get_status_by_id(db: Session, id: int):
     return db.query(Status).filter(Status.id == id).first()
+
+def get_p_by_id(db: Session, id: int):
+    return db.query(P).filter(P.id == id).first()
 
 def get_B_by_id(db: Session, id: int):
     return db.query(B).filter(B.id == id).first()
@@ -513,7 +516,7 @@ def update_E(db: Session, id: int, e_data: EUpdate):
     return db_e
 
 
-def create_D(db: Session, d_data: ECreate):
+def create_D(db: Session, d_data: DCreate):
     db_d = D(**d_data.dict())
     db.add(db_d)
     db.commit()
@@ -521,11 +524,11 @@ def create_D(db: Session, d_data: ECreate):
     return db_d
 
 
-def update_D(db: Session, id: int, e_data: EUpdate):
+def update_d(db: Session, id: int, d_data: DUpdate):
     db_d = db.query(D).filter(D.id == id).first()
     if not db_d:
         return None
-    for key, value in e_data.dict(exclude_unset=True).items():
+    for key, value in d_data.dict(exclude_unset=True).items():
         setattr(db_d, key, value)
     db.commit()
     db.refresh(db_d)

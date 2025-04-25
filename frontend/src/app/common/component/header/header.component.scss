@@ -1,15 +1,31 @@
 .main-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: #67a529;
-    letter-spacing: 1px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #2d2f2b;
+  letter-spacing: 1px;
+  margin-left: 80%;
+  width: 100%;
+  white-space: nowrap;
+
   }
+.active-background {
+  font-weight: bold;
+  background-color: #e9ffd3;
+  color: #437512;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
 
   .calendar-icon {
     vertical-align: middle;
     margin-bottom: 1px; /* optional fine-tuning */
   }
-
+.settings-button{
+  background: none;
+  cursor: pointer;
+  border:0px;
+  font-size: 12px;
+}
   .date {
     font-size: 10px;
     color: #777;
