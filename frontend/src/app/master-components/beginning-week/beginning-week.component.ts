@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { GoalsService } from '../services/goals.service';
+import { GoalsService } from '../../services/goals.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';

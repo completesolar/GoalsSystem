@@ -1,0 +1,122 @@
+.logo-section {
+  background-color: #fff;
+  padding: 6px;
+}
+
+.title-section {
+  //background-color: whitesmoke;
+  max-width: 99%;
+  margin: 0 auto;
+  border-radius: 10px;
+}
+
+::ng-deep .custom-table .p-datatable-tbody>tr,
+::ng-deep .custom-table .p-datatable-thead>tr {
+  height: 10px !important;
+}
+
+::ng-deep .custom-table .p-datatable-tbody>tr>td,
+::ng-deep .custom-table .p-datatable-thead>tr>th {
+  padding: 2px 6px !important;
+  font-size: 0.875rem;
+  height: 10px !important;
+  vertical-align: middle;
+}
+
+::ng-deep .custom-table .p-inputtext,
+::ng-deep .custom-table .p-dropdown,
+::ng-deep .custom-table .p-dropdown-label {
+  height: 28px !important;
+  font-size: 0.85rem;
+  padding: 2px 6px !important;
+  line-height: 1.2;
+}
+
+::ng-deep .custom-goal-table th:nth-child(9),
+::ng-deep .custom-goal-table td:nth-child(9) {
+  width: 400px;
+}
+
+::ng-deep .custom-goal-table th {
+  background-color: rgb(226, 239, 218) !important;
+  color: white;
+  /* Optionally set text color */
+  height: 40px;
+}
+
+::ng-deep .custom-goal-table .p-d-flex.p-ai-center {
+  background-color: rgb(226,
+      239,
+      218) !important;
+  /* Set your desired color here */
+  color: white;
+  /* White text for contrast */
+}
+
+::ng-deep .custom-goal-table .p-datatable-tbody>tr>td,
+::ng-deep .custom-goal-table .p-datatable-thead>tr>th {
+  padding: 2px 8px !important;
+  font-size: 12px !important;
+  /* reduce font size */
+  line-height: 1 !important;
+  height: 28px !important;
+  /* tighter row spacing */
+}
+
+::ng-deep .custom-goal-table .p-datatable-wrapper {
+  height: 100%;
+}
+
+::ng-deep .custom-goal-table .p-datatable-scrollable-body {
+  flex: 1 1 auto;
+  overflow-y: auto !important;
+}
+
+::ng-deep .custom-goal-table .p-datatable-scrollable {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.custom-goal-table th:last-child {
+  text-align: left;
+}
+
+::ng-deep .custom-goal-table tbody tr:nth-child(even) {
+  background-color: rgb(226, 239, 218) !important;
+}
+
+::ng-deep .custom-goal-table tbody tr:nth-child(odd) {
+  background-color: rgb(255, 255, 255) !important;
+}
+
+/* Ensure inputs and dropdowns inside the row inherit background */
+::ng-deep .custom-goal-table tbody tr:nth-child(even) input,
+::ng-deep .custom-goal-table tbody tr:nth-child(even) .p-inputtext,
+::ng-deep .custom-goal-table tbody tr:nth-child(even) .p-dropdown,
+::ng-deep .custom-goal-table tbody tr:nth-child(even) .p-select {
+  background-color: rgb(226, 239, 218) !important;
+}
+
+::ng-deep .custom-goal-table tbody tr:nth-child(odd) input,
+::ng-deep .custom-goal-table tbody tr:nth-child(odd) .p-inputtext,
+::ng-deep .custom-goal-table tbody tr:nth-child(odd) .p-dropdown,
+::ng-deep .custom-goal-table tbody tr:nth-child(odd) .p-select {
+  background-color: rgb(255, 255, 255) !important;
+}
+
+::ng-deep .custom-goal-table .p-datatable-tbody>tr.add-row.head.first-data-row {
+  background-color: rgb(139, 139, 212) !important;
+}
+
+.icon-actions-column {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  /* Adjust spacing between icons as needed */
+}
+
+.invalid-border {
+  border: 1px solid red !important;
+}

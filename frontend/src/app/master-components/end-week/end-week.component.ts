@@ -2,35 +2,38 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { TableModule } from 'primeng/table';
-import { GoalsService } from '../services/goals.service';
 import { SelectModule } from 'primeng/select';
+import { TableModule } from 'primeng/table';
+import { ToastModule } from 'primeng/toast';
+import { GoalsService } from '../../services/goals.service';
+import { MessageService } from 'primeng/api';
 
 @Component({
-  selector: 'app-status',
+  selector: 'app-end-week',
   imports: [
-    ButtonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    TableModule,
+    ToastModule,
     CommonModule,
+    TableModule,
     SelectModule,
+    ButtonModule,
+    ReactiveFormsModule,
+    FormsModule,
   ],
-  templateUrl: './status.component.html',
-  styleUrl: './status.component.scss',
+  providers: [MessageService],
+  templateUrl: './end-week.component.html',
+  styleUrl: './end-week.component.scss',
 })
-export class StatusComponent {
+export class EndWeekComponent {
   columns = [
     { field: 's.no', header: 'S.No', tooltip: '' },
-    { field: 'statusId', header: 'Status ID', tooltip: '' },
-    { field: 'initial', header: 'Initial', tooltip: '' },
-    { field: 'name', header: 'Name', tooltip: '' },
+    { field: 'eId', header: 'E ID', tooltip: '' },
+    { field: 'e', header: 'E', tooltip: '' },
     { field: 'status', header: 'Status', tooltip: '' },
     { field: 'remarks', header: 'Remarks', tooltip: '' },
     { field: 'action', header: 'ACTION', tooltip: '' },
   ];
 
-  statusList: any[] = [];
+  EList: any[] = [];
   editingItem: any = null;
   statusOptions: any = [
     { label: 'Active', value: 1 },
@@ -40,36 +43,36 @@ export class StatusComponent {
 
   isValid: boolean = true;
 
-  initial: string | undefined;
-  name: string | undefined;
+  e: number | undefined;
   remarks: any;
   status: any;
 
-  constructor(private goalsService: GoalsService) {}
+  constructor(
+    private goalsService: GoalsService,
+    public messageService: MessageService
+  ) {}
 
   ngOnInit() {
-    this.getStatus();
+    this.getE();
   }
 
-  getStatus() {
-    this.goalsService.getStatus().subscribe({
+  getE() {
+    this.goalsService.getE().subscribe({
       next: (response) => {
         console.log('response', response);
-        this.statusList = (
+        this.EList = (
           response as Array<{
-            description: string;
-            status: string;
+            e: number;
             id: number;
+            status: number;
             remarks: string;
-            active_status: number;
           }>
         ).map((item) => ({
           id: item.id,
-          status: `${item.status}`,
-          activeStatus: item.active_status,
+          e: `${item.e}`,
+          status: item.status,
           remarks: item.remarks,
           isEditable: false,
-          description: item.description,
         }));
       },
       error: (error) => {
@@ -79,22 +82,29 @@ export class StatusComponent {
   }
 
   onEdit(item: any) {
+    console.log('Item', item);
+
     this.editingItem = { ...item };
   }
 
-  async updateStatus(item: any) {
+  async updateE(item: any) {
     console.log('editingItem', this.editingItem);
     const isChanged = await this.isObjectChanged(item, this.editingItem);
     if (!this.editingItem && isChanged) return;
-    this.goalsService.updateStatus(this.editingItem).subscribe({
+    this.goalsService.updateE(this.editingItem).subscribe({
       next: (response: any) => {
         console.log('Response', response);
         if (response && response.id) {
-          this.statusList = this.statusList.map((p: any) =>
+          this.EList = this.EList.map((p: any) =>
             p.id === response.id ? { ...response } : p
           );
-          console.log('statusList edit', this.statusList);
-          this.getStatus();
+          console.log('statusList edit', this.EList);
+          this.getE();
+          this.messageService.add({
+            severity: 'success',
+            summary: 'E',
+            detail: 'updated successfully!.',
+          });
           this.editingItem = null;
         }
       },
@@ -108,24 +118,22 @@ export class StatusComponent {
     this.editingItem = null;
   }
 
-  saveNewStatus() {
-    console.log('initial', this.initial);
-    console.log('name', this.name);
-
-    if (!this.initial?.trim() || !this.name?.trim()) {
+  saveNewE() {
+    if (this.e === undefined) {
       this.isValid = false;
       console.log('isValid:', this.isValid);
       return;
     }
     let data = {
-      status: this.initial,
-      description: this.name,
+      e: this.e,
       active_status: this.status !== undefined ? this.status.value : 1,
       remarks: this.remarks,
     };
 
-    this.goalsService.createStatus(data).subscribe({
+    this.goalsService.createE(data).subscribe({
       next: (response: any) => {
+        console.log('Response', response);
+
         if (response && response.id) {
           const newGoal = {
             ...data,
@@ -133,16 +141,25 @@ export class StatusComponent {
             createddatetime: new Date(),
             isEditable: false,
           };
-          this.statusList = [newGoal, ...this.statusList];
-          this.initial = '';
-          this.name = '';
+          this.EList = [newGoal, ...this.EList];
+          this.e = undefined;
           this.status = null;
           this.remarks = '';
           this.isValid = true;
+          this.messageService.add({
+            severity: 'success',
+            summary: 'E',
+            detail: 'Added successfully!.',
+          });
         }
       },
       error: (err) => {
         console.error('Create failed', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'E',
+          detail: `${this.e} already exist.`,
+        });
       },
     });
   }

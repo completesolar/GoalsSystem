@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { GoalsService } from '../services/goals.service';
+import { GoalsService } from '../../services/goals.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -8,6 +8,7 @@ import { SelectModule } from 'primeng/select';
 import { DialogModule } from 'primeng/dialog';
 import { MessageService } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-priority',
@@ -20,6 +21,7 @@ import { InputTextModule } from 'primeng/inputtext';
     SelectModule,
     DialogModule,
     InputTextModule,
+    ToastModule,
   ],
   providers: [MessageService],
   templateUrl: './priority.component.html',
@@ -41,7 +43,7 @@ export class PriorityComponent {
   selectedStatus: { label: string; value: number } | undefined;
 
   addDialogVisible: boolean = false;
-
+  isValid: boolean = true;
   priority: number | undefined;
   remarks: any;
   status: any;
@@ -67,16 +69,21 @@ export class PriorityComponent {
   getPriority() {
     this.goalsService.getP().subscribe({
       next: (response) => {
-        console.log("response", response);
-        this.priorityList = (response as Array<{ p: number; id: number;status:number;remarks:string }>).map(
-          (item) => ({
-            id: item.id,
-            p: `${item.p}`,
-            status: item.status,
-            remarks: item.remarks,
-            isEditable: false,
-          })
-        );
+        console.log('response', response);
+        this.priorityList = (
+          response as Array<{
+            p: number;
+            id: number;
+            status: number;
+            remarks: string;
+          }>
+        ).map((item) => ({
+          id: item.id,
+          p: `${item.p}`,
+          status: item.status,
+          remarks: item.remarks,
+          isEditable: false,
+        }));
       },
       error: (error) => {
         console.error('Error fetching priorities:', error);
@@ -98,6 +105,11 @@ export class PriorityComponent {
             p.id === response.id ? { ...response } : p
           );
           this.editingItem = null;
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Priority',
+            detail: 'updated successfully!.',
+          });
         }
       },
       error: (err) => {
@@ -112,6 +124,7 @@ export class PriorityComponent {
 
   saveNewPriority() {
     if (this.priority === undefined) {
+      this.isValid = false;
       return;
     }
     let data = {
@@ -130,10 +143,24 @@ export class PriorityComponent {
             isEditable: false,
           };
           this.priorityList = [newGoal, ...this.priorityList];
+          (this.priority = undefined),
+            (this.status = undefined),
+            (this.remarks = ''),
+            (this.isValid = true);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Priority',
+            detail: 'Added successfully!.',
+          });
         }
       },
       error: (err) => {
         console.error('Create failed', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Priority',
+          detail: `${this.priority} already exist.`,
+        });
       },
     });
   }
