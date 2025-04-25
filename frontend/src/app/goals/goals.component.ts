@@ -822,7 +822,7 @@ export class GoalsComponent implements AfterViewInit {
           doc.text('Company Confidential', pageWidth / 2, pageHeight - 10, { align: 'center' });
   
           const footerText = `Page ${pageNumber} of ${totalPagesExp}`;
-          doc.text(footerText, pageWidth - 14, pageHeight - 10, { align: 'right' });
+          doc.text(footerText, pageWidth - 1, pageHeight - 10, { align: 'right' });
         },
       });
   
@@ -1061,7 +1061,7 @@ export class GoalsComponent implements AfterViewInit {
         }>;
         const filteredStatus = statusList.filter(item => item.active_status == 1);
         this.statusOptions = filteredStatus.map((item) => ({
-          label: `${item.status} ${item.description}`,
+          label: `${item.status} (${item.description})`,
           value: item.status, // Store only the status code
         })).sort((a, b) => a.label.localeCompare(b.label));
       },
