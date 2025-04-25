@@ -61,7 +61,6 @@ export class StatusComponent {
   getStatus() {
     this.goalsService.getStatus().subscribe({
       next: (response) => {
-        console.log('response', response);
         this.statusList = (
           response as Array<{
             description: string;
@@ -86,23 +85,18 @@ export class StatusComponent {
   }
 
   onEdit(item: any) {
-    console.log('Item', item);
-
     this.editingItem = { ...item };
   }
 
   async updateStatus(item: any) {
-    console.log('editingItem', this.editingItem);
     const isChanged = await this.isObjectChanged(item, this.editingItem);
     if (!this.editingItem && isChanged) return;
     this.goalsService.updateStatus(this.editingItem).subscribe({
       next: (response: any) => {
-        console.log('Response', response);
         if (response && response.id) {
           this.statusList = this.statusList.map((p: any) =>
             p.id === response.id ? { ...response } : p
           );
-          console.log('statusList edit', this.statusList);
           this.getStatus();
           this.messageService.add({
             severity: 'success',
@@ -123,12 +117,8 @@ export class StatusComponent {
   }
 
   saveNewStatus() {
-    console.log('initial', this.initial);
-    console.log('name', this.name);
-
     if (!this.initial?.trim() || !this.name?.trim()) {
       this.isValid = false;
-      console.log('isValid:', this.isValid);
       return;
     }
     let data = {
@@ -140,8 +130,6 @@ export class StatusComponent {
 
     this.goalsService.createStatus(data).subscribe({
       next: (response: any) => {
-        console.log('Response', response);
-
         if (response && response.id) {
           const newGoal = {
             ...data,

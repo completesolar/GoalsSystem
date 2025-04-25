@@ -59,7 +59,6 @@ export class EndWeekComponent {
   getE() {
     this.goalsService.getE().subscribe({
       next: (response) => {
-        console.log('response', response);
         this.EList = (
           response as Array<{
             e: number;
@@ -82,23 +81,18 @@ export class EndWeekComponent {
   }
 
   onEdit(item: any) {
-    console.log('Item', item);
-
     this.editingItem = { ...item };
   }
 
   async updateE(item: any) {
-    console.log('editingItem', this.editingItem);
     const isChanged = await this.isObjectChanged(item, this.editingItem);
     if (!this.editingItem && isChanged) return;
     this.goalsService.updateE(this.editingItem).subscribe({
       next: (response: any) => {
-        console.log('Response', response);
         if (response && response.id) {
           this.EList = this.EList.map((p: any) =>
             p.id === response.id ? { ...response } : p
           );
-          console.log('statusList edit', this.EList);
           this.getE();
           this.messageService.add({
             severity: 'success',
@@ -121,7 +115,6 @@ export class EndWeekComponent {
   saveNewE() {
     if (this.e === undefined) {
       this.isValid = false;
-      console.log('isValid:', this.isValid);
       return;
     }
     let data = {
@@ -132,8 +125,6 @@ export class EndWeekComponent {
 
     this.goalsService.createE(data).subscribe({
       next: (response: any) => {
-        console.log('Response', response);
-
         if (response && response.id) {
           const newGoal = {
             ...data,

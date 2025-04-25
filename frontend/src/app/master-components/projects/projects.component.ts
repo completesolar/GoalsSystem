@@ -59,21 +59,20 @@ export class ProjectsComponent {
   getProj() {
     this.goalsService.getProj().subscribe({
       next: (response) => {
-        console.log('response', response);
-        // this.projList = (
-        //   response as Array<{
-        //     d: number;
-        //     id: number;
-        //     status: number;
-        //     remarks: string;
-        //   }>
-        // ).map((item) => ({
-        //   id: item.id,
-        //   d: `${item.d}`,
-        //   status: item.status,
-        //   remarks: item.remarks,
-        //   isEditable: false,
-        // }));
+        this.projList = (
+          response as Array<{
+            proj: string;
+            id: number;
+            status: number;
+            remarks: string;
+          }>
+        ).map((item) => ({
+          id: item.id,
+          proj: `${item.proj}`,
+          status: item.status,
+          remarks: item.remarks,
+          isEditable: false,
+        }));
       },
       error: (error) => {
         console.error('Error fetching status:', error);
@@ -82,23 +81,18 @@ export class ProjectsComponent {
   }
 
   onEdit(item: any) {
-    console.log('Item', item);
-
     this.editingItem = { ...item };
   }
 
   async updateProject(item: any) {
-    console.log('editingItem', this.editingItem);
     const isChanged = await this.isObjectChanged(item, this.editingItem);
     if (!this.editingItem && isChanged) return;
-    this.goalsService.updateD(this.editingItem).subscribe({
+    this.goalsService.updateProj(this.editingItem).subscribe({
       next: (response: any) => {
-        console.log('Response', response);
         if (response && response.id) {
           this.projList = this.projList.map((p: any) =>
             p.id === response.id ? { ...response } : p
           );
-          console.log('statusList edit', this.projList);
           this.getProj();
           this.messageService.add({
             severity: 'success',
@@ -119,21 +113,17 @@ export class ProjectsComponent {
   }
 
   saveNewProject() {
-    if (this.project === undefined) {
+    if (!this.project?.trim()) {
       this.isValid = false;
-      console.log('isValid:', this.isValid);
       return;
     }
     let data = {
-      d: this.project,
-      active_status: this.status !== undefined ? this.status.value : 1,
-      remarks: this.remarks,
+      proj: this.project,
+      status: this.status?.value || 1,
+      remarks: this.remarks || '',
     };
-
     this.goalsService.createProj(data).subscribe({
       next: (response: any) => {
-        console.log('Response', response);
-
         if (response && response.id) {
           const newGoal = {
             ...data,

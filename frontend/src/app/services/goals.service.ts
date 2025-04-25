@@ -111,14 +111,14 @@ export class GoalsService {
   }
 
   getProj() {
-    return this.http.get(`${this.baseURL}/Proj`);
+    return this.http.get(`${this.baseURL}/proj`);
   }
   updateProj(Proj: any) {
-    return this.http.put(`${this.baseURL}/Proj/${Proj.id}`, Proj);
+    return this.http.put(`${this.baseURL}/proj/${Proj.id}`, Proj);
   }
 
   createProj(Proj: any) {
-    return this.http.post(`${this.baseURL}/Proj`, Proj);
+    return this.http.post(`${this.baseURL}/proj`, Proj);
   }
   getB() {
     return this.http.get(`${this.baseURL}/b`);

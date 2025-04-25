@@ -69,7 +69,6 @@ export class PriorityComponent {
   getPriority() {
     this.goalsService.getP().subscribe({
       next: (response) => {
-        console.log('response', response);
         this.priorityList = (
           response as Array<{
             p: number;

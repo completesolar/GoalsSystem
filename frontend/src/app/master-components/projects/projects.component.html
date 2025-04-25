@@ -51,10 +51,10 @@
           <td>{{ rowIndex + 1 }}</td>
           <td>{{ item.id }}</td>
           <td>
-            <ng-container *ngIf="editingItem?.id === item.id; else viewD">
-              <input type="number" pInputText [(ngModel)]="editingItem.d" style="width: 100px" />
+            <ng-container *ngIf="editingItem?.id === item.id; else viewproj">
+              <input type="text" pInputText [(ngModel)]="editingItem.proj" style="width: 100px" />
             </ng-container>
-            <ng-template #viewD>{{ item.d }}</ng-template>
+            <ng-template #viewproj>{{ item.proj }}</ng-template>
           </td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewStatus">
