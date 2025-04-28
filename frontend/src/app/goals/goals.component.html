@@ -312,9 +312,7 @@
           <th
             *ngFor="let col of columns"
             [hidden]="
-              (col.field === 'fiscalyear' && !isAnyRowEditable()) ||
-              (col.field === 'confidential' && !isAnyRowEditable())
-            "
+              (col.field === 'fiscalyear' && !isAnyRowEditable()) "
             class=""
           >
             <div class="flex items-center justify-between">
@@ -641,7 +639,7 @@
 
             <p-confirmPopup #descriptionPopup key="descPopup"></p-confirmPopup>
           </td>
-          <td *ngIf="row.isEditable">
+          <!-- <td *ngIf="row.isEditable">
             <input
               pInputText
               [(ngModel)]="row.fiscalyear"
@@ -650,9 +648,21 @@
               tabindex="12"
               id="year-input"
             />
+          </td> -->
+          <td *ngIf="isAnyRowEditable()">
+            <input
+              pInputText
+              [(ngModel)]="row.fiscalyear"
+              [disabled]="!row.isEditable"
+              [readonly]="!row.isEditable"
+              tooltipPosition="bottom"
+              tabindex="12"
+              id="year-input-{{ rowIndex }}"
+              [ngClass]="{ 'saved': !row.isEditable }"
+            />
           </td>
-
-          <td *ngIf="row.isEditable">
+          
+          <!-- <td>
             <p-checkbox
               [(ngModel)]="row.isconfidential"
               binary="true"
@@ -660,9 +670,29 @@
               [pTooltip]="'Mark as Confidential'"
               tooltipPosition="bottom"
               [style]="{ 'margin-top': '4px' }"
+              [disabled]="!row.isEditable"
+              [ngClass]="{ 'saved': !row.isEditable }"
             ></p-checkbox>
+          </td> -->
+          <td>
+            <ng-container *ngIf="row.isEditable; else viewConfidential">
+              <p-checkbox
+                [(ngModel)]="row.isconfidential"
+                binary="true"
+                inputId="isconfidential-{{ rowIndex }}"
+                [pTooltip]="'Mark as Confidential'"
+                tooltipPosition="bottom"
+                [style]="{ 'margin-top': '4px' }"
+              ></p-checkbox>
+            </ng-container>
+          
+            <ng-template #viewConfidential>
+              <div class="confidential-status">
+                <i class="pi" [ngClass]="row.isconfidential ? 'pi-check text-green-500' : 'pi-times text-red-500'"></i>
+              </div>
+            </ng-template>
           </td>
-
+          
           <td class="icon-actions-column">
             <i
               [ngClass]="
