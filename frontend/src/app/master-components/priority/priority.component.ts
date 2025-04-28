@@ -173,6 +173,8 @@ export class PriorityComponent {
     return JSON.stringify(restA) !== JSON.stringify(restB);
   }
 
+  // Filter added
+  
   applyFilters(): void {
     this.priorityList = [...this.allPriorities].filter((row: any) => {
       return Object.entries(this.selectedFilters).every(
