@@ -18,7 +18,7 @@ from schemas.d import DResponse,DUpdate,DCreate
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.sql import text
 from json import dumps, loads
-from datetime import datetime
+from datetime import datetime, timedelta
 from copy import deepcopy
 from sqlalchemy import case, func,extract
 
@@ -95,9 +95,42 @@ def get_action(db: Session):
     return jsonable_encoder(db_action)
 
 
+def get_mst_now():
+    utc_now = datetime.utcnow()
+    mst_now = utc_now - timedelta(hours=7)
+    return mst_now
+
 def create_goal(db: Session, goal: Goals):
-    currentdate = datetime.now()
+    from sqlalchemy import text
+
+    currentdate = get_mst_now()
+
+    # Step 1: Generate correct prefix: YYWW
+    now = get_mst_now()
+    current_year = now.strftime("%y")
+    current_week = now.isocalendar()[1]
+    base_prefix = f"{current_year}{current_week:02d}"
+
+    # Step 2: Find highest matching goalid
+    result = db.execute(
+        text(f"SELECT MAX(goalid) FROM goals WHERE goalid::TEXT LIKE '{base_prefix}%'")
+    ).fetchone()
+
+    max_goalid = result[0] if result and result[0] is not None else None
+
+    # Step 3: Safely calculate suffix
+    if max_goalid and str(max_goalid).startswith(base_prefix):
+        suffix_str = str(max_goalid)[4:]
+        suffix = int(suffix_str) + 1 if suffix_str.isdigit() else 1
+    else:
+        suffix = 1
+
+    # Step 4: Generate new goalid
+    new_goalid = int(f"{base_prefix}{str(suffix).zfill(4)}")  # Always 4 digits padded
+
+    # Step 5: Create the goal
     db_goal = Goals(
+        goalid=new_goalid,
         who=goal.who,
         p=goal.p,
         proj=goal.proj,
@@ -111,6 +144,9 @@ def create_goal(db: Session, goal: Goals):
         description=goal.description,
         fiscalyear=goal.fiscalyear,
         updateBy=goal.updateBy,
+        isconfidential=goal.isconfidential,
+        createddatetime=currentdate,
+        updateddatetime=currentdate,
     )
     db.add(db_goal)
     db.commit()
@@ -133,7 +169,7 @@ def create_goal(db: Session, goal: Goals):
         fiscalyear=goal.fiscalyear,
         updateBy=goal.updateBy,
         description=goal.description,
-    )  # Assuming you want to store the initial state in history
+    )
     db.add(db_goalhistory)
     db.commit()
     db.refresh(db_goalhistory)
@@ -266,6 +302,8 @@ def update_goal(db: Session, goal_id: int, goal_update: GoalsUpdate):
         db_goal.fiscalyear = goal_update.fiscalyear
     if goal_update.updateBy is not None:
         db_goal.updateBy = goal_update.updateBy
+    if goal_update.isconfidential is not None:
+        db_goal.isconfidential = goal_update.isconfidential
 
     # Step 3: Commit the changes to the database
     db.commit()

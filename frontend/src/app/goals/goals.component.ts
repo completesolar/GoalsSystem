@@ -122,6 +122,7 @@ export class GoalsComponent implements AfterViewInit {
     { name: 'Status' },
   ];
   columns = [
+    { field: 'goalid', header: 'Goal ID' },
     { field: 'who', header: 'WHO', tooltip: 'Owner of the goal' },
     { field: 'p', header: 'P', tooltip: 'Priority' },
     { field: 'proj', header: 'PROJ', tooltip: 'Project' },
@@ -132,6 +133,7 @@ export class GoalsComponent implements AfterViewInit {
     { field: 's', header: 'S', tooltip: 'Status of the goal' },
     { field: 'gdb', header: 'GOAL DELIVERABLE', tooltip: '' },
     { field: 'fiscalyear', header: 'Year' },
+    { field: 'confidential', header: 'Confidential', tooltip: '' },
     { field: 'action', header: 'ACTION', tooltip: '' },
   ];
 
@@ -166,6 +168,7 @@ export class GoalsComponent implements AfterViewInit {
     description: '',
     action: '',
     memo: '',
+    isconfidential: false,
   };
 
   selectedExport: string | null = null;
@@ -357,21 +360,21 @@ export class GoalsComponent implements AfterViewInit {
           who: g.who ?? '',
           gdb: g.gdb ?? '',
           isEditable: false,
+          isconfidential: !!g.isconfidential,
         }))
         .sort((a, b) => {
           const whoA = a.who.toLowerCase();
           const whoB = b.who.toLowerCase();
           if (whoA < whoB) return -1;
           if (whoA > whoB) return 1;
-
           const priorityA = isNaN(+a.p) ? Number.MAX_SAFE_INTEGER : +a.p;
           const priorityB = isNaN(+b.p) ? Number.MAX_SAFE_INTEGER : +b.p;
           return priorityA - priorityB;
         });
-
       this.allGoals = filteredGoals;
       this.goal = [...filteredGoals];
       this.originalGoal = [...this.goal];
+      console.log("this.goal", this.goal);
     });
   }
 
@@ -412,12 +415,12 @@ export class GoalsComponent implements AfterViewInit {
           .sort((a, b) => new Date(a.createddate).getTime() - new Date(b.createddate).getTime());
   
         const coloredHistory = [];
+        let cumulativeMemo: { text: string; color: string }[] = [];
+        let cumulativeAction: { text: string; color: string }[] = [];
+        let cumulativeDescription: { text: string; color: string }[] = [];
   
         for (let i = 0; i < sortedHistory.length; i++) {
           const current = sortedHistory[i];
-          const previous = sortedHistory[i - 1];
-          const cyclePalette = this.colorPalette.slice(1); 
-          const color = cyclePalette[(i - 1) % cyclePalette.length] || cyclePalette[0];
   
           const rowDisplay: any = {
             ...current,
@@ -429,14 +432,24 @@ export class GoalsComponent implements AfterViewInit {
           };
   
           if (i === 0) {
-            rowDisplay.display.action.push({ text: current.action || '', color: this.colorPalette[0] });
-            rowDisplay.display.description.push({ text: current.description || '', color: this.colorPalette[0] });
-            rowDisplay.display.memo.push({ text: current.memo || '', color: this.colorPalette[0] });
+            rowDisplay.display.action = [{ text: current.action || '', color: this.colorPalette[0] }];
+            rowDisplay.display.description = [{ text: current.description || '', color: this.colorPalette[0] }];
+            rowDisplay.display.memo = [{ text: current.memo || '', color: this.colorPalette[0] }];
+  
+            cumulativeAction = [...rowDisplay.display.action];
+            cumulativeDescription = [...rowDisplay.display.description];
+            cumulativeMemo = [...rowDisplay.display.memo];
           } else {
-            rowDisplay.display.memo = this.getSmartDiffChunks(current.memo || '', previous.memo || '', color);
-            rowDisplay.display.action = this.getSmartDiffChunksForAction(current.action || '', previous.action || '', color);
-            rowDisplay.display.description = this.getSmartDiffChunks(current.description || '', previous.description || '', color);
-                    }
+            const highlightColor = this.colorPalette[i % this.colorPalette.length] || this.colorPalette[1];
+  
+            rowDisplay.display.action = this.getProgressiveChunks(cumulativeAction, current.action || '', highlightColor);
+            rowDisplay.display.description = this.getProgressiveChunks(cumulativeDescription, current.description || '', highlightColor);
+            rowDisplay.display.memo = this.getProgressiveChunks(cumulativeDescription, current.memo || '', highlightColor);
+  
+            cumulativeAction = [...rowDisplay.display.action];
+            cumulativeDescription = [...rowDisplay.display.description];
+            cumulativeMemo = [...rowDisplay.display.memo];
+          }
   
           coloredHistory.push(rowDisplay);
         }
@@ -448,6 +461,8 @@ export class GoalsComponent implements AfterViewInit {
       }
     );
   }
+  
+  
 
   
 
@@ -488,6 +503,7 @@ export class GoalsComponent implements AfterViewInit {
       createddatetime: new Date(),
       updateddatetime: new Date(),
       description: '',
+      isconfidential: false,
       action: '',
     };
   }
@@ -508,6 +524,7 @@ export class GoalsComponent implements AfterViewInit {
     this.newRow.e = this.newRow.e;
     this.newRow.d = this.newRow.d;
     this.newRow.action = `${this.newRow.action}:`;
+    this.newRow.isconfidential = !!this.newRow.isconfidential;
 
     this.goalsService.createGoal(this.newRow).subscribe((response: any) => {
       if (response && response.goalid) {
@@ -608,7 +625,7 @@ export class GoalsComponent implements AfterViewInit {
           'Key:',
           'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
           'S =Status of the goal, N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
-          'PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS',
+          'PROJ TYPES: TJRM, TJRS, SHIP, SOX, BATT, ADMN, RCCA,SLES',
         ];
 
         const keyStartRow = 8;
@@ -749,13 +766,13 @@ export class GoalsComponent implements AfterViewInit {
       doc.setFontSize(11);
       doc.setTextColor(0, 0, 0);
       doc.text('SORT Order: This report is sorted on WHO P', infoStartX, infoStartY);
-      doc.text(`Reported Date & time: ${displayTime} (MST)`, infoStartX, infoStartY + lineGap);
-  
+      doc.text(`Reported Date & time: ${displayTime} (MST)`, pageWidth - infoStartX, infoStartY, { align: 'right' });
+    
       const keyText = [
         'Key:',
         'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
         'S =Status of the goal, N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
-        'PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS',
+        'PROJ TYPES: TJRM, TJRS, SHIP, SOX, BATT, ADMN, RCCA,SLES',
       ];
   
       let keyStartY = infoStartY + 20;
@@ -920,7 +937,6 @@ export class GoalsComponent implements AfterViewInit {
     console.log('previousRow', this.previousRow);
     console.log('currentRow', row);
     this.checkDifferences(this.previousRow, row);
-
     const missingFields = this.isValidGoalData(row);
     if (missingFields.length > 0) {
       this.messageService.add({
@@ -940,25 +956,43 @@ export class GoalsComponent implements AfterViewInit {
       return;
     }
 
-    row.e = row.e;
-    row.d = row.d; 
+    if (row.e === '' as any) row.e = null;
+    if (row.d === '' as any) row.d = null;
+    if (row.b === '' as any) row.b = null;
 
-    const goalid = row.goalid;
+    if (typeof row.isconfidential === 'number') {
+      row.isconfidential = row.isconfidential === 1 ? true : false;
+    }
+  
+    const goalid = row.goalid;  
     const updatedGoal: Goals = {
-      ...row,
-      isEditable: false,
+      who: row.who,
+      p: row.p,
+      proj: row.proj,
+      vp: row.vp,
+      b: row.b,
+      e: row.e,
+      d: row.d,
+      s: row.s,
+      action: row.action,
+      memo: row.memo,
+      fiscalyear: row.fiscalyear,
+      updateBy: row.updateBy,
+      description: row.description,
+      isconfidential: row.isconfidential,
+      goalid: row.goalid,
+      createddatetime: row.createddatetime,
+      updateddatetime: moment().tz('America/Denver').toDate(),
     };
 
     this.goalsService.updateGoal(updatedGoal).subscribe((response) => {
       if (response) {
         const updatedGoals = this.goal.map((g: Goals) =>
-          g.goalid === goalid ? updatedGoal : g
+          g.goalid === goalid ? { ...updatedGoal, isEditable: false } : g
         );
 
         const newTopGoal = updatedGoals.find((g: Goals) => g.goalid === goalid);
-        const restGoals = updatedGoals.filter(
-          (g: Goals) => g.goalid !== goalid
-        );
+        const restGoals = updatedGoals.filter((g: Goals) => g.goalid !== goalid);
         this.goal = newTopGoal ? [newTopGoal, ...restGoals] : updatedGoals;
 
         this.messageService.add({
@@ -990,6 +1024,7 @@ export class GoalsComponent implements AfterViewInit {
       'description',
       'memo',
       'fiscalyear',
+      'isconfidential',
     ];
 
     for (const field of fieldsToCompare) {
@@ -1463,7 +1498,7 @@ exportHistoryExcelData(goalHistory:[]): void {
         'Key:',
         'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
         'S =Status of the goal, N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
-        'PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS',
+        'PROJ TYPES: TJRM, TJRS, SHIP, SOX, BATT, ADMN, RCCA,SLES',
       ];
 
       const keyStartRow = 8;
@@ -1606,14 +1641,14 @@ exportHistoryPdfData(goalHistory:[]): void {
     doc.setFontSize(11);
     doc.setTextColor(0, 0, 0);
     doc.text('SORT Order: This report is sorted on WHO P', infoStartX, infoStartY);
-    doc.text(`Reported Date & time: ${displayTime} (MST)`, infoStartX, infoStartY + lineGap);
+    doc.text(`Reported Date & time: ${displayTime} (MST)`, pageWidth - infoStartX, infoStartY, { align: 'right' });
 
     // Legend
     const keyText = [
       'Key:',
       'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
       'S =Status of the goal, N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
-      'PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS',
+      'PROJ TYPES: TJRM, TJRS, SHIP, SOX, BATT, ADMN, RCCA,SLES',
     ];
 
     let keyStartY = infoStartY + 20;
@@ -1651,6 +1686,7 @@ exportHistoryPdfData(goalHistory:[]): void {
       goal.fiscalyear,
       `${goal.action ?? ''} ${goal.description ?? ''} ${goal.memo ?? ''}`.trim()
     ]);
+    const totalPagesExp = "{total_pages_count_string}";
 
     autoTable(doc, {
       startY: tableStartY,
@@ -1672,29 +1708,27 @@ exportHistoryPdfData(goalHistory:[]): void {
       },
       margin: { top: 10 },
       didDrawPage: (data) => {
-        const pageNumber = data.pageNumber;
+        const pageNumber = doc.getCurrentPageInfo().pageNumber;
         doc.setFontSize(9);
         doc.text(`Reported: ${displayTime}`, 14, pageHeight - 10, { align: 'left' });
         doc.text('Company Confidential', pageWidth / 2, pageHeight - 10, { align: 'center' });
 
-        doc.text(`Page ${pageNumber}`, pageWidth - 14, pageHeight - 10, { align: 'right' });
+        const footerText = `Page ${pageNumber} of ${totalPagesExp}`;
+        doc.text(footerText, pageWidth - 1, pageHeight - 10, { align: 'right' });
       },
     });
+
+    if (typeof doc.putTotalPages === 'function') {
+      doc.putTotalPages(totalPagesExp);
+    }
+
 
     const fileName = `Goals_${fileNameDate}_${formattedTime}.pdf`;
     doc.save(fileName);
   };
 }
 
-// clearAllFilters(): void {
-//   this.selectedFilters = {};
-//   this.activeFilters = {};
-//   this.dataTable?.reset();
-//   }
 
-// hasActiveFilters(): boolean {
-//   return Object.values(this.activeFilters || {}).some((v) => v === true);
-// }
 clearAllFilters(): void {
   this.selectedFilters = {};
   this.activeFilters = {};
@@ -1710,4 +1744,78 @@ loadUnfilteredData(): void {
     this.dataTable.first = 0; 
   }
 }
+
+getProgressiveChunks(
+  previousChunks: { text: string; color: string }[],
+  currentText: string,
+  highlightColor: string
+): { text: string; color: string }[] {
+  const dmp = new diff_match_patch();
+
+  let previousText = '';
+  for (const chunk of previousChunks) {
+    previousText += chunk.text;
+  }
+
+  const diffs = dmp.diff_main(previousText, currentText);
+  dmp.diff_cleanupSemantic(diffs);
+
+  const resultChunks: { text: string; color: string }[] = [];
+
+  let prevChunkIndex = 0;
+  let prevChunkOffset = 0;
+
+  for (const [op, data] of diffs) {
+    if (op === DIFF_EQUAL) {
+      let remainingLength = data.length;
+
+      while (remainingLength > 0 && prevChunkIndex < previousChunks.length) {
+        const chunk = previousChunks[prevChunkIndex];
+        const remainingChunkText = chunk.text.substring(prevChunkOffset);
+
+        if (remainingChunkText.length <= remainingLength) {
+          resultChunks.push({
+            text: remainingChunkText,
+            color: chunk.color
+          });
+          remainingLength -= remainingChunkText.length;
+          prevChunkIndex++;
+          prevChunkOffset = 0;
+        } else {
+          resultChunks.push({
+            text: remainingChunkText.substring(0, remainingLength),
+            color: chunk.color
+          });
+          prevChunkOffset += remainingLength;
+          remainingLength = 0;
+        }
+      }
+    } else if (op === DIFF_INSERT) {
+      resultChunks.push({
+        text: data,
+        color: highlightColor
+      });
+    } else if (op === DIFF_DELETE) {
+      // Skip deleted text
+      let remainingLength = data.length;
+      while (remainingLength > 0 && prevChunkIndex < previousChunks.length) {
+        const chunk = previousChunks[prevChunkIndex];
+        const remainingChunkText = chunk.text.substring(prevChunkOffset);
+
+        if (remainingChunkText.length <= remainingLength) {
+          remainingLength -= remainingChunkText.length;
+          prevChunkIndex++;
+          prevChunkOffset = 0;
+        } else {
+          prevChunkOffset += remainingLength;
+          remainingLength = 0;
+        }
+      }
+    }
+  }
+
+  return resultChunks;
+}
+
+
 }
