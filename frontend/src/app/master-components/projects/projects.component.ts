@@ -7,6 +7,7 @@ import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { GoalsService } from '../../services/goals.service';
+import { MultiSelectModule } from 'primeng/multiselect';
 
 @Component({
   selector: 'app-projects',
@@ -18,6 +19,7 @@ import { GoalsService } from '../../services/goals.service';
     ButtonModule,
     ReactiveFormsModule,
     FormsModule,
+    MultiSelectModule,
   ],
   providers: [MessageService],
   templateUrl: './projects.component.html',
@@ -25,9 +27,9 @@ import { GoalsService } from '../../services/goals.service';
 })
 export class ProjectsComponent {
   columns = [
-    { field: 's.no', header: 'S.No', tooltip: '' },
-    { field: 'projectId', header: 'Proj ID', tooltip: '' },
-    { field: 'project', header: 'Project', tooltip: '' },
+    { field: 'sno', header: 'S.No', tooltip: '' },
+    { field: 'id', header: 'Proj ID', tooltip: '' },
+    { field: 'proj', header: 'Project', tooltip: '' },
     { field: 'status', header: 'Status', tooltip: '' },
     { field: 'remarks', header: 'Remarks', tooltip: '' },
     { field: 'action', header: 'ACTION', tooltip: '' },
@@ -46,6 +48,9 @@ export class ProjectsComponent {
   project: string | undefined;
   remarks: any;
   status: any;
+  selectedFilters: { [key: string]: any[] } = {};
+  activeFilters: { [key: string]: boolean } = {};
+  allProjList: any = [];
 
   constructor(
     private goalsService: GoalsService,
@@ -65,14 +70,17 @@ export class ProjectsComponent {
             id: number;
             status: number;
             remarks: string;
+            sno: number;
           }>
-        ).map((item) => ({
+        ).map((item, index) => ({
+          sno: index + 1,
           id: item.id,
           proj: `${item.proj}`,
           status: item.status,
           remarks: item.remarks,
           isEditable: false,
         }));
+        this.allProjList = [...this.projList];
       },
       error: (error) => {
         console.error('Error fetching status:', error);
@@ -131,7 +139,7 @@ export class ProjectsComponent {
             createddatetime: new Date(),
             isEditable: false,
           };
-          this.projList = [newGoal, ...this.projList];
+          this.getProj();
           this.project = '';
           this.status = null;
           this.remarks = '';
@@ -158,5 +166,54 @@ export class ProjectsComponent {
     const { isEditable: _, ...restA } = objA;
     const { isEditable: __, ...restB } = objB;
     return JSON.stringify(restA) !== JSON.stringify(restB);
+  }
+
+  applyFilters(): void {
+    this.projList = [...this.allProjList].filter((row: any) => {
+      return Object.entries(this.selectedFilters).every(
+        ([filterField, selectedValues]: [string, any[]]) => {
+          if (!selectedValues || selectedValues.length === 0) return true;
+
+          if (filterField === 'status') {
+            return selectedValues.some(
+              (option: any) => option.value === row[filterField]
+            );
+          }
+          if (
+            filterField === 'remarks' ||
+            filterField === 'proj' ||
+            filterField === 'id'
+          ) {
+            return selectedValues.some(
+              (option: any) => option.value == row[filterField]
+            );
+          }
+          return true;
+        }
+      );
+    });
+  }
+  onFilterChange(): void {
+    this.applyFilters();
+    Object.keys(this.selectedFilters).forEach((field) => {
+      this.activeFilters[field] = !!this.selectedFilters[field]?.length;
+    });
+  }
+  getFilterOptions(field: string) {
+    if (field === 'status') {
+      return [
+        { label: 'Active', value: 1 },
+        { label: 'Inactive', value: 0 },
+      ];
+    }
+
+    const uniqueValues = [
+      ...new Set(this.allProjList.map((item: any) => (item as any)[field])),
+    ];
+
+    return uniqueValues.map((val) => ({
+      label: val,
+      value: val,
+    }));
   }
 }

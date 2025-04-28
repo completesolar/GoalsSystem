@@ -42,8 +42,28 @@
         <tr>
           <th *ngFor="let col of columns" class="">
             <div class="flex items-center justify-between">
-              <div class="test">
+              <div class="test" [pSortableColumn]="col.field" *ngIf="col.field !== 'action'; else noSort">
                 <b>{{ col.header }}</b>
+                <p-sortIcon [field]="col.field"></p-sortIcon>
+              </div>
+              <ng-template #noSort>
+                <b>{{ col.header }}</b>
+              </ng-template>
+              <div class="flex justify-center" *ngIf="col.field !== 'action' && col.field !== 'sno'">
+                <p-multiSelect [options]="getFilterOptions(col.field)" [(ngModel)]="selectedFilters[col.field]"
+                  (onChange)="onFilterChange()" optionLabel="label" display="chip" [style]="{
+                                                              width: '1.5rem',
+                                                              height: '1.5rem',
+                                                              padding: 0,
+                                                              border: 'none',
+                                                              background: 'transparent'
+                                                            }" panelStyleClass="filter-dropdown-left"
+                  [showToggleAll]="true" [maxSelectedLabels]="0" [dropdownIcon]="'pi pi-filter'" appendTo="body"
+                  [ngClass]="{ 'filter-active': activeFilters[col.field] }">
+                  <ng-template let-value pTemplate="selectedItems">
+                    <span class="sr-only">Filter</span>
+                  </ng-template>
+                </p-multiSelect>
               </div>
             </div>
           </th>
@@ -51,7 +71,7 @@
       </ng-template>
       <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
         <tr *ngIf="statusList.length">
-          <td>{{ rowIndex + 1 }}</td>
+          <td>{{ item.sno }}</td>
           <td>{{ item.id }}</td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewInitial">
@@ -67,10 +87,10 @@
           </td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewStatus">
-              <p-select [options]="statusOptions" [(ngModel)]="editingItem.activeStatus" optionLabel="label"
+              <p-select [options]="statusOptions" [(ngModel)]="editingItem.active_status" optionLabel="label"
                 optionValue="value"></p-select>
             </ng-container>
-            <ng-template #viewStatus>{{ item.activeStatus === 1 ? 'Active' : 'Inactive' }}</ng-template>
+            <ng-template #viewStatus>{{ item.active_status === 1 ? 'Active' : 'Inactive' }}</ng-template>
           </td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewRenarks">

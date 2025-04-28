@@ -7,6 +7,7 @@ import { GoalsService } from '../../services/goals.service';
 import { SelectModule } from 'primeng/select';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { MultiSelectModule } from 'primeng/multiselect';
 
 @Component({
   selector: 'app-status',
@@ -18,6 +19,7 @@ import { ToastModule } from 'primeng/toast';
     CommonModule,
     SelectModule,
     ToastModule,
+    MultiSelectModule,
   ],
   providers: [MessageService],
   templateUrl: './status.component.html',
@@ -25,11 +27,11 @@ import { ToastModule } from 'primeng/toast';
 })
 export class StatusComponent {
   columns = [
-    { field: 's.no', header: 'S.No', tooltip: '' },
-    { field: 'statusId', header: 'Status ID', tooltip: '' },
-    { field: 'initial', header: 'Initial', tooltip: '' },
-    { field: 'name', header: 'Name', tooltip: '' },
-    { field: 'status', header: 'Status', tooltip: '' },
+    { field: 'sno', header: 'S.No', tooltip: '' },
+    { field: 'id', header: 'Status ID', tooltip: '' },
+    { field: 'status', header: 'Initial', tooltip: '' },
+    { field: 'description', header: 'Name', tooltip: '' },
+    { field: 'active_status', header: 'Status', tooltip: '' },
     { field: 'remarks', header: 'Remarks', tooltip: '' },
     { field: 'action', header: 'ACTION', tooltip: '' },
   ];
@@ -48,6 +50,9 @@ export class StatusComponent {
   name: string | undefined;
   remarks: any;
   status: any;
+  selectedFilters: { [key: string]: any[] } = {};
+  activeFilters: { [key: string]: boolean } = {};
+  allStatusList: any = [];
 
   constructor(
     private goalsService: GoalsService,
@@ -68,15 +73,18 @@ export class StatusComponent {
             id: number;
             remarks: string;
             active_status: number;
+            sno: number;
           }>
-        ).map((item) => ({
+        ).map((item, index) => ({
+          sno: index + 1,
           id: item.id,
           status: `${item.status}`,
-          activeStatus: item.active_status,
+          active_status: item.active_status,
           remarks: item.remarks,
           isEditable: false,
           description: item.description,
         }));
+        this.allStatusList = [...this.statusList];
       },
       error: (error) => {
         console.error('Error fetching status:', error);
@@ -137,7 +145,7 @@ export class StatusComponent {
             createddatetime: new Date(),
             isEditable: false,
           };
-          this.statusList = [newGoal, ...this.statusList];
+          this.getStatus();
           this.initial = '';
           this.name = '';
           this.status = null;
@@ -165,5 +173,55 @@ export class StatusComponent {
     const { isEditable: _, ...restA } = objA;
     const { isEditable: __, ...restB } = objB;
     return JSON.stringify(restA) !== JSON.stringify(restB);
+  }
+
+  applyFilters(): void {
+    this.statusList = [...this.allStatusList].filter((row: any) => {
+      return Object.entries(this.selectedFilters).every(
+        ([filterField, selectedValues]: [string, any[]]) => {
+          if (!selectedValues || selectedValues.length === 0) return true;
+
+          if (filterField === 'active_status') {
+            return selectedValues.some(
+              (option: any) => option.value === row[filterField]
+            );
+          }
+          if (
+            filterField === 'remarks' ||
+            filterField === 'status' ||
+            filterField === 'description' ||
+            filterField === 'id'
+          ) {
+            return selectedValues.some(
+              (option: any) => option.value == row[filterField]
+            );
+          }
+          return true;
+        }
+      );
+    });
+  }
+  onFilterChange(): void {
+    this.applyFilters();
+    Object.keys(this.selectedFilters).forEach((field) => {
+      this.activeFilters[field] = !!this.selectedFilters[field]?.length;
+    });
+  }
+  getFilterOptions(field: string) {
+    if (field === 'active_status') {
+      return [
+        { label: 'Active', value: 1 },
+        { label: 'Inactive', value: 0 },
+      ];
+    }
+
+    const uniqueValues = [
+      ...new Set(this.allStatusList.map((item: any) => (item as any)[field])),
+    ];
+
+    return uniqueValues.map((val) => ({
+      label: val,
+      value: val,
+    }));
   }
 }

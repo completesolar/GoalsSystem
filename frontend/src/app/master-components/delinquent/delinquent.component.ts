@@ -7,6 +7,7 @@ import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { GoalsService } from '../../services/goals.service';
 import { MessageService } from 'primeng/api';
+import { MultiSelectModule } from 'primeng/multiselect';
 
 @Component({
   selector: 'app-delinquent',
@@ -18,21 +19,30 @@ import { MessageService } from 'primeng/api';
     ButtonModule,
     ReactiveFormsModule,
     FormsModule,
+    MultiSelectModule,
   ],
   providers: [MessageService],
   templateUrl: './delinquent.component.html',
   styleUrl: './delinquent.component.scss',
 })
 export class DelinquentComponent {
+  // columns = [
+  // { field: 's.no', header: 'S.No', tooltip: '' },
+  // { field: 'id', header: 'D ID', tooltip: '' },
+  // { field: 'd', header: 'D', tooltip: '' },
+  // { field: 'status', header: 'Status', tooltip: '' },
+  // { field: 'remarks', header: 'Remarks', tooltip: '' },
+  // { field: 'action', header: 'ACTION', tooltip: '' },
+  // ];
+
   columns = [
-    { field: 's.no', header: 'S.No', tooltip: '' },
-    { field: 'dId', header: 'D ID', tooltip: '' },
+    { field: 'sno', header: 'S.No', tooltip: '' },
+    { field: 'id', header: 'D ID', tooltip: '' },
     { field: 'd', header: 'D', tooltip: '' },
     { field: 'status', header: 'Status', tooltip: '' },
     { field: 'remarks', header: 'Remarks', tooltip: '' },
     { field: 'action', header: 'ACTION', tooltip: '' },
   ];
-
   DList: any[] = [];
   editingItem: any = null;
   statusOptions: any = [
@@ -46,6 +56,9 @@ export class DelinquentComponent {
   d: number | undefined;
   remarks: any;
   status: any;
+  selectedFilters: { [key: string]: any[] } = {};
+  activeFilters: { [key: string]: boolean } = {};
+  allDdata: any = [];
 
   constructor(
     private goalsService: GoalsService,
@@ -59,22 +72,25 @@ export class DelinquentComponent {
   getD() {
     this.goalsService.getD().subscribe({
       next: (response) => {
-        console.log('response', response);
         this.DList = (
           response as Array<{
             d: number;
             id: number;
             status: number;
             remarks: string;
+            sno: number;
           }>
-        ).map((item) => ({
+        ).map((item, index) => ({
           id: item.id,
           d: `${item.d}`,
           status: item.status,
           remarks: item.remarks,
           isEditable: false,
+          sno: index + 1,
         }));
+        this.allDdata = [...this.DList];
       },
+
       error: (error) => {
         console.error('Error fetching status:', error);
       },
@@ -82,23 +98,18 @@ export class DelinquentComponent {
   }
 
   onEdit(item: any) {
-    console.log('Item', item);
-
     this.editingItem = { ...item };
   }
 
   async updateD(item: any) {
-    console.log('editingItem', this.editingItem);
     const isChanged = await this.isObjectChanged(item, this.editingItem);
     if (!this.editingItem && isChanged) return;
     this.goalsService.updateD(this.editingItem).subscribe({
       next: (response: any) => {
-        console.log('Response', response);
         if (response && response.id) {
           this.DList = this.DList.map((p: any) =>
             p.id === response.id ? { ...response } : p
           );
-          console.log('statusList edit', this.DList);
           this.getD();
           this.messageService.add({
             severity: 'success',
@@ -121,7 +132,6 @@ export class DelinquentComponent {
   saveNewD() {
     if (this.d === undefined) {
       this.isValid = false;
-      console.log('isValid:', this.isValid);
       return;
     }
     let data = {
@@ -132,8 +142,6 @@ export class DelinquentComponent {
 
     this.goalsService.createD(data).subscribe({
       next: (response: any) => {
-        console.log('Response', response);
-
         if (response && response.id) {
           const newGoal = {
             ...data,
@@ -141,7 +149,7 @@ export class DelinquentComponent {
             createddatetime: new Date(),
             isEditable: false,
           };
-          this.DList = [newGoal, ...this.DList];
+          this.getD();
           this.d = undefined;
           this.status = null;
           this.remarks = '';
@@ -168,5 +176,54 @@ export class DelinquentComponent {
     const { isEditable: _, ...restA } = objA;
     const { isEditable: __, ...restB } = objB;
     return JSON.stringify(restA) !== JSON.stringify(restB);
+  }
+
+  applyFilters(): void {
+    this.DList = [...this.allDdata].filter((row: any) => {
+      return Object.entries(this.selectedFilters).every(
+        ([filterField, selectedValues]: [string, any[]]) => {
+          if (!selectedValues || selectedValues.length === 0) return true;
+
+          if (filterField === 'status') {
+            return selectedValues.some(
+              (option: any) => option.value === row[filterField]
+            );
+          }
+          if (
+            filterField === 'remarks' ||
+            filterField === 'd' ||
+            filterField === 'id'
+          ) {
+            return selectedValues.some(
+              (option: any) => option.value == row[filterField]
+            );
+          }
+          return true;
+        }
+      );
+    });
+  }
+  onFilterChange(): void {
+    this.applyFilters();
+    Object.keys(this.selectedFilters).forEach((field) => {
+      this.activeFilters[field] = !!this.selectedFilters[field]?.length;
+    });
+  }
+  getFilterOptions(field: string) {
+    if (field === 'status') {
+      return [
+        { label: 'Active', value: 1 },
+        { label: 'Inactive', value: 0 },
+      ];
+    }
+
+    const uniqueValues = [
+      ...new Set(this.allDdata.map((item: any) => (item as any)[field])),
+    ];
+
+    return uniqueValues.map((val) => ({
+      label: val,
+      value: val,
+    }));
   }
 }

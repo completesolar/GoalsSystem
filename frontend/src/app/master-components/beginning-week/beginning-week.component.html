@@ -14,7 +14,7 @@
           <input type="number" pInputText [(ngModel)]="b" [ngClass]="{'invalid-border': !isValid && !b}"
             class="no-spinner" />
         </div>
-        <div class=" text-center">
+        <div class="text-center">
           <div class="font-bold">Status</div>
           <p-select [options]="statusOptions" [(ngModel)]="status" optionLabel="label"
             placeholder="Select a status"></p-select>
@@ -28,6 +28,7 @@
       </div>
     </div>
   </div>
+
   <div class="table-container pr-3 pl-3">
     <p-table #dataTable [value]="bList" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
       [rowsPerPageOptions]="[10, 20, 50]" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} goals"
@@ -35,21 +36,41 @@
       [style]="{ width: '100%', height: 'auto', tableLayout: 'fixed' }" tableStyleClass="custom-goal-table fixed-table">
       <ng-template pTemplate="header">
         <tr>
-          <th *ngFor="let col of columns" class="">
+          <th *ngFor="let col of columns">
             <div class="flex items-center justify-between">
-              <div class="test">
+              <div [pSortableColumn]="col.field" *ngIf="col.field !== 'action'; else noSort">
                 <b>{{ col.header }}</b>
+                <p-sortIcon [field]="col.field"></p-sortIcon>
               </div>
-              <div class="relative" *ngIf="col.field !== 'action' && col.field !== 'gdb'">
+              <ng-template #noSort>
+                <b>{{ col.header }}</b>
+              </ng-template>
 
+              <div class="flex justify-center" *ngIf="col.field !== 'action' && col.field !== 'sno'">
+                <p-multiSelect [options]="getFilterOptions(col.field)" [(ngModel)]="selectedFilters[col.field]"
+                  (onChange)="onFilterChange()" optionLabel="label" display="chip" [style]="{
+                    width: '1.5rem',
+                    height: '1.5rem',
+                    padding: 0,
+                    border: 'none',
+                    background: 'transparent'
+                  }" panelStyleClass="filter-dropdown-left" [showToggleAll]="true" [maxSelectedLabels]="0"
+                  [dropdownIcon]="'pi pi-filter'" appendTo="body"
+                  [ngClass]="{ 'filter-active': activeFilters[col.field] }">
+                  <ng-template let-value pTemplate="selectedItems">
+                    <span class="sr-only">Filter</span>
+                  </ng-template>
+                </p-multiSelect>
               </div>
             </div>
           </th>
+
         </tr>
       </ng-template>
+
       <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
         <tr *ngIf="bList.length">
-          <td>{{ rowIndex + 1 }}</td>
+          <td>{{ item.sno }}</td>
           <td>{{ item.id }}</td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewb">

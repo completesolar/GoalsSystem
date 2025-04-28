@@ -9,6 +9,7 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { MultiSelectModule } from 'primeng/multiselect';
 
 @Component({
   selector: 'app-beginning-week',
@@ -21,9 +22,10 @@ import { ToastModule } from 'primeng/toast';
     SelectModule,
     DialogModule,
     InputTextModule,
-    ToastModule
+    ToastModule,
+    MultiSelectModule,
   ],
-  providers:[MessageService],
+  providers: [MessageService],
   templateUrl: './beginning-week.component.html',
   styleUrl: './beginning-week.component.scss',
   standalone: true,
@@ -50,15 +52,20 @@ export class BeginningWeekComponent {
   isValid = true;
 
   columns = [
-    { field: 's.no', header: 'S.No', tooltip: '' },
-    { field: 'bId', header: 'B ID', tooltip: '' },
+    { field: 'sno', header: 'S.No', tooltip: '' },
+    { field: 'id', header: 'B ID', tooltip: '' },
     { field: 'b', header: 'B', tooltip: '' },
     { field: 'status', header: 'Status', tooltip: '' },
     { field: 'remarks', header: 'Remarks', tooltip: '' },
     { field: 'action', header: 'ACTION', tooltip: '' },
   ];
-
-  constructor(private goalsService: GoalsService,public messageService: MessageService) {}
+  selectedFilters: { [key: string]: any[] } = {};
+  activeFilters: { [key: string]: boolean } = {};
+  allBList: any = [];
+  constructor(
+    private goalsService: GoalsService,
+    public messageService: MessageService
+  ) {}
 
   ngOnInit() {
     this.getb();
@@ -67,22 +74,23 @@ export class BeginningWeekComponent {
   getb() {
     this.goalsService.getB().subscribe({
       next: (response) => {
-        console.log('response', response);
         this.bList = (
           response as Array<{
             b: number;
             id: number;
             status: number;
             remarks: string;
+            sno: number;
           }>
-        ).map((item) => ({
+        ).map((item, index) => ({
           id: item.id,
           b: `${item.b}`,
           status: item.status,
           remarks: item.remarks,
           isEditable: false,
+          sno: index + 1,
         }));
-        console.log('bList', this.bList);
+        this.allBList = [...this.bList];
       },
       error: (error) => {
         console.error('Error fetching priorities:', error);
@@ -130,18 +138,12 @@ export class BeginningWeekComponent {
       b: this.b?.toString(),
       status: this.status?.value || 1,
       remarks: this.remarks || '',
-    }
+    };
 
     this.goalsService.createB(data).subscribe({
       next: (response: any) => {
         if (response && response.id) {
-          const newGoal = {
-            ...data,
-            id: response.id,
-            createddatetime: new Date(),
-            isEditable: false,
-          };
-          this.bList = [newGoal, ...this.bList];
+          this.getb();
           this.b = undefined;
           this.status = undefined;
           this.remarks = '';
@@ -171,5 +173,54 @@ export class BeginningWeekComponent {
 
     // Compare remaining properties
     return JSON.stringify(restA) !== JSON.stringify(restB);
+  }
+
+  applyFilters(): void {
+    this.bList = [...this.allBList].filter((row: any) => {
+      return Object.entries(this.selectedFilters).every(
+        ([filterField, selectedValues]: [string, any[]]) => {
+          if (!selectedValues || selectedValues.length === 0) return true;
+
+          if (filterField === 'status') {
+            return selectedValues.some(
+              (option: any) => option.value === row[filterField]
+            );
+          }
+          if (
+            filterField === 'remarks' ||
+            filterField === 'b' ||
+            filterField === 'id'
+          ) {
+            return selectedValues.some(
+              (option: any) => option.value == row[filterField]
+            );
+          }
+          return true;
+        }
+      );
+    });
+  }
+  onFilterChange(): void {
+    this.applyFilters();
+    Object.keys(this.selectedFilters).forEach((field) => {
+      this.activeFilters[field] = !!this.selectedFilters[field]?.length;
+    });
+  }
+  getFilterOptions(field: string) {
+    if (field === 'status') {
+      return [
+        { label: 'Active', value: 1 },
+        { label: 'Inactive', value: 0 },
+      ];
+    }
+
+    const uniqueValues = [
+      ...new Set(this.allBList.map((item: any) => (item as any)[field])),
+    ];
+
+    return uniqueValues.map((val) => ({
+      label: val,
+      value: val,
+    }));
   }
 }
