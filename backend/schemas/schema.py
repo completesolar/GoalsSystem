@@ -22,6 +22,7 @@ class Goals(BaseModel):
     createddatetime: datetime
     updateddatetime: datetime
     description: Optional[str] # Allow None values
+    isconfidential: Optional[bool] = False
 
     class Config:
         from_attributes  = True
@@ -44,6 +45,7 @@ class GoalsCreate(Goals):
      createddatetime: datetime
      updateddatetime: datetime
      description: Optional[str]
+     isconfidential: Optional[bool] = False
      
 class GoalsUpdate(Goals):
      who: Optional[str] = None
@@ -60,6 +62,7 @@ class GoalsUpdate(Goals):
      createddatetime: Optional[datetime] = None
      updateddatetime: Optional[datetime] = None
      description: Optional[str] = None 
+     isconfidential: Optional[bool] = False
      
 class GoalsResponse(BaseModel):
     goalid: int
@@ -78,6 +81,7 @@ class GoalsResponse(BaseModel):
     createddatetime: datetime
     updateddatetime: datetime
     description: Optional[str]
+    isconfidential: Optional[bool] = False
 
     class Config:
         from_attributes = True

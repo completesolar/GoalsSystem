@@ -8,6 +8,8 @@
   white-space: nowrap;
 
   }
+
+
 .active-background {
   font-weight: bold;
   background-color: #e9ffd3;
@@ -52,6 +54,13 @@ width: 180px;}
   .settingSelect ::ng-deep.p-placeholder {
     padding-left: 0 !important;
     padding-right: 0 !important;
+    width: min-content;
+    flex: none !important;
+    margin-right: 3px;
   }
  
+
+  ::ng-deep.p-select-dropdown {
+justify-content: flex-start;
+  }
 

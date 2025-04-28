@@ -66,10 +66,8 @@ class Goals(Base):
     fiscalyear = Column(Integer)
     updateBy = Column(String)
     createddatetime = Column(DateTime, default=func.now())  # Auto-set on insert
-    updateddatetime = Column(
-        DateTime, default=func.now(), onupdate=func.now()
-    )  # Auto-update on row update
-    
+    updateddatetime = Column(DateTime, default=func.now(), onupdate=func.now())  # Auto-update on row update
+    isconfidential = Column(Boolean, default=False)
 
 class Status(Base):
     __tablename__ = 'status'

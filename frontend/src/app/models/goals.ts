@@ -16,5 +16,6 @@ export interface Goals {
   description: string;
   action:string;
   [key: string]: any;
+  isconfidential: boolean;
 
 }
