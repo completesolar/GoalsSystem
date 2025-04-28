@@ -260,16 +260,13 @@
         </div>
 
         <div
-          class="flex ialign-items-center justify-content-center flex-column gap-1"
-          style="margin-bottom: 2px"
-        >
+          class="flex ialign-items-center justify-content-center flex-column gap-1" >
           <p-button
             icon="pi pi-filter-slash"
             (click)="clearAllFilters()"
             severity="success"
             size="small"
             label="Clear"
-            class="mb-2"
             [style]="{ height: '24px', fontSize: '12px' }"
           ></p-button>
 
@@ -657,7 +654,7 @@
               [readonly]="!row.isEditable"
               tooltipPosition="bottom"
               tabindex="12"
-              id="year-input-{{ rowIndex }}"
+              id="year-input"
               [ngClass]="{ 'saved': !row.isEditable }"
             />
           </td>
@@ -724,24 +721,38 @@
       [modal]="true"
       [style]="{ width: '90vw' }"
       [contentStyle]="{ 'max-height': '70vh', overflow: 'auto' }"
+      [showHeader]="false" 
     >
+
+      <!-- Custom Close Button -->
+
+
       <div
-        class="flex items-center gap-2 ml-auto align-items-center justify-content-end py-2"
+        class="flex items-center gap-2 ml-auto align-items-center justify-content-between py-2"
       >
-        <span class="white-space-nowrap">Export to</span>
+      <div>Goal History</div>
+       <div> <span class="white-space-nowrap mr-2">Export to</span>
         <p-select
-          class="custom-select-width"
+          class="custom-select-width mr-2"
           [options]="exportOptions"
           [(ngModel)]="selectedExport"
           placeholder="Select"
           (onChange)="onHistoryExportChange($event.value, goalHistory)"
           optionLabel="label"
         ></p-select>
+        <button 
+        class="custom-close-button p-button p-button-text"
+        (click)="display = false"
+        type="button"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+      </div>
       </div>
 
       <p-table
         [value]="goalHistory"
-        tableStyleClass="custom-goal-table goal-history-table"
+        tableStyleClass=" goal-history-table"
         scrollable="true"
         scrollHeight="400px"
       >
