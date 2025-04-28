@@ -614,7 +614,7 @@ export class GoalsComponent implements AfterViewInit {
           'Key:',
           'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
           'S =Status of the goal, N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
-          'PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS',
+          'PROJ TYPES: TJRM, TJRS, SHIP, SOX, BATT, ADMN, RCCA,SLES',
         ];
 
         const keyStartRow = 8;
@@ -755,13 +755,13 @@ export class GoalsComponent implements AfterViewInit {
       doc.setFontSize(11);
       doc.setTextColor(0, 0, 0);
       doc.text('SORT Order: This report is sorted on WHO P', infoStartX, infoStartY);
-      doc.text(`Reported Date & time: ${displayTime} (MST)`, infoStartX, infoStartY + lineGap);
-  
+      doc.text(`Reported Date & time: ${displayTime} (MST)`, pageWidth - infoStartX, infoStartY, { align: 'right' });
+    
       const keyText = [
         'Key:',
         'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
         'S =Status of the goal, N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
-        'PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS',
+        'PROJ TYPES: TJRM, TJRS, SHIP, SOX, BATT, ADMN, RCCA,SLES',
       ];
   
       let keyStartY = infoStartY + 20;
@@ -971,7 +971,7 @@ export class GoalsComponent implements AfterViewInit {
       isconfidential: row.isconfidential,
       goalid: row.goalid,
       createddatetime: row.createddatetime,
-      updateddatetime: new Date(),
+      updateddatetime: moment().tz('America/Denver').toDate(),
     };
 
     this.goalsService.updateGoal(updatedGoal).subscribe((response) => {
@@ -1487,7 +1487,7 @@ exportHistoryExcelData(goalHistory:[]): void {
         'Key:',
         'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
         'S =Status of the goal, N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
-        'PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS',
+        'PROJ TYPES: TJRM, TJRS, SHIP, SOX, BATT, ADMN, RCCA,SLES',
       ];
 
       const keyStartRow = 8;
@@ -1630,14 +1630,14 @@ exportHistoryPdfData(goalHistory:[]): void {
     doc.setFontSize(11);
     doc.setTextColor(0, 0, 0);
     doc.text('SORT Order: This report is sorted on WHO P', infoStartX, infoStartY);
-    doc.text(`Reported Date & time: ${displayTime} (MST)`, infoStartX, infoStartY + lineGap);
+    doc.text(`Reported Date & time: ${displayTime} (MST)`, pageWidth - infoStartX, infoStartY, { align: 'right' });
 
     // Legend
     const keyText = [
       'Key:',
       'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
       'S =Status of the goal, N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
-      'PROJ TYPES: ADMN, AGE, AOP, AVL, BOM, CCC, COMM, COST, ENG, FAB, FIN, FUND, GEN, GM47, HR, INST, IT, OPEX, PURC, QUAL, RCCA, SALES, SOX, TJRS',
+      'PROJ TYPES: TJRM, TJRS, SHIP, SOX, BATT, ADMN, RCCA,SLES',
     ];
 
     let keyStartY = infoStartY + 20;
@@ -1675,6 +1675,7 @@ exportHistoryPdfData(goalHistory:[]): void {
       goal.fiscalyear,
       `${goal.action ?? ''} ${goal.description ?? ''} ${goal.memo ?? ''}`.trim()
     ]);
+    const totalPagesExp = "{total_pages_count_string}";
 
     autoTable(doc, {
       startY: tableStartY,
@@ -1696,14 +1697,20 @@ exportHistoryPdfData(goalHistory:[]): void {
       },
       margin: { top: 10 },
       didDrawPage: (data) => {
-        const pageNumber = data.pageNumber;
+        const pageNumber = doc.getCurrentPageInfo().pageNumber;
         doc.setFontSize(9);
         doc.text(`Reported: ${displayTime}`, 14, pageHeight - 10, { align: 'left' });
         doc.text('Company Confidential', pageWidth / 2, pageHeight - 10, { align: 'center' });
 
-        doc.text(`Page ${pageNumber}`, pageWidth - 14, pageHeight - 10, { align: 'right' });
+        const footerText = `Page ${pageNumber} of ${totalPagesExp}`;
+        doc.text(footerText, pageWidth - 1, pageHeight - 10, { align: 'right' });
       },
     });
+
+    if (typeof doc.putTotalPages === 'function') {
+      doc.putTotalPages(totalPagesExp);
+    }
+
 
     const fileName = `Goals_${fileNameDate}_${formattedTime}.pdf`;
     doc.save(fileName);
