@@ -367,15 +367,14 @@ export class GoalsComponent implements AfterViewInit {
           const whoB = b.who.toLowerCase();
           if (whoA < whoB) return -1;
           if (whoA > whoB) return 1;
-
           const priorityA = isNaN(+a.p) ? Number.MAX_SAFE_INTEGER : +a.p;
           const priorityB = isNaN(+b.p) ? Number.MAX_SAFE_INTEGER : +b.p;
           return priorityA - priorityB;
         });
-
       this.allGoals = filteredGoals;
       this.goal = [...filteredGoals];
       this.originalGoal = [...this.goal];
+      console.log("this.goal", this.goal);
     });
   }
 
@@ -416,12 +415,12 @@ export class GoalsComponent implements AfterViewInit {
           .sort((a, b) => new Date(a.createddate).getTime() - new Date(b.createddate).getTime());
   
         const coloredHistory = [];
+        let cumulativeMemo: { text: string; color: string }[] = [];
+        let cumulativeAction: { text: string; color: string }[] = [];
+        let cumulativeDescription: { text: string; color: string }[] = [];
   
         for (let i = 0; i < sortedHistory.length; i++) {
           const current = sortedHistory[i];
-          const previous = sortedHistory[i - 1];
-          const cyclePalette = this.colorPalette.slice(1); 
-          const color = cyclePalette[(i - 1) % cyclePalette.length] || cyclePalette[0];
   
           const rowDisplay: any = {
             ...current,
@@ -433,14 +432,24 @@ export class GoalsComponent implements AfterViewInit {
           };
   
           if (i === 0) {
-            rowDisplay.display.action.push({ text: current.action || '', color: this.colorPalette[0] });
-            rowDisplay.display.description.push({ text: current.description || '', color: this.colorPalette[0] });
-            rowDisplay.display.memo.push({ text: current.memo || '', color: this.colorPalette[0] });
+            rowDisplay.display.action = [{ text: current.action || '', color: this.colorPalette[0] }];
+            rowDisplay.display.description = [{ text: current.description || '', color: this.colorPalette[0] }];
+            rowDisplay.display.memo = [{ text: current.memo || '', color: this.colorPalette[0] }];
+  
+            cumulativeAction = [...rowDisplay.display.action];
+            cumulativeDescription = [...rowDisplay.display.description];
+            cumulativeMemo = [...rowDisplay.display.memo];
           } else {
-            rowDisplay.display.memo = this.getSmartDiffChunks(current.memo || '', previous.memo || '', color);
-            rowDisplay.display.action = this.getSmartDiffChunksForAction(current.action || '', previous.action || '', color);
-            rowDisplay.display.description = this.getSmartDiffChunks(current.description || '', previous.description || '', color);
-                    }
+            const highlightColor = this.colorPalette[i % this.colorPalette.length] || this.colorPalette[1];
+  
+            rowDisplay.display.action = this.getProgressiveChunks(cumulativeAction, current.action || '', highlightColor);
+            rowDisplay.display.description = this.getProgressiveChunks(cumulativeDescription, current.description || '', highlightColor);
+            rowDisplay.display.memo = this.getProgressiveChunks(cumulativeDescription, current.memo || '', highlightColor);
+  
+            cumulativeAction = [...rowDisplay.display.action];
+            cumulativeDescription = [...rowDisplay.display.description];
+            cumulativeMemo = [...rowDisplay.display.memo];
+          }
   
           coloredHistory.push(rowDisplay);
         }
@@ -452,6 +461,8 @@ export class GoalsComponent implements AfterViewInit {
       }
     );
   }
+  
+  
 
   
 
@@ -1717,15 +1728,7 @@ exportHistoryPdfData(goalHistory:[]): void {
   };
 }
 
-// clearAllFilters(): void {
-//   this.selectedFilters = {};
-//   this.activeFilters = {};
-//   this.dataTable?.reset();
-//   }
 
-// hasActiveFilters(): boolean {
-//   return Object.values(this.activeFilters || {}).some((v) => v === true);
-// }
 clearAllFilters(): void {
   this.selectedFilters = {};
   this.activeFilters = {};
@@ -1741,4 +1744,78 @@ loadUnfilteredData(): void {
     this.dataTable.first = 0; 
   }
 }
+
+getProgressiveChunks(
+  previousChunks: { text: string; color: string }[],
+  currentText: string,
+  highlightColor: string
+): { text: string; color: string }[] {
+  const dmp = new diff_match_patch();
+
+  let previousText = '';
+  for (const chunk of previousChunks) {
+    previousText += chunk.text;
+  }
+
+  const diffs = dmp.diff_main(previousText, currentText);
+  dmp.diff_cleanupSemantic(diffs);
+
+  const resultChunks: { text: string; color: string }[] = [];
+
+  let prevChunkIndex = 0;
+  let prevChunkOffset = 0;
+
+  for (const [op, data] of diffs) {
+    if (op === DIFF_EQUAL) {
+      let remainingLength = data.length;
+
+      while (remainingLength > 0 && prevChunkIndex < previousChunks.length) {
+        const chunk = previousChunks[prevChunkIndex];
+        const remainingChunkText = chunk.text.substring(prevChunkOffset);
+
+        if (remainingChunkText.length <= remainingLength) {
+          resultChunks.push({
+            text: remainingChunkText,
+            color: chunk.color
+          });
+          remainingLength -= remainingChunkText.length;
+          prevChunkIndex++;
+          prevChunkOffset = 0;
+        } else {
+          resultChunks.push({
+            text: remainingChunkText.substring(0, remainingLength),
+            color: chunk.color
+          });
+          prevChunkOffset += remainingLength;
+          remainingLength = 0;
+        }
+      }
+    } else if (op === DIFF_INSERT) {
+      resultChunks.push({
+        text: data,
+        color: highlightColor
+      });
+    } else if (op === DIFF_DELETE) {
+      // Skip deleted text
+      let remainingLength = data.length;
+      while (remainingLength > 0 && prevChunkIndex < previousChunks.length) {
+        const chunk = previousChunks[prevChunkIndex];
+        const remainingChunkText = chunk.text.substring(prevChunkOffset);
+
+        if (remainingChunkText.length <= remainingLength) {
+          remainingLength -= remainingChunkText.length;
+          prevChunkIndex++;
+          prevChunkOffset = 0;
+        } else {
+          prevChunkOffset += remainingLength;
+          remainingLength = 0;
+        }
+      }
+    }
+  }
+
+  return resultChunks;
+}
+
+
 }

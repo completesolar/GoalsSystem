@@ -9,6 +9,7 @@ import { DialogModule } from 'primeng/dialog';
 import { MessageService } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToastModule } from 'primeng/toast';
+import { MultiSelectModule } from 'primeng/multiselect';
 
 @Component({
   selector: 'app-priority',
@@ -22,6 +23,7 @@ import { ToastModule } from 'primeng/toast';
     DialogModule,
     InputTextModule,
     ToastModule,
+    MultiSelectModule,
   ],
   providers: [MessageService],
   templateUrl: './priority.component.html',
@@ -49,13 +51,16 @@ export class PriorityComponent {
   status: any;
 
   columns = [
-    { field: 's.no', header: 'S.No', tooltip: '' },
-    { field: 'priorityId', header: 'Priority ID', tooltip: '' },
-    { field: 'priority', header: 'Priority', tooltip: '' },
+    { field: 'sno', header: 'S.No', tooltip: '' },
+    { field: 'id', header: 'Priority ID', tooltip: '' },
+    { field: 'p', header: 'Priority', tooltip: '' },
     { field: 'status', header: 'Status', tooltip: '' },
     { field: 'remarks', header: 'Remarks', tooltip: '' },
     { field: 'action', header: 'ACTION', tooltip: '' },
   ];
+  selectedFilters: { [key: string]: any[] } = {};
+  activeFilters: { [key: string]: boolean } = {};
+  allPriorities: any = [];
 
   constructor(
     private goalsService: GoalsService,
@@ -75,14 +80,18 @@ export class PriorityComponent {
             id: number;
             status: number;
             remarks: string;
+            sno: number;
           }>
-        ).map((item) => ({
+        ).map((item, index) => ({
           id: item.id,
           p: `${item.p}`,
           status: item.status,
           remarks: item.remarks,
           isEditable: false,
+          sno: index + 1,
         }));
+        this.allPriorities = [...this.priorityList];
+        console.log('allPriorities', this.allPriorities);
       },
       error: (error) => {
         console.error('Error fetching priorities:', error);
@@ -135,14 +144,8 @@ export class PriorityComponent {
     this.goalsService.createP(data).subscribe({
       next: (response: any) => {
         if (response && response.id) {
-          const newGoal = {
-            ...data,
-            id: response.id,
-            createddatetime: new Date(),
-            isEditable: false,
-          };
-          this.priorityList = [newGoal, ...this.priorityList];
-          (this.priority = undefined),
+          this.getPriority(),
+            (this.priority = undefined),
             (this.status = undefined),
             (this.remarks = ''),
             (this.isValid = true);
@@ -168,5 +171,56 @@ export class PriorityComponent {
     const { isEditable: _, ...restA } = objA;
     const { isEditable: __, ...restB } = objB;
     return JSON.stringify(restA) !== JSON.stringify(restB);
+  }
+
+  // Filter added
+  
+  applyFilters(): void {
+    this.priorityList = [...this.allPriorities].filter((row: any) => {
+      return Object.entries(this.selectedFilters).every(
+        ([filterField, selectedValues]: [string, any[]]) => {
+          if (!selectedValues || selectedValues.length === 0) return true;
+
+          if (filterField === 'status') {
+            return selectedValues.some(
+              (option: any) => option.value === row[filterField]
+            );
+          }
+          if (
+            filterField === 'remarks' ||
+            filterField === 'p' ||
+            filterField === 'id'
+          ) {
+            return selectedValues.some(
+              (option: any) => option.value == row[filterField]
+            );
+          }
+          return true;
+        }
+      );
+    });
+  }
+  onFilterChange(): void {
+    this.applyFilters();
+    Object.keys(this.selectedFilters).forEach((field) => {
+      this.activeFilters[field] = !!this.selectedFilters[field]?.length;
+    });
+  }
+  getFilterOptions(field: string) {
+    if (field === 'status') {
+      return [
+        { label: 'Active', value: 1 },
+        { label: 'Inactive', value: 0 },
+      ];
+    }
+
+    const uniqueValues = [
+      ...new Set(this.allPriorities.map((item: any) => (item as any)[field])),
+    ];
+
+    return uniqueValues.map((val) => ({
+      label: val,
+      value: val,
+    }));
   }
 }

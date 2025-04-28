@@ -7,6 +7,7 @@ import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { GoalsService } from '../../services/goals.service';
 import { MessageService } from 'primeng/api';
+import { MultiSelectModule } from 'primeng/multiselect';
 
 @Component({
   selector: 'app-end-week',
@@ -18,6 +19,7 @@ import { MessageService } from 'primeng/api';
     ButtonModule,
     ReactiveFormsModule,
     FormsModule,
+    MultiSelectModule,
   ],
   providers: [MessageService],
   templateUrl: './end-week.component.html',
@@ -25,8 +27,8 @@ import { MessageService } from 'primeng/api';
 })
 export class EndWeekComponent {
   columns = [
-    { field: 's.no', header: 'S.No', tooltip: '' },
-    { field: 'eId', header: 'E ID', tooltip: '' },
+    { field: 'sno', header: 'S.No', tooltip: '' },
+    { field: 'id', header: 'E ID', tooltip: '' },
     { field: 'e', header: 'E', tooltip: '' },
     { field: 'status', header: 'Status', tooltip: '' },
     { field: 'remarks', header: 'Remarks', tooltip: '' },
@@ -46,6 +48,9 @@ export class EndWeekComponent {
   e: number | undefined;
   remarks: any;
   status: any;
+  selectedFilters: { [key: string]: any[] } = {};
+  activeFilters: { [key: string]: boolean } = {};
+  allEList: any = [];
 
   constructor(
     private goalsService: GoalsService,
@@ -61,18 +66,21 @@ export class EndWeekComponent {
       next: (response) => {
         this.EList = (
           response as Array<{
+            sno: number;
             e: number;
             id: number;
             status: number;
             remarks: string;
           }>
-        ).map((item) => ({
+        ).map((item, index) => ({
+          sno: index + 1,
           id: item.id,
           e: `${item.e}`,
           status: item.status,
           remarks: item.remarks,
           isEditable: false,
         }));
+        this.allEList = [...this.EList];
       },
       error: (error) => {
         console.error('Error fetching status:', error);
@@ -80,7 +88,7 @@ export class EndWeekComponent {
     });
   }
 
-  onEdit(item: any) {    
+  onEdit(item: any) {
     this.editingItem = { ...item };
   }
 
@@ -132,7 +140,7 @@ export class EndWeekComponent {
             createddatetime: new Date(),
             isEditable: false,
           };
-          this.EList = [newGoal, ...this.EList];
+          this.getE();
           this.e = undefined;
           this.status = null;
           this.remarks = '';
@@ -159,5 +167,54 @@ export class EndWeekComponent {
     const { isEditable: _, ...restA } = objA;
     const { isEditable: __, ...restB } = objB;
     return JSON.stringify(restA) !== JSON.stringify(restB);
+  }
+
+  applyFilters(): void {
+    this.EList = [...this.allEList].filter((row: any) => {
+      return Object.entries(this.selectedFilters).every(
+        ([filterField, selectedValues]: [string, any[]]) => {
+          if (!selectedValues || selectedValues.length === 0) return true;
+
+          if (filterField === 'status') {
+            return selectedValues.some(
+              (option: any) => option.value === row[filterField]
+            );
+          }
+          if (
+            filterField === 'remarks' ||
+            filterField === 'e' ||
+            filterField === 'id'
+          ) {
+            return selectedValues.some(
+              (option: any) => option.value == row[filterField]
+            );
+          }
+          return true;
+        }
+      );
+    });
+  }
+  onFilterChange(): void {
+    this.applyFilters();
+    Object.keys(this.selectedFilters).forEach((field) => {
+      this.activeFilters[field] = !!this.selectedFilters[field]?.length;
+    });
+  }
+  getFilterOptions(field: string) {
+    if (field === 'status') {
+      return [
+        { label: 'Active', value: 1 },
+        { label: 'Inactive', value: 0 },
+      ];
+    }
+
+    const uniqueValues = [
+      ...new Set(this.allEList.map((item: any) => (item as any)[field])),
+    ];
+
+    return uniqueValues.map((val) => ({
+      label: val,
+      value: val,
+    }));
   }
 }
