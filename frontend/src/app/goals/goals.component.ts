@@ -122,6 +122,7 @@ export class GoalsComponent implements AfterViewInit {
     { name: 'Status' },
   ];
   columns = [
+    { field: 'goalid', header: 'Goal ID' },
     { field: 'who', header: 'WHO', tooltip: 'Owner of the goal' },
     { field: 'p', header: 'P', tooltip: 'Priority' },
     { field: 'proj', header: 'PROJ', tooltip: 'Project' },
@@ -132,6 +133,7 @@ export class GoalsComponent implements AfterViewInit {
     { field: 's', header: 'S', tooltip: 'Status of the goal' },
     { field: 'gdb', header: 'GOAL DELIVERABLE', tooltip: '' },
     { field: 'fiscalyear', header: 'Year' },
+    { field: 'confidential', header: 'Confidential', tooltip: '' },
     { field: 'action', header: 'ACTION', tooltip: '' },
   ];
 
@@ -166,6 +168,7 @@ export class GoalsComponent implements AfterViewInit {
     description: '',
     action: '',
     memo: '',
+    isconfidential: false,
   };
 
   selectedExport: string | null = null;
@@ -357,6 +360,7 @@ export class GoalsComponent implements AfterViewInit {
           who: g.who ?? '',
           gdb: g.gdb ?? '',
           isEditable: false,
+          isconfidential: !!g.isconfidential,
         }))
         .sort((a, b) => {
           const whoA = a.who.toLowerCase();
@@ -488,6 +492,7 @@ export class GoalsComponent implements AfterViewInit {
       createddatetime: new Date(),
       updateddatetime: new Date(),
       description: '',
+      isconfidential: false,
       action: '',
     };
   }
@@ -508,6 +513,7 @@ export class GoalsComponent implements AfterViewInit {
     this.newRow.e = this.newRow.e;
     this.newRow.d = this.newRow.d;
     this.newRow.action = `${this.newRow.action}:`;
+    this.newRow.isconfidential = !!this.newRow.isconfidential;
 
     this.goalsService.createGoal(this.newRow).subscribe((response: any) => {
       if (response && response.goalid) {
@@ -920,7 +926,6 @@ export class GoalsComponent implements AfterViewInit {
     console.log('previousRow', this.previousRow);
     console.log('currentRow', row);
     this.checkDifferences(this.previousRow, row);
-
     const missingFields = this.isValidGoalData(row);
     if (missingFields.length > 0) {
       this.messageService.add({
@@ -940,25 +945,43 @@ export class GoalsComponent implements AfterViewInit {
       return;
     }
 
-    row.e = row.e;
-    row.d = row.d; 
+    if (row.e === '' as any) row.e = null;
+    if (row.d === '' as any) row.d = null;
+    if (row.b === '' as any) row.b = null;
 
-    const goalid = row.goalid;
+    if (typeof row.isconfidential === 'number') {
+      row.isconfidential = row.isconfidential === 1 ? true : false;
+    }
+  
+    const goalid = row.goalid;  
     const updatedGoal: Goals = {
-      ...row,
-      isEditable: false,
+      who: row.who,
+      p: row.p,
+      proj: row.proj,
+      vp: row.vp,
+      b: row.b,
+      e: row.e,
+      d: row.d,
+      s: row.s,
+      action: row.action,
+      memo: row.memo,
+      fiscalyear: row.fiscalyear,
+      updateBy: row.updateBy,
+      description: row.description,
+      isconfidential: row.isconfidential,
+      goalid: row.goalid,
+      createddatetime: row.createddatetime,
+      updateddatetime: new Date(),
     };
 
     this.goalsService.updateGoal(updatedGoal).subscribe((response) => {
       if (response) {
         const updatedGoals = this.goal.map((g: Goals) =>
-          g.goalid === goalid ? updatedGoal : g
+          g.goalid === goalid ? { ...updatedGoal, isEditable: false } : g
         );
 
         const newTopGoal = updatedGoals.find((g: Goals) => g.goalid === goalid);
-        const restGoals = updatedGoals.filter(
-          (g: Goals) => g.goalid !== goalid
-        );
+        const restGoals = updatedGoals.filter((g: Goals) => g.goalid !== goalid);
         this.goal = newTopGoal ? [newTopGoal, ...restGoals] : updatedGoals;
 
         this.messageService.add({
@@ -990,6 +1013,7 @@ export class GoalsComponent implements AfterViewInit {
       'description',
       'memo',
       'fiscalyear',
+      'isconfidential',
     ];
 
     for (const field of fieldsToCompare) {

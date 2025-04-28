@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -17,6 +17,7 @@ class Goals(Base):
     gdb = Column(String)
     fiscalyear = Column(Integer)
     updateBy = Column(String)
+    isconfidential = Column(Boolean, default=False)
 
 class Who(Base):
     __tablename__ = "who"
