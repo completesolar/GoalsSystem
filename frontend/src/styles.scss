@@ -173,26 +173,24 @@ span.p-multiselect-dropdown-icon.pi.pi-filter {
 .pi{
 font-size: 12px !important;
 }
-
-  .custom-goal-table td:nth-child(1) .p-select {
-    width: 76px;
-  }
-
-  .custom-goal-table td:nth-child(3) .p-select {
+.custom-goal-table td:nth-child(1) .p-select {
+  width: 76px;
+}
+  .custom-goal-table td:nth-child(2) .p-select {
     width: 76px;
   }
 
   .custom-goal-table td:nth-child(4) .p-select {
-    width: 70px;
+    width: 76px;
   }
 
   .custom-goal-table td:nth-child(5) .p-select {
-    width: 63px;
-  }
-  .custom-goal-table td:nth-child(6) .p-select {
-    width: 62px;
+    width: 70px;
   }
 
+  .custom-goal-table td:nth-child(6) .p-select {
+    width: 63px;
+  }
   .custom-goal-table td:nth-child(7) .p-select {
     width: 62px;
   }
@@ -202,27 +200,31 @@ font-size: 12px !important;
   }
 
   .custom-goal-table td:nth-child(9) .p-select {
+    width: 62px;
+  }
+
+  .custom-goal-table td:nth-child(10) .p-select {
     width: 65px;
   }
+
   .custom-goal-table th:nth-child(1),
- .custom-goal-table td:nth-child(1) {
+  .custom-goal-table td:nth-child(1) {
+   width: 80px;
+ }
+  .custom-goal-table th:nth-child(2),
+ .custom-goal-table td:nth-child(2) {
   width: 80px;
 }
 
-.custom-goal-table th:nth-child(2),
-.custom-goal-table td:nth-child(2) {
+.custom-goal-table th:nth-child(3),
+.custom-goal-table td:nth-child(3) {
  width: 80px;
 }
 
-
-.custom-goal-table th:nth-child(3),
-.custom-goal-table td:nth-child(3) {
- width: 90px;
-}
 
 .custom-goal-table th:nth-child(4),
 .custom-goal-table td:nth-child(4) {
- width: 80px;
+ width: 90px;
 }
 
 .custom-goal-table th:nth-child(5),
@@ -244,8 +246,13 @@ font-size: 12px !important;
 .custom-goal-table td:nth-child(8) {
  width: 80px;
 }
+
 .custom-goal-table th:nth-child(9),
- .custom-goal-table td:nth-child(9) {
+.custom-goal-table td:nth-child(9) {
+ width: 80px;
+}
+.custom-goal-table th:nth-child(10),
+ .custom-goal-table td:nth-child(10) {
   width: 634px !important;
 }
 
@@ -262,7 +269,7 @@ font-size: 12px !important;
 
 @media(min-width:1600px){
 
-  .custom-goal-table th:nth-child(10) {
+  .custom-goal-table th:nth-child(11) {
     width: 100px ;
   }
 
@@ -291,29 +298,27 @@ font-size: 12px !important;
 .pi{
 font-size: 12px !important;
 }
-
-  .custom-goal-table td:nth-child(1) .p-select {
-    width: 76px;
-  }
+.custom-goal-table td:nth-child(1) .p-select {
+  width: 76px;
+}
   .custom-goal-table td:nth-child(2) .p-select {
-    width: 55px;
-  }
-
-  .custom-goal-table td:nth-child(3) .p-select {
     width: 76px;
+  }
+  .custom-goal-table td:nth-child(3) .p-select {
+    width: 55px;
   }
 
   .custom-goal-table td:nth-child(4) .p-select {
-    width: 62px;
+    width: 76px;
   }
 
   .custom-goal-table td:nth-child(5) .p-select {
-    width: 55px;
+    width: 62px;
   }
+
   .custom-goal-table td:nth-child(6) .p-select {
     width: 55px;
   }
-
   .custom-goal-table td:nth-child(7) .p-select {
     width: 55px;
   }
@@ -323,32 +328,37 @@ font-size: 12px !important;
   }
 
   .custom-goal-table td:nth-child(9) .p-select {
+    width: 55px;
+  }
+
+  .custom-goal-table td:nth-child(10) .p-select {
     width: 65px;
   }
+
   .custom-goal-table th:nth-child(1),
- .custom-goal-table td:nth-child(1) {
+  .custom-goal-table td:nth-child(1) {
+   width: 65px;
+ }
+ 
+  .custom-goal-table th:nth-child(2),
+ .custom-goal-table td:nth-child(2) {
   width: 58px;
 }
 
-.custom-goal-table th:nth-child(2),
-.custom-goal-table td:nth-child(2) {
+.custom-goal-table th:nth-child(3),
+.custom-goal-table td:nth-child(3) {
  width: 45px;
 }
 
 
-.custom-goal-table th:nth-child(3),
-.custom-goal-table td:nth-child(3) {
- width: 58px;
-}
-
 .custom-goal-table th:nth-child(4),
 .custom-goal-table td:nth-child(4) {
- width: 53px;
+ width: 58px;
 }
 
 .custom-goal-table th:nth-child(5),
 .custom-goal-table td:nth-child(5) {
- width: 45px;
+ width: 53px;
 }
 
 .custom-goal-table th:nth-child(6),
@@ -365,8 +375,13 @@ font-size: 12px !important;
 .custom-goal-table td:nth-child(8) {
  width: 45px;
 }
+
 .custom-goal-table th:nth-child(9),
- .custom-goal-table td:nth-child(9) {
+.custom-goal-table td:nth-child(9) {
+ width: 45px;
+}
+.custom-goal-table th:nth-child(10),
+ .custom-goal-table td:nth-child(10) {
   width: 800px !important;
 }
 
