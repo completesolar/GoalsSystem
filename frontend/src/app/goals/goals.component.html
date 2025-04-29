@@ -314,10 +314,10 @@
           >
             <div class="flex items-center justify-between">
               <div
-                class="test"
-                [pSortableColumn]="col.field"
-                *ngIf="col.field !== 'action'; else noSort"
-              >
+              class="test"
+              *ngIf="col.field !== 'action' && col.field !== 'confidential'; else noSort"
+              [pSortableColumn]="col.field"
+            >
                 <b>{{ col.header }}</b>
                 <p-sortIcon [field]="col.field"></p-sortIcon>
               </div>
@@ -326,7 +326,7 @@
               </ng-template>
               <div
                 class="relative"
-                *ngIf="col.field !== 'action' && col.field !== 'gdb'"
+                *ngIf="col.field !== 'action' && col.field !== 'gdb' && col.field !== 'confidential'"
               >
                 <p-multiSelect
                   [options]="getFilterOptions(col.field)"
@@ -422,6 +422,7 @@
               tooltipPosition="bottom"
             >
               <p-select
+                #whoSelect
                 [options]="whoOptions"
                 [(ngModel)]="row.who"
                 [disabled]="!row.isEditable"
@@ -430,6 +431,7 @@
                 filter
                 [ngClass]="{ saved: !row.isEditable }"
                 [tabindex]="rowIndex * 100 + 1"
+                (keydown)="onKeydownGeneric($event, whoOptions, 'who', whoSelect)"
               >
                 <ng-template let-option pTemplate="item">
                   {{ option.label }}
@@ -672,22 +674,17 @@
             ></p-checkbox>
           </td> -->
           <td>
-            <ng-container *ngIf="row.isEditable; else viewConfidential">
+            <ng-container>
               <p-checkbox
                 [(ngModel)]="row.isconfidential"
                 binary="true"
+                [disabled]="!row.isEditable"
                 inputId="isconfidential-{{ rowIndex }}"
                 [pTooltip]="'Mark as Confidential'"
                 tooltipPosition="bottom"
                 [style]="{ 'margin-top': '4px' }"
               ></p-checkbox>
             </ng-container>
-          
-            <ng-template #viewConfidential>
-              <div class="confidential-status">
-                <i class="pi" [ngClass]="row.isconfidential ? 'pi-check text-green-500' : 'pi-times text-red-500'"></i>
-              </div>
-            </ng-template>
           </td>
           
           <td class="icon-actions-column">
@@ -785,20 +782,20 @@
               <div class="flex flex-wrap items-center gap-2">
                 <b class="flex">
                   <ng-container *ngFor="let part of row.display.action">
-                    <span [style.color]="part.color">{{ part.text }}</span>
+                    <span [style.color]="part.color" style="white-space: pre-wrap;">{{ part.text }}</span>
                   </ng-container>
                 </b>
 
                 <span class="flex">
                   <ng-container *ngFor="let part of row.display.description">
-                    <span [style.color]="part.color">{{ part.text }}</span>
+                    <span [style.color]="part.color" style="white-space: pre-wrap;">{{ part.text }}</span>
                   </ng-container>
                 </span>
 
                 <b class="flex">
                   <ng-container *ngFor="let part of row.display.memo">
-                    <span [style.color]="part.color">{{ part.text }}</span>
-                  </ng-container>
+                    <span [style.color]="part.color" style="white-space: pre-wrap;">{{ part.text }}</span>
+                  </ng-container>                 
                 </b>
               </div>
             </td>

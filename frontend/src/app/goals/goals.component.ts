@@ -163,8 +163,8 @@ export class GoalsComponent implements AfterViewInit {
     fiscalyear: this.currentYear,
     gdb: '',
     updateBy: 'Admin',
-    createddatetime: new Date(),
-    updateddatetime: new Date(),
+    createddatetime: moment().tz('America/Denver').toDate(),
+    updateddatetime: moment().tz('America/Denver').toDate(),
     description: '',
     action: '',
     memo: '',
@@ -225,7 +225,7 @@ export class GoalsComponent implements AfterViewInit {
       }
     });
 
-    this.today = new Date();
+    this.today =moment().tz('America/Denver').toDate();
     if (isPlatformBrowser(this.platform)) {
       this.msalService.instance
         .initialize()
@@ -266,7 +266,7 @@ export class GoalsComponent implements AfterViewInit {
           label: `${item.initials ?? ''} (${item.employee_name ?? ''})`,
           value: item.initials,
         })).sort((a, b) => a.label.localeCompare(b.label));;
-
+// console.log("whoOptions",this.whoOptions)
       },
       error: (err) => {
         console.error('Failed to load WHO options:', err);
@@ -430,7 +430,6 @@ export class GoalsComponent implements AfterViewInit {
               memo: []
             }
           };
-  
           if (i === 0) {
             rowDisplay.display.action = [{ text: current.action || '', color: this.colorPalette[0] }];
             rowDisplay.display.description = [{ text: current.description || '', color: this.colorPalette[0] }];
@@ -444,12 +443,12 @@ export class GoalsComponent implements AfterViewInit {
   
             rowDisplay.display.action = this.getProgressiveChunks(cumulativeAction, current.action || '', highlightColor);
             rowDisplay.display.description = this.getProgressiveChunks(cumulativeDescription, current.description || '', highlightColor);
-            rowDisplay.display.memo = this.getProgressiveChunks(cumulativeDescription, current.memo || '', highlightColor);
-  
+            rowDisplay.display.memo = this.getProgressiveChunks(cumulativeMemo, current.memo || '', highlightColor); // ✅ FIXED
+          
             cumulativeAction = [...rowDisplay.display.action];
             cumulativeDescription = [...rowDisplay.display.description];
             cumulativeMemo = [...rowDisplay.display.memo];
-          }
+          }        
   
           coloredHistory.push(rowDisplay);
         }
@@ -500,8 +499,8 @@ export class GoalsComponent implements AfterViewInit {
       fiscalyear: this.currentYear,
       memo: '',
       updateBy: 'Admin',
-      createddatetime: new Date(),
-      updateddatetime: new Date(),
+      createddatetime: moment().tz('America/Denver').toDate(),
+      updateddatetime: moment().tz('America/Denver').toDate(),
       description: '',
       isconfidential: false,
       action: '',
@@ -527,14 +526,17 @@ export class GoalsComponent implements AfterViewInit {
     this.newRow.isconfidential = !!this.newRow.isconfidential;
 
     this.goalsService.createGoal(this.newRow).subscribe((response: any) => {
+      const mstMoment = moment.tz('America/Denver'); 
+      console.log("mst",mstMoment)
       if (response && response.goalid) {
         const newGoal: Goals = {
           ...this.newRow,
           goalid: response.goalid,
-          createddatetime: new Date(),
+          createddatetime: new Date(mstMoment.format()),
           isEditable: false,
         };
 
+        console.log("createddatetime",newGoal.createddatetime)
         this.goal = [
           newGoal,
           ...this.goal.filter((g: Goals) => g.goalid !== newGoal.goalid),
@@ -984,7 +986,7 @@ export class GoalsComponent implements AfterViewInit {
       createddatetime: row.createddatetime,
       updateddatetime: moment().tz('America/Denver').toDate(),
     };
-
+// console.log("updateddatetime",updatedGoal.updateddatetime)
     this.goalsService.updateGoal(updatedGoal).subscribe((response) => {
       if (response) {
         const updatedGoals = this.goal.map((g: Goals) =>
@@ -1400,25 +1402,81 @@ getSmartDiffChunks(current: string, previous: string, highlightColor: string): {
   });
 }
 
+// onKeydownGeneric(event: KeyboardEvent, options: any[], field: keyof typeof this.newRow, selectRef: any) {
+//   if (event.key === 'Enter') {    
+//     const inputElement = event.target as HTMLInputElement;
 
+//     const filterValue = (selectRef?.filterValue || '').toLowerCase();
+// console.log("field",field)
+// console.log("field",filterValue)
 
-onKeydownGeneric(event: KeyboardEvent, options: any[], field: keyof typeof this.newRow,selectRef:any) {
+//     const filteredOptions = options.filter(option =>
+//       typeof option.label === 'string' &&
+//       option.label.toLowerCase().includes(filterValue)
+//     );
+
+//     if (filteredOptions.length > 0) {
+//       this.newRow[field] = filteredOptions[0].value;
+//     }
+//     else{
+//       this.newRow[field]=filterValue;
+//     }
+
+//     if (selectRef) {
+//       selectRef.hide();
+//     }
+//   }
+// }
+onKeydownGeneric(event: KeyboardEvent, options: any[], field: keyof typeof this.newRow, selectRef: any) {
   if (event.key === 'Enter') {
-    const inputElement = event.target as HTMLInputElement;
-    const filterValue = inputElement.value.toLowerCase();
+    const filterValue = (selectRef?.filterValue || '').toUpperCase();
+
+    console.log("field", field);
+    console.log("filterValue", filterValue);
 
     const filteredOptions = options.filter(option =>
+      typeof option.label === 'string' &&
       option.label.toLowerCase().includes(filterValue)
     );
 
     if (filteredOptions.length > 0) {
       this.newRow[field] = filteredOptions[0].value;
+      
+      selectRef.highlightedOption = filteredOptions[0];
+    } else {
+      this.newRow[field] = filterValue;
     }
+
     if (selectRef) {
       selectRef.hide();
     }
   }
 }
+
+// onKeydownGeneric(event: KeyboardEvent, options: any[], field: keyof typeof this.newRow, selectRef: any) {
+//   if (event.key === 'Enter') {
+//     const filterValue = (selectRef?.filterValue || '').toLowerCase();
+
+//     console.log("field", field);
+//     console.log("filterValue", filterValue);
+
+//     const filteredOptions = options.filter(option =>
+//       typeof option.label === 'string' &&
+//       option.label.toLowerCase().includes(filterValue)
+//     );
+
+//     if (filteredOptions.length > 0) {
+//       this.newRow[field] = filteredOptions[0].value;
+//     } else {
+//       this.newRow[field] = filterValue;
+//     }
+
+//     if (selectRef) {
+//       selectRef.hide();
+//     }
+//   }
+// }
+
 
 onHistoryExportChange(option: any,goalHistory:[]) {
   console.log("goalHistory",goalHistory)
