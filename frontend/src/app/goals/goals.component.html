@@ -34,9 +34,20 @@
       <div class="flex gap-2 align-items-end  ">
         <div style="width:76px">
           <div class="mb-2 font-bold text-center">WHO</div>
-          <p-select class="whoselect" [options]="whoOptions" [(ngModel)]="newRow.who" (onChange)="onWhoSelected()"
-            placeholder="WHO" appendTo="body" optionLabel="label" optionValue="value" [pTooltip]="'Owner of the goal'"
-            tooltipPosition="bottom" filter [style]="{ width: '100%' }">
+          <p-select 
+          #whoNewSelect
+          class="whoselect" 
+          [options]="whoOptions" 
+          [(ngModel)]="newRow.who" 
+          (onChange)="onWhoSelected()"
+            placeholder="WHO" 
+            appendTo="body"
+             optionLabel="label" 
+             optionValue="value"
+              [pTooltip]="'Owner of the goal'"
+            tooltipPosition="bottom"
+             filter [style]="{ width: '100%' }"
+             >
             <ng-template let-option pTemplate="item">
               {{ option.label }}
             </ng-template>
@@ -78,23 +89,22 @@
           <div class="mb-2 font-bold text-center">B</div>
           <p-select #bSelect class="bselect" appendTo="body" [options]="priorityOptionsB" [(ngModel)]="newRow.b"
             placeholder="B" [pTooltip]="'WW goal was given'" tooltipPosition="bottom" optionLabel="label"
-            optionValue="value" filter (keydown)="onKeydownGeneric($event, priorityOptionsB, 'b', bSelect)"
+            optionValue="value" filter 
             [style]="{ width: '100%' }" [autofocusFilter]="true"></p-select>
-        </div>
+          </div>
 
         <div style="width: 62px">
           <div class="mb-2 font-bold text-center">E</div>
           <p-select #eSelect class="eselect" appendTo="body" [options]="priorityOptionsE" [(ngModel)]="newRow.e"
             placeholder="E" [pTooltip]="'WW goal is due'" tooltipPosition="bottom" optionLabel="label"
-            optionValue="value" filter (keydown)="onKeydownGeneric($event, priorityOptionsE, 'e', eSelect)"
+            optionValue="value" filter 
             [style]="{ width: '100%' }"></p-select>
-        </div>
+          </div>
         <div style="width: 62px">
           <div class="mb-2 font-bold text-center">D</div>
           <p-select #dselect class="dselect" appendTo="body" [options]="priorityOptionsD" [(ngModel)]="newRow.d"
-            placeholder="D" [pTooltip]="'Delinquent'" tooltipPosition="bottom" optionLabel="label" optionValue="value"
-            (keydown)="onKeydownGeneric($event, priorityOptionsD, 'd', dselect)" filter
-            [style]="{ width: '100%' }"></p-select>
+          placeholder="D" [pTooltip]="'Delinquent'" tooltipPosition="bottom" optionLabel="label" optionValue="value"
+          [style]="{ width: '100%' }"></p-select>
         </div>
 
         <div style="width: 74px">
@@ -253,8 +263,8 @@
                 filter
                 [ngClass]="{ saved: !row.isEditable }"
                 [tabindex]="rowIndex * 100 + 1"
-                (keydown)="onKeydownGeneric($event, whoOptions, 'who', whoSelect)"
-              >
+                (keydown)="onKeydownGeneric($event, whoOptions, 'who', whoSelect, row)"
+                >
                 <ng-template let-option pTemplate="item">
                   {{ option.label }}
                 </ng-template>
@@ -270,21 +280,48 @@
           </td>
 
           <td>
-            <p-select [options]="priorityOptions" [(ngModel)]="row.p" [disabled]="!row.isEditable" optionLabel="label"
+            <p-select
+             #PSelect
+              [options]="priorityOptions" 
+              [(ngModel)]="row.p" 
+              [disabled]="!row.isEditable" 
+              optionLabel="label"
               optionValue="value" filter [ngClass]="{ saved: !row.isEditable }" tooltipPosition="bottom"
-              [tabindex]="rowIndex * 100 + 2"></p-select>
+              [tabindex]="rowIndex * 100 + 2"
+              (keydown)="onKeydownGeneric($event, priorityOptions, 'p',PSelect, row)"
+              ></p-select>
           </td>
 
           <td>
-            <p-select [options]="projOptions" [(ngModel)]="row.proj" [disabled]="!row.isEditable" optionLabel="label"
-              optionValue="value" filter [ngClass]="{ saved: !row.isEditable }" tooltipPosition="bottom"
-              [tabindex]="rowIndex * 100 + 3"></p-select>
+            <p-select
+            #projSelect 
+            [options]="projOptions" 
+            [(ngModel)]="row.proj"
+             [disabled]="!row.isEditable"
+              optionLabel="label"
+              optionValue="value"
+               filter
+                [ngClass]="{ saved: !row.isEditable }" tooltipPosition="bottom"
+              [tabindex]="rowIndex * 100 + 3"
+              (keydown)="onKeydownGeneric($event, projOptions, 'proj',projSelect, row)"
+              ></p-select>
           </td>
 
           <td>
             <div [pTooltip]="getLabelForVpValue(row.vp)" tooltipPosition="bottom">
-              <p-select [options]="vpOptions" [(ngModel)]="row.vp" [disabled]="!row.isEditable" optionLabel="label"
-                optionValue="value" filter [ngClass]="{ saved: !row.isEditable }" [tabindex]="rowIndex * 100 + 4">
+              <p-select 
+              #vpSelect
+              [options]="vpOptions" 
+              [(ngModel)]="row.vp" 
+              [disabled]="!row.isEditable" 
+              optionLabel="label"
+                optionValue="value" 
+                filter 
+                [ngClass]="{ saved: !row.isEditable }" 
+                [tabindex]="rowIndex * 100 + 4"
+                (keydown)="onKeydownGeneric($event, vpOptions, 'vp',vpSelect, row)"
+                
+                >
                 <ng-template let-option pTemplate="item">
                   {{ option.label }}
                 </ng-template>
@@ -300,29 +337,69 @@
           </td>
 
           <td>
-            <p-select [options]="priorityOptionsB" [(ngModel)]="row.b" [disabled]="!row.isEditable" optionLabel="label"
-              optionValue="value" filter [ngClass]="{ saved: !row.isEditable }" tooltipPosition="bottom"
-              [tabindex]="rowIndex * 100 + 5"></p-select>
+            <p-select 
+            #bSelect
+            [options]="priorityOptionsB" 
+            [(ngModel)]="row.b"
+             [disabled]="!row.isEditable" 
+             optionLabel="label"
+              optionValue="value" 
+              filter
+               [ngClass]="{ saved: !row.isEditable }" 
+               tooltipPosition="bottom"
+              [tabindex]="rowIndex * 100 + 5"
+              (keydown)="onKeydownGeneric($event, priorityOptionsB, 'b', bSelect, row)"
+              ></p-select>
           </td>
 
           <td>
-            <p-select [options]="priorityOptionsE" [(ngModel)]="row.e" [disabled]="!row.isEditable" optionLabel="label"
-              optionValue="value" filter [ngClass]="{ saved: !row.isEditable }" tooltipPosition="bottom"
-              [tabindex]="rowIndex * 100 + 6"></p-select>
+            <p-select 
+            #eSelect
+            [options]="priorityOptionsE"
+             [(ngModel)]="row.e"
+              [disabled]="!row.isEditable" 
+              optionLabel="label"
+              optionValue="value" 
+              filter
+               [ngClass]="{ saved: !row.isEditable }" 
+               tooltipPosition="bottom"
+              [tabindex]="rowIndex * 100 + 6"
+              (keydown)="onKeydownGeneric($event, priorityOptionsE, 'e',eSelect, row)"
+              ></p-select>
           </td>
 
           <td>
-            <p-select [options]="priorityOptionsD" [(ngModel)]="row.d" [disabled]="!row.isEditable" optionLabel="label"
-              optionValue="value" filter [ngClass]="{ saved: !row.isEditable }" tooltipPosition="bottom"
-              [tabindex]="rowIndex * 100 + 7"></p-select>
+            <p-select
+            #dSelect
+             [options]="priorityOptionsD"
+              [(ngModel)]="row.d"
+               [disabled]="!row.isEditable"
+                optionLabel="label"
+              optionValue="value"
+               filter 
+               [ngClass]="{ saved: !row.isEditable }" 
+               tooltipPosition="bottom"
+              [tabindex]="rowIndex * 100 + 7"
+              (keydown)="onKeydownGeneric($event, priorityOptionsD, 'd',dSelect, row)"
+              ></p-select>
           </td>
 
           <td>
             <div [pTooltip]="
                 !row.isEditable ? getLabelForStatusValue(row.s) : undefined
-              " tooltipPosition="bottom">
-              <p-select [options]="statusOptions" [(ngModel)]="row.s" [disabled]="!row.isEditable" optionLabel="label"
-                optionValue="value" filter [ngClass]="{ saved: !row.isEditable }" [tabindex]="rowIndex * 100 + 8">
+              "tooltipPosition="bottom">
+              <p-select 
+              #statusSelect
+              [options]="statusOptions"
+               [(ngModel)]="row.s"
+                [disabled]="!row.isEditable" 
+                optionLabel="label"
+                optionValue="value" 
+                filter
+                 [ngClass]="{ saved: !row.isEditable }"
+                  [tabindex]="rowIndex * 100 + 8"
+                  (keydown)="onKeydownGeneric($event, statusOptions, 's',statusSelect, row)"
+                  >
                 <ng-template let-option pTemplate="item">
                   {{ option.label }}
                 </ng-template>

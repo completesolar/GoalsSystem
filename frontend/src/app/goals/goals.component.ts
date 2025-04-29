@@ -374,7 +374,7 @@ export class GoalsComponent implements AfterViewInit {
       this.allGoals = filteredGoals;
       this.goal = [...filteredGoals];
       this.originalGoal = [...this.goal];
-      console.log("this.goal", this.goal);
+      // console.log("this.goal", this.goal);
     });
   }
 
@@ -1056,15 +1056,15 @@ export class GoalsComponent implements AfterViewInit {
       'fiscalyear',
     ];
 
-    console.log('--- Field Differences ---');
+    // console.log('--- Field Differences ---');
     for (const field of fieldsToCompare) {
       const originalValue = original[field];
       const updatedValue = updated[field];
 
       if (originalValue !== updatedValue) {
-        console.log(
-          `Changed field: ${field} | Original: ${originalValue} | Updated: ${updatedValue}`
-        );
+        // console.log(
+        //   `Changed field: ${field} | Original: ${originalValue} | Updated: ${updatedValue}`
+        // );
       }
     }
   }
@@ -1195,7 +1195,7 @@ export class GoalsComponent implements AfterViewInit {
   getBData() {
     this.goalsService.getB().subscribe({
       next: (response) => {
-        console.log("b response",response)
+        // console.log("b response",response)
         const numData = response as Array<{ b: number; id: number;status: number }>;
         const filterednumData = numData.filter(item => item.status == 1);
         const sortedNumData = [...filterednumData].sort((a, b) => +a.b - +b.b);
@@ -1402,80 +1402,58 @@ getSmartDiffChunks(current: string, previous: string, highlightColor: string): {
   });
 }
 
-// onKeydownGeneric(event: KeyboardEvent, options: any[], field: keyof typeof this.newRow, selectRef: any) {
-//   if (event.key === 'Enter') {    
-//     const inputElement = event.target as HTMLInputElement;
 
-//     const filterValue = (selectRef?.filterValue || '').toLowerCase();
-// console.log("field",field)
-// console.log("field",filterValue)
+// onKeydownGeneric(
+//   event: KeyboardEvent,
+//   options: any[],
+//   field: keyof Goals,
+//   selectRef: any,
+//   row: Goals
+// ) {
+//   if (event.key === 'Enter') {
+//     const filterValue = (selectRef?.filterValue || '').toString().toUpperCase();
 
 //     const filteredOptions = options.filter(option =>
-//       typeof option.label === 'string' &&
-//       option.label.toLowerCase().includes(filterValue)
+//       option.label !== undefined &&
+//       option.label.toString().toUpperCase().includes(filterValue)
 //     );
 
 //     if (filteredOptions.length > 0) {
-//       this.newRow[field] = filteredOptions[0].value;
-//     }
-//     else{
-//       this.newRow[field]=filterValue;
+//       row[field] = filteredOptions[0].value;
+//       selectRef.highlightedOption = filteredOptions[0];
+//     } else {
+//       row[field] = filterValue;
 //     }
 
-//     if (selectRef) {
-//       selectRef.hide();
-//     }
+//     selectRef?.hide();
 //   }
 // }
-onKeydownGeneric(event: KeyboardEvent, options: any[], field: keyof typeof this.newRow, selectRef: any) {
-  if (event.key === 'Enter') {
-    const filterValue = (selectRef?.filterValue || '').toUpperCase();
 
-    console.log("field", field);
-    console.log("filterValue", filterValue);
+onKeydownGeneric(
+  event: KeyboardEvent,
+  options: any[],
+  field: keyof Goals,
+  selectRef: any,
+  row: Goals
+) {
+  if (event.key === 'Enter') {
+    const filterValue = (selectRef?.filterValue || '').toString().toUpperCase();
 
     const filteredOptions = options.filter(option =>
-      typeof option.label === 'string' &&
-      option.label.toLowerCase().includes(filterValue)
+      option.label != null &&
+      option.label.toString().toUpperCase().includes(filterValue)
     );
 
     if (filteredOptions.length > 0) {
-      this.newRow[field] = filteredOptions[0].value;
-      
+      row[field] = filteredOptions[0].value;
       selectRef.highlightedOption = filteredOptions[0];
     } else {
-      this.newRow[field] = filterValue;
+      row[field] = filterValue;
     }
 
-    if (selectRef) {
-      selectRef.hide();
-    }
+    selectRef?.hide();
   }
 }
-
-// onKeydownGeneric(event: KeyboardEvent, options: any[], field: keyof typeof this.newRow, selectRef: any) {
-//   if (event.key === 'Enter') {
-//     const filterValue = (selectRef?.filterValue || '').toLowerCase();
-
-//     console.log("field", field);
-//     console.log("filterValue", filterValue);
-
-//     const filteredOptions = options.filter(option =>
-//       typeof option.label === 'string' &&
-//       option.label.toLowerCase().includes(filterValue)
-//     );
-
-//     if (filteredOptions.length > 0) {
-//       this.newRow[field] = filteredOptions[0].value;
-//     } else {
-//       this.newRow[field] = filterValue;
-//     }
-
-//     if (selectRef) {
-//       selectRef.hide();
-//     }
-//   }
-// }
 
 
 onHistoryExportChange(option: any,goalHistory:[]) {
