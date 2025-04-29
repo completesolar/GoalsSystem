@@ -284,7 +284,7 @@ span.p-multiselect-dropdown-icon.pi.pi-filter {
 
   .custom-goal-table th:nth-child(10),
   .custom-goal-table td:nth-child(10) {
-    width: 675px !important;
+    width: 530px !important;
   }
 
   .custom-goal-table th:last-child,
@@ -547,7 +547,7 @@ span.p-multiselect-dropdown-icon.pi.pi-filter {
 
   .goal-history-table th:nth-child(9),
   .goal-history-table td:nth-child(9) {
-    width: 800px !important;
+    width: 600px !important;
   }
 
   .goal-history-table th:last-child,
@@ -555,6 +555,9 @@ span.p-multiselect-dropdown-icon.pi.pi-filter {
     width: 150px !important;
   }
 
+  .goalhistory-popup .p-dialog {
+    width: 80vw !important;
+  }
 
 }
 

@@ -37,7 +37,12 @@ import { SelectModule } from 'primeng/select';
 import { Goals } from '../models/goals';
 import { BadgeModule } from 'primeng/badge';
 import { OverlayBadgeModule } from 'primeng/overlaybadge';
-import { diff_match_patch, DIFF_EQUAL, DIFF_INSERT, DIFF_DELETE } from 'diff-match-patch';
+import {
+  diff_match_patch,
+  DIFF_EQUAL,
+  DIFF_INSERT,
+  DIFF_DELETE,
+} from 'diff-match-patch';
 import { ViewChildren, QueryList, ElementRef } from '@angular/core';
 
 interface Year {
@@ -194,15 +199,13 @@ export class GoalsComponent implements AfterViewInit {
   ];
   gdbSearchText: string = '';
 
-
   settingsDropdownOptions = [
     { label: 'Priority', route: '/priority' },
-    { label: 'Status', route: '/status-page' }
-
+    { label: 'Status', route: '/status-page' },
   ];
-  settingDropdownOpen: boolean=false;
-  selectedSettingOption:string | undefined;
-   isEdit: boolean=false;
+  settingDropdownOpen: boolean = false;
+  selectedSettingOption: string | undefined;
+  isEdit: boolean = false;
   constructor(
     @Inject(PLATFORM_ID) private platform: Object,
     private goalsService: GoalsService,
@@ -243,8 +246,6 @@ export class GoalsComponent implements AfterViewInit {
     }
   }
 
-
-  
   loadInitialData() {
     this.loadGoals();
     this.loadWhoOptions();
@@ -262,11 +263,12 @@ export class GoalsComponent implements AfterViewInit {
     this.goalsService.getWhoOptions().subscribe({
       next: (data) => {
         this.fullWhoList = data;
-        this.whoOptions = data.map((item) => ({
-          label: `${item.initials ?? ''} (${item.employee_name ?? ''})`,
-          value: item.initials,
-        })).sort((a, b) => a.label.localeCompare(b.label));;
-
+        this.whoOptions = data
+          .map((item) => ({
+            label: `${item.initials ?? ''} (${item.employee_name ?? ''})`,
+            value: item.initials,
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label));
       },
       error: (err) => {
         console.error('Failed to load WHO options:', err);
@@ -274,22 +276,20 @@ export class GoalsComponent implements AfterViewInit {
     });
   }
   getLabelForValue(value: any): string | undefined {
-    const selected = this.whoOptions?.find(opt => opt.value === value);
+    const selected = this.whoOptions?.find((opt) => opt.value === value);
     return selected ? selected.label : undefined;
   }
-  
+
   getLabelForVpValue(value: any): string | undefined {
-    const selected = this.vpOptions?.find(opt => opt.value === value);
+    const selected = this.vpOptions?.find((opt) => opt.value === value);
     return selected ? selected.label : undefined;
   }
-  
+
   getLabelForStatusValue(value: any): string | undefined {
-    const selected = this.statusOptions?.find(opt => opt.value === value);
+    const selected = this.statusOptions?.find((opt) => opt.value === value);
     return selected ? selected.label : undefined;
   }
-  
-  
-  
+
   loadVpOptions(): void {
     this.goalsService.getVpOptions().subscribe({
       next: (data) => {
@@ -374,7 +374,7 @@ export class GoalsComponent implements AfterViewInit {
       this.allGoals = filteredGoals;
       this.goal = [...filteredGoals];
       this.originalGoal = [...this.goal];
-      console.log("this.goal", this.goal);
+      console.log('this.goal', this.goal);
     });
   }
 
@@ -406,66 +406,85 @@ export class GoalsComponent implements AfterViewInit {
     this.goalsService.getGoalHistory(id).subscribe(
       (goalsHistory) => {
         let sortedHistory = (goalsHistory as any[])
-          .map(g => ({
+          .map((g) => ({
             ...g,
             createddateMST: moment(g.createddate)
               .tz('America/Denver')
-              .format('MM/DD/YYYY hh:mm:ss A')
+              .format('MM/DD/YYYY hh:mm:ss A'),
           }))
-          .sort((a, b) => new Date(a.createddate).getTime() - new Date(b.createddate).getTime());
-  
+          .sort(
+            (a, b) =>
+              new Date(a.createddate).getTime() -
+              new Date(b.createddate).getTime()
+          );
+
         const coloredHistory = [];
         let cumulativeMemo: { text: string; color: string }[] = [];
         let cumulativeAction: { text: string; color: string }[] = [];
         let cumulativeDescription: { text: string; color: string }[] = [];
-  
+
         for (let i = 0; i < sortedHistory.length; i++) {
           const current = sortedHistory[i];
-  
+
           const rowDisplay: any = {
             ...current,
             display: {
               action: [],
               description: [],
-              memo: []
-            }
+              memo: [],
+            },
           };
-  
+
           if (i === 0) {
-            rowDisplay.display.action = [{ text: current.action || '', color: this.colorPalette[0] }];
-            rowDisplay.display.description = [{ text: current.description || '', color: this.colorPalette[0] }];
-            rowDisplay.display.memo = [{ text: current.memo || '', color: this.colorPalette[0] }];
-  
+            rowDisplay.display.action = [
+              { text: current.action || '', color: this.colorPalette[0] },
+            ];
+            rowDisplay.display.description = [
+              { text: current.description || '', color: this.colorPalette[0] },
+            ];
+            rowDisplay.display.memo = [
+              { text: current.memo || '', color: this.colorPalette[0] },
+            ];
+
             cumulativeAction = [...rowDisplay.display.action];
             cumulativeDescription = [...rowDisplay.display.description];
             cumulativeMemo = [...rowDisplay.display.memo];
           } else {
-            const highlightColor = this.colorPalette[i % this.colorPalette.length] || this.colorPalette[1];
-  
-            rowDisplay.display.action = this.getProgressiveChunks(cumulativeAction, current.action || '', highlightColor);
-            rowDisplay.display.description = this.getProgressiveChunks(cumulativeDescription, current.description || '', highlightColor);
-            rowDisplay.display.memo = this.getProgressiveChunks(cumulativeDescription, current.memo || '', highlightColor);
-  
+            const highlightColor =
+              this.colorPalette[i % this.colorPalette.length] ||
+              this.colorPalette[1];
+
+            rowDisplay.display.action = this.getProgressiveChunks(
+              cumulativeAction,
+              current.action || '',
+              highlightColor
+            );
+            rowDisplay.display.description = this.getProgressiveChunks(
+              cumulativeDescription,
+              current.description || '',
+              highlightColor
+            );
+            rowDisplay.display.memo = this.getProgressiveChunks(
+              cumulativeDescription,
+              current.memo || '',
+              highlightColor
+            );
+
             cumulativeAction = [...rowDisplay.display.action];
             cumulativeDescription = [...rowDisplay.display.description];
             cumulativeMemo = [...rowDisplay.display.memo];
           }
-  
+
           coloredHistory.push(rowDisplay);
         }
-  
+
         this.goalHistory = coloredHistory.reverse();
       },
-      error => {
+      (error) => {
         console.error('Error fetching goal history for ID:', id);
       }
     );
   }
-  
-  
-
-  
-
 
   onYearChange() {
     this.loadGoals();
@@ -703,7 +722,7 @@ export class GoalsComponent implements AfterViewInit {
                 horizontal: 'left',
                 vertical: 'middle',
                 wrapText: false,
-              }
+              };
             } else {
               cell.alignment = {
                 horizontal: 'center',
@@ -733,54 +752,63 @@ export class GoalsComponent implements AfterViewInit {
     const doc = new jsPDF('landscape');
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-  
+
     const logo = new Image();
     logo.src = 'assets/SunPower.png';
-  
+
     logo.onload = () => {
       const logoX = 10;
       const logoY = 10;
       const logoWidth = 50;
       const logoHeight = 15;
-  
+
       doc.addImage(logo, 'PNG', logoX, logoY, logoWidth, logoHeight);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(18);
-  
+
       const title = 'GOALS SYSTEM REPORT';
       const titleX = (pageWidth - doc.getTextWidth(title)) / 2;
       const titleY = logoY + logoHeight / 2 + 5;
-  
+
       doc.text(title, titleX, titleY);
-  
+
       const currentMSTTime = moment().tz('America/Denver');
       const fileNameDate = currentMSTTime.format('MM-DD-YY');
       const formattedTime = currentMSTTime.format('hh-mm-ss A');
       const displayTime = currentMSTTime.format('MM-DD-YYYY hh:mm:ss A');
-  
+
       const infoStartX = 14;
       const infoStartY = titleY + 8;
       const lineGap = 7;
-  
+
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(11);
       doc.setTextColor(0, 0, 0);
-      doc.text('SORT Order: This report is sorted on WHO P', infoStartX, infoStartY);
-      doc.text(`Reported Date & time: ${displayTime} (MST)`, pageWidth - infoStartX, infoStartY, { align: 'right' });
-    
+      doc.text(
+        'SORT Order: This report is sorted on WHO P',
+        infoStartX,
+        infoStartY
+      );
+      doc.text(
+        `Reported Date & time: ${displayTime} (MST)`,
+        pageWidth - infoStartX,
+        infoStartY,
+        { align: 'right' }
+      );
+
       const keyText = [
         'Key:',
         'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
         'S =Status of the goal, N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
         'PROJ TYPES: TJRM, TJRS, SHIP, SOX, BATT, ADMN, RCCA,SLES',
       ];
-  
+
       let keyStartY = infoStartY + 20;
       const lineHeight = 6;
       const rectX = 10;
       const rectWidth = pageWidth - 20;
       doc.setFontSize(10);
-  
+
       keyText.forEach((line) => {
         const wrappedLines: string[] = doc.splitTextToSize(line, rectWidth - 8);
         wrappedLines.forEach((subLine: string) => {
@@ -791,13 +819,22 @@ export class GoalsComponent implements AfterViewInit {
           keyStartY += lineHeight;
         });
       });
-  
+
       const tableStartY = keyStartY + 4;
-  
+
       const columns = [
-        'Who', 'P', 'Proj', 'VP', 'B', 'E', 'D', 'S', 'Year', 'Goal Deliverable'
+        'Who',
+        'P',
+        'Proj',
+        'VP',
+        'B',
+        'E',
+        'D',
+        'S',
+        'Year',
+        'Goal Deliverable',
       ];
-  
+
       const rows = this.goal.map((goal: any) => [
         goal.who,
         goal.p,
@@ -808,11 +845,13 @@ export class GoalsComponent implements AfterViewInit {
         goal.d ?? '',
         goal.s,
         goal.fiscalyear,
-        `${goal.action ?? ''} ${goal.description ?? ''} ${goal.memo ?? ''}`.trim()
+        `${goal.action ?? ''} ${goal.description ?? ''} ${
+          goal.memo ?? ''
+        }`.trim(),
       ]);
-  
-      const totalPagesExp = "{total_pages_count_string}";
-  
+
+      const totalPagesExp = '{total_pages_count_string}';
+
       autoTable(doc, {
         startY: tableStartY,
         head: [columns],
@@ -835,43 +874,47 @@ export class GoalsComponent implements AfterViewInit {
         didDrawPage: (data) => {
           const pageNumber = doc.getCurrentPageInfo().pageNumber;
           doc.setFontSize(9);
-          doc.text(`Reported: ${displayTime}`, 14, pageHeight - 10, { align: 'left' });
-          doc.text('Company Confidential', pageWidth / 2, pageHeight - 10, { align: 'center' });
-  
+          doc.text(`Reported: ${displayTime}`, 14, pageHeight - 10, {
+            align: 'left',
+          });
+          doc.text('Company Confidential', pageWidth / 2, pageHeight - 10, {
+            align: 'center',
+          });
+
           const footerText = `Page ${pageNumber} of ${totalPagesExp}`;
-          doc.text(footerText, pageWidth - 1, pageHeight - 10, { align: 'right' });
+          doc.text(footerText, pageWidth - 1, pageHeight - 10, {
+            align: 'right',
+          });
         },
       });
-  
+
       if (typeof doc.putTotalPages === 'function') {
         doc.putTotalPages(totalPagesExp);
       }
-  
+
       const fileName = `Goals_${fileNameDate}_${formattedTime}.pdf`;
       doc.save(fileName);
     };
   }
-  
-  
-  
+
   // enableEdit(row: any): void {
   //   row.isEditable = true;
   //   this.previousRow = JSON.parse(JSON.stringify(row));
   //   this.cdr.detectChanges();
-  
+
   //   setTimeout(() => {
   //     const index = this.goal.findIndex((g: any) => g === row);
   //     const wrapperRef = this.whoSelectWrappers.get(index);
-  
+
   //     if (wrapperRef?.nativeElement) {
   //       const wrapperEl = wrapperRef.nativeElement;
-  
+
   //       const triggerEl: HTMLElement = wrapperEl.querySelector('.p-select-label');
-  
+
   //       if (triggerEl) {
   //         triggerEl.focus();
-  //         triggerEl.click(); 
-          
+  //         triggerEl.click();
+
   //       } else {
   //         console.warn('Could not find .p-select-label inside WHO');
   //         console.log('Wrapper content:', wrapperEl.innerHTML);
@@ -882,39 +925,44 @@ export class GoalsComponent implements AfterViewInit {
   //   }, 100);
   // }
   enableEdit(row: any): void {
-    this.isEdit=true
+    this.isEdit = true;
     row.isEditable = true;
     this.previousRow = JSON.parse(JSON.stringify(row));
     this.cdr.detectChanges();
-  
+
     setTimeout(() => {
       const index = this.goal.findIndex((g: any) => g === row);
       const wrapperRef = this.whoSelectWrappers.get(index);
-  
+
       if (wrapperRef?.nativeElement) {
         const wrapperEl = wrapperRef.nativeElement;
-  
+
         // Focus the dropdown input or label
-        const triggerEl: HTMLElement = wrapperEl.querySelector('.p-select-label');
-  
+        const triggerEl: HTMLElement =
+          wrapperEl.querySelector('.p-select-label');
+
         if (triggerEl) {
           triggerEl.focus();
           triggerEl.click();
-  
+
           // Now add keyboard event listener
           const inputEl: HTMLInputElement = wrapperEl.querySelector('input');
-  
-          if (inputEl) {
-            inputEl.addEventListener('keydown', (event: KeyboardEvent) => {
-              if (event.key === 'Tab') {
-                console.log('Tab pressed - move to next field');
-                triggerEl.click();
 
-                // Optional: blur and let natural tab order continue
-              } else {
-                console.log('Key pressed:', event.key);
-              }
-            }, { once: true }); // add { once: true } to avoid duplicate handlers
+          if (inputEl) {
+            inputEl.addEventListener(
+              'keydown',
+              (event: KeyboardEvent) => {
+                if (event.key === 'Tab') {
+                  console.log('Tab pressed - move to next field');
+                  triggerEl.click();
+
+                  // Optional: blur and let natural tab order continue
+                } else {
+                  console.log('Key pressed:', event.key);
+                }
+              },
+              { once: true }
+            ); // add { once: true } to avoid duplicate handlers
           } else {
             console.warn('No input element found for WHO');
           }
@@ -927,12 +975,12 @@ export class GoalsComponent implements AfterViewInit {
       }
     }, 100);
   }
-  
+
   // Function to get element by tabindex
   getElementByTabIndex(tabIndex: number): HTMLElement | null {
     return document.querySelector(`[tabindex="${tabIndex}"]`);
   }
-  
+
   updateGoal(row: Goals): void {
     console.log('previousRow', this.previousRow);
     console.log('currentRow', row);
@@ -956,15 +1004,15 @@ export class GoalsComponent implements AfterViewInit {
       return;
     }
 
-    if (row.e === '' as any) row.e = null;
-    if (row.d === '' as any) row.d = null;
-    if (row.b === '' as any) row.b = null;
+    if (row.e === ('' as any)) row.e = null;
+    if (row.d === ('' as any)) row.d = null;
+    if (row.b === ('' as any)) row.b = null;
 
     if (typeof row.isconfidential === 'number') {
       row.isconfidential = row.isconfidential === 1 ? true : false;
     }
-  
-    const goalid = row.goalid;  
+
+    const goalid = row.goalid;
     const updatedGoal: Goals = {
       who: row.who,
       p: row.p,
@@ -992,7 +1040,9 @@ export class GoalsComponent implements AfterViewInit {
         );
 
         const newTopGoal = updatedGoals.find((g: Goals) => g.goalid === goalid);
-        const restGoals = updatedGoals.filter((g: Goals) => g.goalid !== goalid);
+        const restGoals = updatedGoals.filter(
+          (g: Goals) => g.goalid !== goalid
+        );
         this.goal = newTopGoal ? [newTopGoal, ...restGoals] : updatedGoals;
 
         this.messageService.add({
@@ -1007,8 +1057,6 @@ export class GoalsComponent implements AfterViewInit {
       }
     });
   }
-
-
 
   isEqualGoal(goal1: Goals, goal2: Goals): boolean {
     const fieldsToCompare = [
@@ -1083,7 +1131,7 @@ export class GoalsComponent implements AfterViewInit {
     } else if (option?.value === 'pdf') {
       this.exportPdfData();
     }
-  }  
+  }
 
   getStatus() {
     this.goalsService.getStatus().subscribe({
@@ -1092,13 +1140,17 @@ export class GoalsComponent implements AfterViewInit {
           status: string;
           description: string;
           id: number;
-          active_status: number
+          active_status: number;
         }>;
-        const filteredStatus = statusList.filter(item => item.active_status == 1);
-        this.statusOptions = filteredStatus.map((item) => ({
-          label: `${item.status} (${item.description})`,
-          value: item.status, // Store only the status code
-        })).sort((a, b) => a.label.localeCompare(b.label));
+        const filteredStatus = statusList.filter(
+          (item) => item.active_status == 1
+        );
+        this.statusOptions = filteredStatus
+          .map((item) => ({
+            label: `${item.status} (${item.description})`,
+            value: item.status, // Store only the status code
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label));
       },
       error: (error) => {
         console.error('Error fetching status:', error);
@@ -1109,12 +1161,18 @@ export class GoalsComponent implements AfterViewInit {
   getPriority() {
     this.goalsService.getP().subscribe({
       next: (response) => {
-        const priority = response as Array<{ p: number; id: number; status: number }>;
-         const filteredP = priority.filter(item => item.status == 1);
-        this.priorityOptions = filteredP.map((item) => ({
-          label: item.p,
-          value: item.p,
-        })).sort((a, b) => a.value - b.value);;
+        const priority = response as Array<{
+          p: number;
+          id: number;
+          status: number;
+        }>;
+        const filteredP = priority.filter((item) => item.status == 1);
+        this.priorityOptions = filteredP
+          .map((item) => ({
+            label: item.p,
+            value: item.p,
+          }))
+          .sort((a, b) => a.value - b.value);
       },
       error: (error) => {
         console.error('Error fetching status:', error);
@@ -1125,9 +1183,13 @@ export class GoalsComponent implements AfterViewInit {
   getProj() {
     this.goalsService.getProj().subscribe({
       next: (response) => {
-        const proj = (response as Array<{ proj: string; id: number; status: number }>);
-        const filteredProj = proj.filter(item => item.status == 1);
-          this.projOptions = filteredProj
+        const proj = response as Array<{
+          proj: string;
+          id: number;
+          status: number;
+        }>;
+        const filteredProj = proj.filter((item) => item.status == 1);
+        this.projOptions = filteredProj
           .map((item) => ({
             label: item.proj,
             value: item.proj,
@@ -1139,15 +1201,17 @@ export class GoalsComponent implements AfterViewInit {
       },
     });
   }
-  
+
   getActions() {
     this.goalsService.getAction().subscribe({
       next: (response) => {
         const action = response as Array<{ action: string; id: number }>;
-        this.actionOptions = action.map((item) => ({
-          label: item.action,
-          value: item.action,
-        })).sort((a, b) => a.label.localeCompare(b.label));;
+        this.actionOptions = action
+          .map((item) => ({
+            label: item.action,
+            value: item.action,
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label));
       },
       error: (error) => {
         console.error('Error fetching status:', error);
@@ -1159,12 +1223,16 @@ export class GoalsComponent implements AfterViewInit {
     this.goalsService.getD().subscribe({
       next: (response) => {
         // console.log(" d response",response)
-        const numData = response as Array<{ d: number; id: number;status: number }>;
-        const filterednumData = numData.filter(item => item.status == 1);
+        const numData = response as Array<{
+          d: number;
+          id: number;
+          status: number;
+        }>;
+        const filterednumData = numData.filter((item) => item.status == 1);
         const sortedNumData = [...filterednumData].sort((a, b) => +a.d - +b.d);
         this.priorityOptionsD = sortedNumData.map((item) => ({
           label: item.d,
-          value: item.d, 
+          value: item.d,
         }));
       },
       error: (error) => {
@@ -1176,12 +1244,16 @@ export class GoalsComponent implements AfterViewInit {
     this.goalsService.getE().subscribe({
       next: (response) => {
         // console.log(" e response",response)
-        const numData = response as Array<{ e: number; id: number;status: number }>;
-        const filterednumData = numData.filter(item => item.status == 1);
+        const numData = response as Array<{
+          e: number;
+          id: number;
+          status: number;
+        }>;
+        const filterednumData = numData.filter((item) => item.status == 1);
         const sortedNumData = [...filterednumData].sort((a, b) => +a.e - +b.e);
         this.priorityOptionsE = sortedNumData.map((item) => ({
           label: item.e,
-          value: item.e, 
+          value: item.e,
         }));
       },
       error: (error) => {
@@ -1189,17 +1261,21 @@ export class GoalsComponent implements AfterViewInit {
       },
     });
   }
-  
+
   getBData() {
     this.goalsService.getB().subscribe({
       next: (response) => {
-        console.log("b response",response)
-        const numData = response as Array<{ b: number; id: number;status: number }>;
-        const filterednumData = numData.filter(item => item.status == 1);
+        console.log('b response', response);
+        const numData = response as Array<{
+          b: number;
+          id: number;
+          status: number;
+        }>;
+        const filterednumData = numData.filter((item) => item.status == 1);
         const sortedNumData = [...filterednumData].sort((a, b) => +a.b - +b.b);
         this.priorityOptionsB = sortedNumData.map((item) => ({
           label: item.b,
-          value: item.b, 
+          value: item.b,
         }));
       },
       error: (error) => {
@@ -1207,7 +1283,6 @@ export class GoalsComponent implements AfterViewInit {
       },
     });
   }
-  
 
   logout() {
     // console.log("logout")
@@ -1248,24 +1323,41 @@ export class GoalsComponent implements AfterViewInit {
   }
 
   getFilterOptions(field: string): any[] {
-    if (field === 'who') {
-      return this.whoOptions;
-    }
-    if (field === 'vp') {
-      return this.vpOptions;
-    }
-    const uniqueValues = [
-      ...new Set(this.allGoals.map((row: any) => row[field] ?? '')),
-    ];
+    let options: any[];
 
-    return uniqueValues.map((val) => ({
-      label: val === '' ? 'Empty' : val,
-      value: val,
-    }));
+    if (field === 'who') {
+      options = this.whoOptions;
+    } else if (field === 'vp') {
+      options = this.vpOptions;
+    } else {
+      const uniqueValues = [
+        ...new Set(this.allGoals.map((row: any) => row[field] ?? '')),
+      ];
+      options = uniqueValues.map((val) => ({
+        label: val === '' ? 'Empty' : val,
+        value: val,
+      }));
+    }
+
+    // Sort options to bring selected values to the top
+    const selected = this.selectedFilters[field] || [];
+    return options.sort((a, b) => {
+      const isSelectedA = selected.some((sel: any) => sel.value === a.value);
+      const isSelectedB = selected.some((sel: any) => sel.value === b.value);
+
+      if (isSelectedA && !isSelectedB) {
+        return -1; // a comes before b
+      } else if (!isSelectedA && isSelectedB) {
+        return 1; // b comes before a
+      } else {
+        return 0; // Maintain original order
+      }
+    });
   }
+
   onFilterChange(field: string): void {
-    this.applyFilters(); 
-  
+    this.applyFilters();
+
     this.activeFilters = this.activeFilters || {};
     this.activeFilters[field] =
       Array.isArray(this.selectedFilters[field]) &&
@@ -1276,26 +1368,30 @@ export class GoalsComponent implements AfterViewInit {
     this.activeFilters = this.activeFilters || {};
     this.activeFilters['gdb'] = !!this.gdbSearchText?.trim();
   }
-  
+
   applyFilters(): void {
     this.goal = this.allGoals.filter((row: any) => {
       const matchMultiSelect = Object.entries(this.selectedFilters).every(
         ([filterField, selectedValues]: any) => {
           if (!selectedValues || selectedValues.length === 0) return true;
-          const includedValues = selectedValues.map((option: any) => option.value);
+          const includedValues = selectedValues.map(
+            (option: any) => option.value
+          );
           return includedValues.includes(row[filterField]);
         }
       );
-  
-      const gdbText = `${row.action ?? ''} ${row.description ?? ''} ${row.memo ?? ''}`.toLowerCase();
+
+      const gdbText = `${row.action ?? ''} ${row.description ?? ''} ${
+        row.memo ?? ''
+      }`.toLowerCase();
       const matchGdb =
         !this.gdbSearchText ||
         gdbText.includes(this.gdbSearchText.toLowerCase());
-  
+
       return matchMultiSelect && matchGdb;
     });
   }
-  
+
   clearFilter(field: string): void {
     if (field === 'gdb') {
       this.gdbSearchText = '';
@@ -1305,14 +1401,16 @@ export class GoalsComponent implements AfterViewInit {
       this.onFilterChange(field);
     }
   }
-  
+
   customGdbFilter(value: any, filter: string): boolean {
     if (!filter || filter.trim() === '') return true;
-  
-    const gdbText = `${value?.action ?? ''} ${value?.description ?? ''} ${value?.memo ?? ''}`.toLowerCase();
+
+    const gdbText = `${value?.action ?? ''} ${value?.description ?? ''} ${
+      value?.memo ?? ''
+    }`.toLowerCase();
     return gdbText.includes(filter.toLowerCase());
-  } 
-  
+  }
+
   isAnyRowEditable(): boolean {
     return this.goal?.some((row: any) => row.isEditable);
   }
@@ -1373,127 +1471,296 @@ export class GoalsComponent implements AfterViewInit {
     row.isEditable = false;
   }
 
-  getSmartDiffChunksForAction(current: string, previous: string, highlightColor: string): { text: string; color: string }[] {
-  const cleanedCurrent = current.trim();
-  const cleanedPrevious = previous.trim();
+  getSmartDiffChunksForAction(
+    current: string,
+    previous: string,
+    highlightColor: string
+  ): { text: string; color: string }[] {
+    const cleanedCurrent = current.trim();
+    const cleanedPrevious = previous.trim();
 
-  const color = cleanedCurrent === cleanedPrevious ? '#000000' : highlightColor;
+    const color =
+      cleanedCurrent === cleanedPrevious ? '#000000' : highlightColor;
 
-  return [{ text: cleanedCurrent, color }];
-}
+    return [{ text: cleanedCurrent, color }];
+  }
 
-  
-  
-getSmartDiffChunks(current: string, previous: string, highlightColor: string): { text: string; color: string }[] {
-  const dmp = new diff_match_patch();
-  const diffs = dmp.diff_main(previous, current);
-  dmp.diff_cleanupSemantic(diffs);
+  getSmartDiffChunks(
+    current: string,
+    previous: string,
+    highlightColor: string
+  ): { text: string; color: string }[] {
+    const dmp = new diff_match_patch();
+    const diffs = dmp.diff_main(previous, current);
+    dmp.diff_cleanupSemantic(diffs);
 
-  return diffs.map(([op, data]) => {
-    if (op === DIFF_EQUAL) {
-      return { text: data, color: '#000000' };
-    } else if (op === DIFF_INSERT) {
-      return { text: data, color: highlightColor };
-    } else {
-      return { text: '', color: '' };
-    }
-  });
-}
+    return diffs.map(([op, data]) => {
+      if (op === DIFF_EQUAL) {
+        return { text: data, color: '#000000' };
+      } else if (op === DIFF_INSERT) {
+        return { text: data, color: highlightColor };
+      } else {
+        return { text: '', color: '' };
+      }
+    });
+  }
 
+  onKeydownGeneric(
+    event: KeyboardEvent,
+    options: any[],
+    field: keyof typeof this.newRow,
+    selectRef: any
+  ) {
+    if (event.key === 'Enter') {
+      const inputElement = event.target as HTMLInputElement;
+      const filterValue = inputElement.value.toLowerCase();
 
+      const filteredOptions = options.filter((option) =>
+        option.label.toLowerCase().includes(filterValue)
+      );
 
-onKeydownGeneric(event: KeyboardEvent, options: any[], field: keyof typeof this.newRow,selectRef:any) {
-  if (event.key === 'Enter') {
-    const inputElement = event.target as HTMLInputElement;
-    const filterValue = inputElement.value.toLowerCase();
-
-    const filteredOptions = options.filter(option =>
-      option.label.toLowerCase().includes(filterValue)
-    );
-
-    if (filteredOptions.length > 0) {
-      this.newRow[field] = filteredOptions[0].value;
-    }
-    if (selectRef) {
-      selectRef.hide();
+      if (filteredOptions.length > 0) {
+        this.newRow[field] = filteredOptions[0].value;
+      }
+      if (selectRef) {
+        selectRef.hide();
+      }
     }
   }
-}
 
-onHistoryExportChange(option: any,goalHistory:[]) {
-  console.log("goalHistory",goalHistory)
-  if (option?.value === 'excel') {
-    this.exportHistoryExcelData(goalHistory);
-  } else if (option?.value === 'pdf') {
-    this.exportHistoryPdfData(goalHistory);
+  onHistoryExportChange(option: any, goalHistory: []) {
+    console.log('goalHistory', goalHistory);
+    if (option?.value === 'excel') {
+      this.exportHistoryExcelData(goalHistory);
+    } else if (option?.value === 'pdf') {
+      this.exportHistoryPdfData(goalHistory);
+    }
   }
-}
 
-exportHistoryExcelData(goalHistory:[]): void {
-  const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet('Goals');
-  const imageUrl = 'assets/SunPower.png';
+  exportHistoryExcelData(goalHistory: []): void {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Goals');
+    const imageUrl = 'assets/SunPower.png';
 
-  fetch(imageUrl)
-    .then((response) => response.blob())
-    .then((blob) => blob.arrayBuffer())
-    .then((buffer) => {
-      const imageId = workbook.addImage({
-        buffer: buffer,
-        extension: 'png',
+    fetch(imageUrl)
+      .then((response) => response.blob())
+      .then((blob) => blob.arrayBuffer())
+      .then((buffer) => {
+        const imageId = workbook.addImage({
+          buffer: buffer,
+          extension: 'png',
+        });
+
+        worksheet.addImage(imageId, {
+          tl: { col: 0, row: 0 },
+          ext: { width: 200, height: 80 },
+        });
+
+        const titleCell = worksheet.getCell('F3');
+        titleCell.value = 'GOALS HISTORY REPORT';
+        titleCell.font = { size: 18, bold: true };
+        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        worksheet.mergeCells('F3:H3');
+
+        const sortCell = worksheet.getCell('A6');
+        sortCell.value = 'SORT Order: This report is sorted on WHO P';
+        sortCell.font = { italic: false, size: 12 };
+        sortCell.alignment = { horizontal: 'left', vertical: 'middle' };
+        worksheet.mergeCells('A6:K6');
+
+        const columns = [
+          { header: 'WHO', key: 'who' },
+          { header: 'P', key: 'p' },
+          { header: 'PROJ', key: 'proj' },
+          { header: 'VP', key: 'vp' },
+          { header: 'B', key: 'b' },
+          { header: 'E', key: 'e' },
+          { header: 'D', key: 'd' },
+          { header: 'S', key: 's' },
+          { header: 'Year', key: 'fiscalyear' },
+          { header: 'GOAL DELIVERABLE', key: 'gdb' },
+        ];
+
+        const date = new Date();
+        const options: Intl.DateTimeFormatOptions = {
+          timeZone: 'America/Denver',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        };
+        const formattedDate = new Date()
+          .toLocaleString('en-US', options)
+          .replace(/[\s,]/g, '')
+          .replace('MST', '');
+
+        const dateCell = worksheet.getCell('A7');
+        dateCell.value = `Report Generated On: ${formattedDate}`;
+        dateCell.font = { italic: false, size: 12 };
+        dateCell.alignment = { horizontal: 'left', vertical: 'middle' };
+        worksheet.mergeCells(`A7:K7`);
+
+        const keyText = [
+          'Key:',
+          'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
+          'S =Status of the goal, N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
+          'PROJ TYPES: TJRM, TJRS, SHIP, SOX, BATT, ADMN, RCCA,SLES',
+        ];
+
+        const keyStartRow = 8;
+        keyText.forEach((line, index) => {
+          const keyRow = worksheet.getRow(keyStartRow + index);
+          keyRow.getCell(1).value = line;
+          keyRow.getCell(1).font = { bold: true };
+          keyRow.getCell(1).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'E2EFDA' },
+          };
+          keyRow.getCell(1).alignment = {
+            vertical: 'middle',
+            horizontal: 'left',
+          };
+          worksheet.mergeCells(keyRow.number, 1, keyRow.number, columns.length);
+        });
+
+        const headerRowIndex = keyStartRow + keyText.length + 1;
+        const headerRow = worksheet.getRow(headerRowIndex);
+        columns.forEach((col, index) => {
+          const cell = headerRow.getCell(index + 1);
+          cell.value = col.header;
+          cell.font = { bold: true };
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'E2EFDA' },
+          };
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          if (col.key === 'gdb') {
+            worksheet.getColumn(index + 1).width = 100;
+          } else {
+            worksheet.getColumn(index + 1).width = 15;
+          }
+        });
+
+        worksheet.autoFilter = {
+          from: { row: headerRowIndex, column: 1 },
+          to: { row: headerRowIndex, column: columns.length },
+        };
+
+        goalHistory.forEach((item: any, index: number) => {
+          const rowValues = columns.map((col) => {
+            if (col.key === 'd') {
+              return item[col.key] !== undefined &&
+                item[col.key] !== null &&
+                item[col.key] !== ''
+                ? Number(item[col.key])
+                : '';
+            } else if (col.key === 'gdb') {
+              return `${item.action ?? ''} ${item.description ?? ''} ${
+                item.memo ?? ''
+              }`.trim();
+            }
+            return item[col.key];
+          });
+
+          const row = worksheet.insertRow(
+            headerRowIndex + 1 + index,
+            rowValues
+          );
+          const isEvenRow = (headerRowIndex + 1 + index) % 2 === 0;
+
+          row.eachCell((cell, colNumber) => {
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: isEvenRow ? 'E2EFDA' : 'FFFFFF' },
+            };
+
+            if (colNumber === 10) {
+              cell.alignment = {
+                horizontal: 'left',
+                vertical: 'middle',
+                wrapText: false,
+              };
+            } else {
+              cell.alignment = {
+                horizontal: 'center',
+                vertical: 'middle',
+              };
+            }
+          });
+
+          row.height = 20;
+        });
+
+        const fileName = `Goals_${formattedDate
+          .replace(':', '')
+          .replace(' ', '_')
+          .replace('/', '')
+          .replace('/', '')}_MST.xlsx`;
+
+        workbook.xlsx.writeBuffer().then((data: ArrayBuffer) => {
+          const blob = new Blob([data], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          });
+          FileSaver.saveAs(blob, fileName);
+        });
       });
+  }
 
-      worksheet.addImage(imageId, {
-        tl: { col: 0, row: 0 },
-        ext: { width: 200, height: 80 },
-      });
+  exportHistoryPdfData(goalHistory: []): void {
+    const doc = new jsPDF('landscape');
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
 
-      const titleCell = worksheet.getCell('F3');
-      titleCell.value = 'GOALS HISTORY REPORT';
-      titleCell.font = { size: 18, bold: true };
-      titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
-      worksheet.mergeCells('F3:H3');
+    const logo = new Image();
+    logo.src = 'assets/SunPower.png';
 
-      const sortCell = worksheet.getCell('A6');
-      sortCell.value = 'SORT Order: This report is sorted on WHO P';
-      sortCell.font = { italic: false, size: 12 };
-      sortCell.alignment = { horizontal: 'left', vertical: 'middle' };
-      worksheet.mergeCells('A6:K6');
+    logo.onload = () => {
+      const logoX = 10;
+      const logoY = 10;
+      const logoWidth = 50;
+      const logoHeight = 15;
 
-      const columns = [
-        { header: 'WHO', key: 'who' },
-        { header: 'P', key: 'p' },
-        { header: 'PROJ', key: 'proj' },
-        { header: 'VP', key: 'vp' },
-        { header: 'B', key: 'b' },
-        { header: 'E', key: 'e' },
-        { header: 'D', key: 'd' },
-        { header: 'S', key: 's' },
-        { header: 'Year', key: 'fiscalyear' },
-        { header: 'GOAL DELIVERABLE', key: 'gdb' },
-      ];
+      doc.addImage(logo, 'PNG', logoX, logoY, logoWidth, logoHeight);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
 
-      const date = new Date();
-      const options: Intl.DateTimeFormatOptions = {
-        timeZone: 'America/Denver',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      };
-      const formattedDate = new Date()
-        .toLocaleString('en-US', options)
-        .replace(/[\s,]/g, '')
-        .replace('MST', '');
+      const title = 'GOALS HISTORY REPORT';
+      const titleX = (pageWidth - doc.getTextWidth(title)) / 2;
+      const titleY = logoY + logoHeight / 2 + 5;
 
-      const dateCell = worksheet.getCell('A7');
-      dateCell.value = `Report Generated On: ${formattedDate}`;
-      dateCell.font = { italic: false, size: 12 };
-      dateCell.alignment = { horizontal: 'left', vertical: 'middle' };
-      worksheet.mergeCells(`A7:K7`);
+      doc.text(title, titleX, titleY);
 
+      // Date + Sort Order block
+      const currentMSTTime = moment().tz('America/Denver');
+      const fileNameDate = currentMSTTime.format('MM-DD-YY');
+      const formattedTime = currentMSTTime.format('hh-mm-ss A');
+      const displayTime = currentMSTTime.format('MM-DD-YYYY hh:mm:ss A');
+
+      const infoStartX = 14;
+      const infoStartY = titleY + 8;
+      const lineGap = 7;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.setTextColor(0, 0, 0);
+      doc.text(
+        'SORT Order: This report is sorted on WHO P',
+        infoStartX,
+        infoStartY
+      );
+      doc.text(
+        `Reported Date & time: ${displayTime} (MST)`,
+        pageWidth - infoStartX,
+        infoStartY,
+        { align: 'right' }
+      );
+
+      // Legend
       const keyText = [
         'Key:',
         'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
@@ -1501,321 +1768,184 @@ exportHistoryExcelData(goalHistory:[]): void {
         'PROJ TYPES: TJRM, TJRS, SHIP, SOX, BATT, ADMN, RCCA,SLES',
       ];
 
-      const keyStartRow = 8;
-      keyText.forEach((line, index) => {
-        const keyRow = worksheet.getRow(keyStartRow + index);
-        keyRow.getCell(1).value = line;
-        keyRow.getCell(1).font = { bold: true };
-        keyRow.getCell(1).fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'E2EFDA' },
-        };
-        keyRow.getCell(1).alignment = {
-          vertical: 'middle',
-          horizontal: 'left',
-        };
-        worksheet.mergeCells(keyRow.number, 1, keyRow.number, columns.length);
-      });
+      let keyStartY = infoStartY + 20;
+      const lineHeight = 6;
+      const rectX = 10;
+      const rectWidth = pageWidth - 20;
+      doc.setFontSize(10);
 
-      const headerRowIndex = keyStartRow + keyText.length + 1;
-      const headerRow = worksheet.getRow(headerRowIndex);
-      columns.forEach((col, index) => {
-        const cell = headerRow.getCell(index + 1);
-        cell.value = col.header;
-        cell.font = { bold: true };
-        cell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'E2EFDA' },
-        };
-        cell.alignment = { vertical: 'middle', horizontal: 'center' };
-        if (col.key === 'gdb') {
-          worksheet.getColumn(index + 1).width = 100;
-        } else {
-          worksheet.getColumn(index + 1).width = 15;
-        }
-      });
-
-      worksheet.autoFilter = {
-        from: { row: headerRowIndex, column: 1 },
-        to: { row: headerRowIndex, column: columns.length },
-      };
-
-      goalHistory.forEach((item: any, index: number) => {
-        const rowValues = columns.map((col) => {
-          if (col.key === 'd') {
-            return item[col.key] !== undefined &&
-              item[col.key] !== null &&
-              item[col.key] !== ''
-              ? Number(item[col.key])
-              : '';
-          } else if (col.key === 'gdb') {
-            return `${item.action ?? ''} ${item.description ?? ''} ${
-              item.memo ?? ''
-            }`.trim();
-          }
-          return item[col.key];
+      keyText.forEach((line) => {
+        const wrappedLines: string[] = doc.splitTextToSize(line, rectWidth - 8);
+        wrappedLines.forEach((subLine: string) => {
+          doc.setFillColor(226, 239, 218);
+          doc.rect(rectX, keyStartY - 4, rectWidth, lineHeight, 'F');
+          doc.setTextColor(0, 0, 0);
+          doc.text(subLine, 14, keyStartY);
+          keyStartY += lineHeight;
         });
+      });
 
-        const row = worksheet.insertRow(
-          headerRowIndex + 1 + index,
-          rowValues
-        );
-        const isEvenRow = (headerRowIndex + 1 + index) % 2 === 0;
+      const tableStartY = keyStartY + 4;
 
-        row.eachCell((cell, colNumber) => {
-          cell.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: isEvenRow ? 'E2EFDA' : 'FFFFFF' },
-          };
+      const columns = [
+        'Who',
+        'P',
+        'Proj',
+        'VP',
+        'B',
+        'E',
+        'D',
+        'S',
+        'Year',
+        'Goal Deliverable',
+      ];
 
-          if (colNumber === 10) {
-            cell.alignment = {
-              horizontal: 'left',
-              vertical: 'middle',
-              wrapText: false,
-            }
+      const rows = goalHistory.map((goal: any) => [
+        goal.who,
+        goal.p,
+        goal.proj,
+        goal.vp,
+        goal.b,
+        goal.e,
+        goal.d ?? '',
+        goal.s,
+        goal.fiscalyear,
+        `${goal.action ?? ''} ${goal.description ?? ''} ${
+          goal.memo ?? ''
+        }`.trim(),
+      ]);
+      const totalPagesExp = '{total_pages_count_string}';
+
+      autoTable(doc, {
+        startY: tableStartY,
+        head: [columns],
+        body: rows,
+        theme: 'striped',
+        headStyles: {
+          fillColor: [226, 239, 218],
+          textColor: [0, 0, 0],
+        },
+        bodyStyles: {
+          textColor: [0, 0, 0],
+          fontSize: 10,
+          valign: 'middle',
+        },
+        columnStyles: {
+          8: { cellWidth: 20, halign: 'left' },
+          9: { cellWidth: 120, halign: 'left' },
+        },
+        margin: { top: 10 },
+        didDrawPage: (data) => {
+          const pageNumber = doc.getCurrentPageInfo().pageNumber;
+          doc.setFontSize(9);
+          doc.text(`Reported: ${displayTime}`, 14, pageHeight - 10, {
+            align: 'left',
+          });
+          doc.text('Company Confidential', pageWidth / 2, pageHeight - 10, {
+            align: 'center',
+          });
+
+          const footerText = `Page ${pageNumber} of ${totalPagesExp}`;
+          doc.text(footerText, pageWidth - 1, pageHeight - 10, {
+            align: 'right',
+          });
+        },
+      });
+
+      if (typeof doc.putTotalPages === 'function') {
+        doc.putTotalPages(totalPagesExp);
+      }
+
+      const fileName = `Goals_${fileNameDate}_${formattedTime}.pdf`;
+      doc.save(fileName);
+    };
+  }
+
+  clearAllFilters(): void {
+    this.selectedFilters = {};
+    this.activeFilters = {};
+    if (this.dataTable) {
+      this.dataTable.reset();
+    }
+    this.loadUnfilteredData();
+  }
+
+  loadUnfilteredData(): void {
+    this.goal = [...this.originalGoal];
+    if (this.dataTable) {
+      this.dataTable.first = 0;
+    }
+  }
+
+  getProgressiveChunks(
+    previousChunks: { text: string; color: string }[],
+    currentText: string,
+    highlightColor: string
+  ): { text: string; color: string }[] {
+    const dmp = new diff_match_patch();
+
+    let previousText = '';
+    for (const chunk of previousChunks) {
+      previousText += chunk.text;
+    }
+
+    const diffs = dmp.diff_main(previousText, currentText);
+    dmp.diff_cleanupSemantic(diffs);
+
+    const resultChunks: { text: string; color: string }[] = [];
+
+    let prevChunkIndex = 0;
+    let prevChunkOffset = 0;
+
+    for (const [op, data] of diffs) {
+      if (op === DIFF_EQUAL) {
+        let remainingLength = data.length;
+
+        while (remainingLength > 0 && prevChunkIndex < previousChunks.length) {
+          const chunk = previousChunks[prevChunkIndex];
+          const remainingChunkText = chunk.text.substring(prevChunkOffset);
+
+          if (remainingChunkText.length <= remainingLength) {
+            resultChunks.push({
+              text: remainingChunkText,
+              color: chunk.color,
+            });
+            remainingLength -= remainingChunkText.length;
+            prevChunkIndex++;
+            prevChunkOffset = 0;
           } else {
-            cell.alignment = {
-              horizontal: 'center',
-              vertical: 'middle',
-            };
+            resultChunks.push({
+              text: remainingChunkText.substring(0, remainingLength),
+              color: chunk.color,
+            });
+            prevChunkOffset += remainingLength;
+            remainingLength = 0;
           }
-        });
-
-        row.height = 20;
-      });
-
-      const fileName = `Goals_${formattedDate
-        .replace(':', '')
-        .replace(' ', '_')
-        .replace('/', '')
-        .replace('/', '')}_MST.xlsx`;
-
-      workbook.xlsx.writeBuffer().then((data: ArrayBuffer) => {
-        const blob = new Blob([data], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        });
-        FileSaver.saveAs(blob, fileName);
-      });
-    });
-}
-
-exportHistoryPdfData(goalHistory:[]): void {
-  const doc = new jsPDF('landscape');
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-
-  const logo = new Image();
-  logo.src = 'assets/SunPower.png';
-
-  logo.onload = () => {
-    const logoX = 10;
-    const logoY = 10;
-    const logoWidth = 50;
-    const logoHeight = 15;
-
-    doc.addImage(logo, 'PNG', logoX, logoY, logoWidth, logoHeight);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(18);
-
-    const title = 'GOALS HISTORY REPORT';
-    const titleX = (pageWidth - doc.getTextWidth(title)) / 2;
-    const titleY = logoY + logoHeight / 2 + 5; 
-
-    doc.text(title, titleX, titleY);
-
-    // Date + Sort Order block
-    const currentMSTTime = moment().tz('America/Denver');
-    const fileNameDate = currentMSTTime.format('MM-DD-YY');
-    const formattedTime = currentMSTTime.format('hh-mm-ss A');
-    const displayTime = currentMSTTime.format('MM-DD-YYYY hh:mm:ss A');
-
-    const infoStartX = 14;
-    const infoStartY = titleY + 8;
-    const lineGap = 7;
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(11);
-    doc.setTextColor(0, 0, 0);
-    doc.text('SORT Order: This report is sorted on WHO P', infoStartX, infoStartY);
-    doc.text(`Reported Date & time: ${displayTime} (MST)`, pageWidth - infoStartX, infoStartY, { align: 'right' });
-
-    // Legend
-    const keyText = [
-      'Key:',
-      'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
-      'S =Status of the goal, N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
-      'PROJ TYPES: TJRM, TJRS, SHIP, SOX, BATT, ADMN, RCCA,SLES',
-    ];
-
-    let keyStartY = infoStartY + 20;
-    const lineHeight = 6;
-    const rectX = 10;
-    const rectWidth = pageWidth - 20;
-    doc.setFontSize(10);
-
-    keyText.forEach((line) => {
-      const wrappedLines: string[] = doc.splitTextToSize(line, rectWidth - 8);
-      wrappedLines.forEach((subLine: string) => {
-        doc.setFillColor(226, 239, 218);
-        doc.rect(rectX, keyStartY - 4, rectWidth, lineHeight, 'F');
-        doc.setTextColor(0, 0, 0);
-        doc.text(subLine, 14, keyStartY);
-        keyStartY += lineHeight;
-      });
-    });
-
-    const tableStartY = keyStartY + 4;
-
-    const columns = [
-      'Who', 'P', 'Proj', 'VP', 'B', 'E', 'D', 'S', 'Year', 'Goal Deliverable'
-    ];
-
-    const rows = goalHistory.map((goal: any) => [
-      goal.who,
-      goal.p,
-      goal.proj,
-      goal.vp,
-      goal.b,
-      goal.e,
-      goal.d ?? '',
-      goal.s,
-      goal.fiscalyear,
-      `${goal.action ?? ''} ${goal.description ?? ''} ${goal.memo ?? ''}`.trim()
-    ]);
-    const totalPagesExp = "{total_pages_count_string}";
-
-    autoTable(doc, {
-      startY: tableStartY,
-      head: [columns],
-      body: rows,
-      theme: 'striped',
-      headStyles: {
-        fillColor: [226, 239, 218],
-        textColor: [0, 0, 0],
-      },
-      bodyStyles: {
-        textColor: [0, 0, 0],
-        fontSize: 10,
-        valign: 'middle',
-      },
-      columnStyles: {
-        8: { cellWidth: 20, halign: 'left' },
-        9: { cellWidth: 120, halign: 'left' },
-      },
-      margin: { top: 10 },
-      didDrawPage: (data) => {
-        const pageNumber = doc.getCurrentPageInfo().pageNumber;
-        doc.setFontSize(9);
-        doc.text(`Reported: ${displayTime}`, 14, pageHeight - 10, { align: 'left' });
-        doc.text('Company Confidential', pageWidth / 2, pageHeight - 10, { align: 'center' });
-
-        const footerText = `Page ${pageNumber} of ${totalPagesExp}`;
-        doc.text(footerText, pageWidth - 1, pageHeight - 10, { align: 'right' });
-      },
-    });
-
-    if (typeof doc.putTotalPages === 'function') {
-      doc.putTotalPages(totalPagesExp);
-    }
-
-
-    const fileName = `Goals_${fileNameDate}_${formattedTime}.pdf`;
-    doc.save(fileName);
-  };
-}
-
-
-clearAllFilters(): void {
-  this.selectedFilters = {};
-  this.activeFilters = {};
-  if (this.dataTable) {
-    this.dataTable.reset();
-  }
-  this.loadUnfilteredData();
-}
-
-loadUnfilteredData(): void {
-  this.goal = [...this.originalGoal]; 
-  if (this.dataTable) {
-    this.dataTable.first = 0; 
-  }
-}
-
-getProgressiveChunks(
-  previousChunks: { text: string; color: string }[],
-  currentText: string,
-  highlightColor: string
-): { text: string; color: string }[] {
-  const dmp = new diff_match_patch();
-
-  let previousText = '';
-  for (const chunk of previousChunks) {
-    previousText += chunk.text;
-  }
-
-  const diffs = dmp.diff_main(previousText, currentText);
-  dmp.diff_cleanupSemantic(diffs);
-
-  const resultChunks: { text: string; color: string }[] = [];
-
-  let prevChunkIndex = 0;
-  let prevChunkOffset = 0;
-
-  for (const [op, data] of diffs) {
-    if (op === DIFF_EQUAL) {
-      let remainingLength = data.length;
-
-      while (remainingLength > 0 && prevChunkIndex < previousChunks.length) {
-        const chunk = previousChunks[prevChunkIndex];
-        const remainingChunkText = chunk.text.substring(prevChunkOffset);
-
-        if (remainingChunkText.length <= remainingLength) {
-          resultChunks.push({
-            text: remainingChunkText,
-            color: chunk.color
-          });
-          remainingLength -= remainingChunkText.length;
-          prevChunkIndex++;
-          prevChunkOffset = 0;
-        } else {
-          resultChunks.push({
-            text: remainingChunkText.substring(0, remainingLength),
-            color: chunk.color
-          });
-          prevChunkOffset += remainingLength;
-          remainingLength = 0;
         }
-      }
-    } else if (op === DIFF_INSERT) {
-      resultChunks.push({
-        text: data,
-        color: highlightColor
-      });
-    } else if (op === DIFF_DELETE) {
-      // Skip deleted text
-      let remainingLength = data.length;
-      while (remainingLength > 0 && prevChunkIndex < previousChunks.length) {
-        const chunk = previousChunks[prevChunkIndex];
-        const remainingChunkText = chunk.text.substring(prevChunkOffset);
+      } else if (op === DIFF_INSERT) {
+        resultChunks.push({
+          text: data,
+          color: highlightColor,
+        });
+      } else if (op === DIFF_DELETE) {
+        // Skip deleted text
+        let remainingLength = data.length;
+        while (remainingLength > 0 && prevChunkIndex < previousChunks.length) {
+          const chunk = previousChunks[prevChunkIndex];
+          const remainingChunkText = chunk.text.substring(prevChunkOffset);
 
-        if (remainingChunkText.length <= remainingLength) {
-          remainingLength -= remainingChunkText.length;
-          prevChunkIndex++;
-          prevChunkOffset = 0;
-        } else {
-          prevChunkOffset += remainingLength;
-          remainingLength = 0;
+          if (remainingChunkText.length <= remainingLength) {
+            remainingLength -= remainingChunkText.length;
+            prevChunkIndex++;
+            prevChunkOffset = 0;
+          } else {
+            prevChunkOffset += remainingLength;
+            remainingLength = 0;
+          }
         }
       }
     }
+
+    return resultChunks;
   }
-
-  return resultChunks;
-}
-
-
 }

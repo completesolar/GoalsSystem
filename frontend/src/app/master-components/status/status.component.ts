@@ -207,22 +207,38 @@ export class StatusComponent {
       this.activeFilters[field] = !!this.selectedFilters[field]?.length;
     });
   }
-  getFilterOptions(field: string) {
-    if (field === 'active_status') {
-      return [
+  getFilterOptions(field: string): any[] {
+    let options: any[];
+
+    if (field === 'status') {
+      options = [
         { label: 'Active', value: 1 },
         { label: 'Inactive', value: 0 },
       ];
+    } else {
+      const uniqueValues = [
+        ...new Set(this.allStatusList.map((item: any) => item[field])),
+      ];
+      options = uniqueValues.map((val) => ({
+        label: val,
+        value: val,
+      }));
     }
 
-    const uniqueValues = [
-      ...new Set(this.allStatusList.map((item: any) => (item as any)[field])),
-    ];
+    // Sort options to bring selected values to the top
+    const selected = this.selectedFilters?.[field] || [];
+    return options.sort((a, b) => {
+      const isSelectedA = selected.some((sel: any) => sel.value === a.value);
+      const isSelectedB = selected.some((sel: any) => sel.value === b.value);
 
-    return uniqueValues.map((val) => ({
-      label: val,
-      value: val,
-    }));
+      if (isSelectedA && !isSelectedB) {
+        return -1;
+      } else if (!isSelectedA && isSelectedB) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
   }
   resetFilter() {
     // Reset selected filters
