@@ -1326,36 +1326,20 @@ export class GoalsComponent implements AfterViewInit {
   }
 
   getFilterOptions(field: string): any[] {
-    let options: any[];
-
     if (field === 'who') {
-      options = this.whoOptions;
-    } else if (field === 'vp') {
-      options = this.vpOptions;
-    } else {
-      const uniqueValues = [
-        ...new Set(this.allGoals.map((row: any) => row[field] ?? '')),
-      ];
-      options = uniqueValues.map((val) => ({
-        label: val === '' ? 'Empty' : val,
-        value: val,
-      }));
+      return this.whoOptions;
     }
+    if (field === 'vp') {
+      return this.vpOptions;
+    }
+    const uniqueValues = [
+      ...new Set(this.allGoals.map((row: any) => row[field] ?? '')),
+    ];
 
-    // Sort options to bring selected values to the top
-    const selected = this.selectedFilters[field] || [];
-    return options.sort((a, b) => {
-      const isSelectedA = selected.some((sel: any) => sel.value === a.value);
-      const isSelectedB = selected.some((sel: any) => sel.value === b.value);
-
-      if (isSelectedA && !isSelectedB) {
-        return -1; // a comes before b
-      } else if (!isSelectedA && isSelectedB) {
-        return 1; // b comes before a
-      } else {
-        return 0; // Maintain original order
-      }
-    });
+    return uniqueValues.map((val) => ({
+      label: val === '' ? 'Empty' : val,
+      value: val,
+    }));
   }
   onFilterChange(field: string): void {
     this.applyFilters();
