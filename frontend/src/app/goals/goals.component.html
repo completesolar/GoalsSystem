@@ -78,22 +78,19 @@
           <div class="mb-2 font-bold text-center">B</div>
           <p-select #bSelect class="bselect" appendTo="body" [options]="priorityOptionsB" [(ngModel)]="newRow.b"
             placeholder="B" [pTooltip]="'WW goal was given'" tooltipPosition="bottom" optionLabel="label"
-            optionValue="value" filter (keydown)="onKeydownGeneric($event, priorityOptionsB, 'b', bSelect)"
-            [style]="{ width: '100%' }" [autofocusFilter]="true"></p-select>
+            optionValue="value" filter [style]="{ width: '100%' }" [autofocusFilter]="true"></p-select>
         </div>
 
         <div style="width: 62px">
           <div class="mb-2 font-bold text-center">E</div>
           <p-select #eSelect class="eselect" appendTo="body" [options]="priorityOptionsE" [(ngModel)]="newRow.e"
             placeholder="E" [pTooltip]="'WW goal is due'" tooltipPosition="bottom" optionLabel="label"
-            optionValue="value" filter (keydown)="onKeydownGeneric($event, priorityOptionsE, 'e', eSelect)"
-            [style]="{ width: '100%' }"></p-select>
+            optionValue="value" filter [style]="{ width: '100%' }"></p-select>
         </div>
         <div style="width: 62px">
           <div class="mb-2 font-bold text-center">D</div>
           <p-select #dselect class="dselect" appendTo="body" [options]="priorityOptionsD" [(ngModel)]="newRow.d"
-            placeholder="D" [pTooltip]="'Delinquent'" tooltipPosition="bottom" optionLabel="label" optionValue="value"
-            (keydown)="onKeydownGeneric($event, priorityOptionsD, 'd', dselect)" filter
+            placeholder="D" [pTooltip]="'Delinquent'" tooltipPosition="bottom" optionLabel="label" optionValue="value" filter
             [style]="{ width: '100%' }"></p-select>
         </div>
 
@@ -168,14 +165,16 @@
           <th *ngFor="let col of columns" [hidden]="
               (col.field === 'fiscalyear' && !isAnyRowEditable()) " class="">
             <div class="flex items-center justify-between">
-              <div class="test" [pSortableColumn]="col.field" *ngIf="col.field !== 'action'; else noSort">
+              <div class="test" *ngIf="col.field !== 'action' && col.field !== 'confidential'; else noSort"
+                [pSortableColumn]="col.field">
                 <b>{{ col.header }}</b>
                 <p-sortIcon [field]="col.field"></p-sortIcon>
               </div>
               <ng-template #noSort>
                 <b>{{ col.header }}</b>
               </ng-template>
-              <div class="relative" *ngIf="col.field !== 'action' && col.field !== 'gdb'">
+              <div class="relative"
+                *ngIf="col.field !== 'action' && col.field !== 'gdb' && col.field !== 'confidential'">
                 <p-multiSelect [options]="getFilterOptions(col.field)" [(ngModel)]="selectedFilters[col.field]"
                   (onChange)="onFilterChange(col.field)" optionLabel="label" display="chip" [style]="{
                     width: '1.5rem',
@@ -227,8 +226,9 @@
           </td>
           <td>
             <div #whoSelectWrapper [pTooltip]="getLabelForValue(row.who)" tooltipPosition="bottom">
-              <p-select [options]="whoOptions" [(ngModel)]="row.who" [disabled]="!row.isEditable" optionLabel="label"
-                optionValue="value" filter [ngClass]="{ saved: !row.isEditable }" [tabindex]="rowIndex * 100 + 1">
+              <p-select #whoSelect [options]="whoOptions" [(ngModel)]="row.who" [disabled]="!row.isEditable"
+                optionLabel="label" optionValue="value" filter [ngClass]="{ saved: !row.isEditable }"
+                [tabindex]="rowIndex * 100 + 1">
                 <ng-template let-option pTemplate="item">
                   {{ option.label }}
                 </ng-template>
@@ -368,17 +368,11 @@
             ></p-checkbox>
           </td> -->
           <td>
-            <ng-container *ngIf="row.isEditable; else viewConfidential">
-              <p-checkbox [(ngModel)]="row.isconfidential" binary="true" inputId="isconfidential-{{ rowIndex }}"
-                [pTooltip]="'Mark as Confidential'" tooltipPosition="bottom"
+            <ng-container>
+              <p-checkbox [(ngModel)]="row.isconfidential" binary="true" [disabled]="!row.isEditable"
+                inputId="isconfidential-{{ rowIndex }}" [pTooltip]="'Mark as Confidential'" tooltipPosition="bottom"
                 [style]="{ 'margin-top': '4px' }"></p-checkbox>
             </ng-container>
-
-            <ng-template #viewConfidential>
-              <div class="confidential-status">
-                <i class="pi" [ngClass]="row.isconfidential ? 'pi-check text-green-500' : 'pi-times text-red-500'"></i>
-              </div>
-            </ng-template>
           </td>
 
           <td class="icon-actions-column">
@@ -438,19 +432,19 @@
               <div class="flex flex-wrap items-center gap-2">
                 <b class="flex">
                   <ng-container *ngFor="let part of row.display.action">
-                    <span [style.color]="part.color">{{ part.text }}</span>
+                    <span [style.color]="part.color" style="white-space: pre-wrap;">{{ part.text }}</span>
                   </ng-container>
                 </b>
 
                 <span class="flex">
                   <ng-container *ngFor="let part of row.display.description">
-                    <span [style.color]="part.color">{{ part.text }}</span>
+                    <span [style.color]="part.color" style="white-space: pre-wrap;">{{ part.text }}</span>
                   </ng-container>
                 </span>
 
                 <b class="flex">
                   <ng-container *ngFor="let part of row.display.memo">
-                    <span [style.color]="part.color">{{ part.text }}</span>
+                    <span [style.color]="part.color" style="white-space: pre-wrap;">{{ part.text }}</span>
                   </ng-container>
                 </b>
               </div>

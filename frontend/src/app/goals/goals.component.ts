@@ -168,8 +168,8 @@ export class GoalsComponent implements AfterViewInit {
     fiscalyear: this.currentYear,
     gdb: '',
     updateBy: 'Admin',
-    createddatetime: new Date(),
-    updateddatetime: new Date(),
+    createddatetime: moment().tz('America/Denver').toDate(),
+    updateddatetime: moment().tz('America/Denver').toDate(),
     description: '',
     action: '',
     memo: '',
@@ -228,7 +228,7 @@ export class GoalsComponent implements AfterViewInit {
       }
     });
 
-    this.today = new Date();
+    this.today = moment().tz('America/Denver').toDate();
     if (isPlatformBrowser(this.platform)) {
       this.msalService.instance
         .initialize()
@@ -269,6 +269,7 @@ export class GoalsComponent implements AfterViewInit {
             value: item.initials,
           }))
           .sort((a, b) => a.label.localeCompare(b.label));
+        // console.log("whoOptions",this.whoOptions)
       },
       error: (err) => {
         console.error('Failed to load WHO options:', err);
@@ -374,7 +375,7 @@ export class GoalsComponent implements AfterViewInit {
       this.allGoals = filteredGoals;
       this.goal = [...filteredGoals];
       this.originalGoal = [...this.goal];
-      console.log('this.goal', this.goal);
+      // console.log("this.goal", this.goal);
     });
   }
 
@@ -434,7 +435,6 @@ export class GoalsComponent implements AfterViewInit {
               memo: [],
             },
           };
-
           if (i === 0) {
             rowDisplay.display.action = [
               { text: current.action || '', color: this.colorPalette[0] },
@@ -465,10 +465,10 @@ export class GoalsComponent implements AfterViewInit {
               highlightColor
             );
             rowDisplay.display.memo = this.getProgressiveChunks(
-              cumulativeDescription,
+              cumulativeMemo,
               current.memo || '',
               highlightColor
-            );
+            ); // ✅ FIXED
 
             cumulativeAction = [...rowDisplay.display.action];
             cumulativeDescription = [...rowDisplay.display.description];
@@ -519,8 +519,8 @@ export class GoalsComponent implements AfterViewInit {
       fiscalyear: this.currentYear,
       memo: '',
       updateBy: 'Admin',
-      createddatetime: new Date(),
-      updateddatetime: new Date(),
+      createddatetime: moment().tz('America/Denver').toDate(),
+      updateddatetime: moment().tz('America/Denver').toDate(),
       description: '',
       isconfidential: false,
       action: '',
@@ -546,14 +546,17 @@ export class GoalsComponent implements AfterViewInit {
     this.newRow.isconfidential = !!this.newRow.isconfidential;
 
     this.goalsService.createGoal(this.newRow).subscribe((response: any) => {
+      const mstMoment = moment.tz('America/Denver');
+      console.log('mst', mstMoment);
       if (response && response.goalid) {
         const newGoal: Goals = {
           ...this.newRow,
           goalid: response.goalid,
-          createddatetime: new Date(),
+          createddatetime: new Date(mstMoment.format()),
           isEditable: false,
         };
 
+        console.log('createddatetime', newGoal.createddatetime);
         this.goal = [
           newGoal,
           ...this.goal.filter((g: Goals) => g.goalid !== newGoal.goalid),
@@ -1032,7 +1035,7 @@ export class GoalsComponent implements AfterViewInit {
       createddatetime: row.createddatetime,
       updateddatetime: moment().tz('America/Denver').toDate(),
     };
-
+    // console.log("updateddatetime",updatedGoal.updateddatetime)
     this.goalsService.updateGoal(updatedGoal).subscribe((response) => {
       if (response) {
         const updatedGoals = this.goal.map((g: Goals) =>
@@ -1102,15 +1105,15 @@ export class GoalsComponent implements AfterViewInit {
       'fiscalyear',
     ];
 
-    console.log('--- Field Differences ---');
+    // console.log('--- Field Differences ---');
     for (const field of fieldsToCompare) {
       const originalValue = original[field];
       const updatedValue = updated[field];
 
       if (originalValue !== updatedValue) {
-        console.log(
-          `Changed field: ${field} | Original: ${originalValue} | Updated: ${updatedValue}`
-        );
+        // console.log(
+        //   `Changed field: ${field} | Original: ${originalValue} | Updated: ${updatedValue}`
+        // );
       }
     }
   }
@@ -1265,7 +1268,7 @@ export class GoalsComponent implements AfterViewInit {
   getBData() {
     this.goalsService.getB().subscribe({
       next: (response) => {
-        console.log('b response', response);
+        // console.log("b response",response)
         const numData = response as Array<{
           b: number;
           id: number;
@@ -1354,7 +1357,6 @@ export class GoalsComponent implements AfterViewInit {
       }
     });
   }
-
   onFilterChange(field: string): void {
     this.applyFilters();
 
@@ -1505,26 +1507,58 @@ export class GoalsComponent implements AfterViewInit {
     });
   }
 
+  // onKeydownGeneric(
+  //   event: KeyboardEvent,
+  //   options: any[],
+  //   field: keyof Goals,
+  //   selectRef: any,
+  //   row: Goals
+  // ) {
+  //   if (event.key === 'Enter') {
+  //     const filterValue = (selectRef?.filterValue || '').toString().toUpperCase();
+
+  //     const filteredOptions = options.filter(option =>
+  //       option.label !== undefined &&
+  //       option.label.toString().toUpperCase().includes(filterValue)
+  //     );
+
+  //     if (filteredOptions.length > 0) {
+  //       row[field] = filteredOptions[0].value;
+  //       selectRef.highlightedOption = filteredOptions[0];
+  //     } else {
+  //       row[field] = filterValue;
+  //     }
+
+  //     selectRef?.hide();
+  //   }
+  // }
+
   onKeydownGeneric(
     event: KeyboardEvent,
     options: any[],
-    field: keyof typeof this.newRow,
-    selectRef: any
+    field: keyof Goals,
+    selectRef: any,
+    row: Goals
   ) {
     if (event.key === 'Enter') {
-      const inputElement = event.target as HTMLInputElement;
-      const filterValue = inputElement.value.toLowerCase();
+      const filterValue = (selectRef?.filterValue || '')
+        .toString()
+        .toUpperCase();
 
-      const filteredOptions = options.filter((option) =>
-        option.label.toLowerCase().includes(filterValue)
+      const filteredOptions = options.filter(
+        (option) =>
+          option.label != null &&
+          option.label.toString().toUpperCase().includes(filterValue)
       );
 
       if (filteredOptions.length > 0) {
-        this.newRow[field] = filteredOptions[0].value;
+        row[field] = filteredOptions[0].value;
+        selectRef.highlightedOption = filteredOptions[0];
+      } else {
+        row[field] = filterValue;
       }
-      if (selectRef) {
-        selectRef.hide();
-      }
+
+      selectRef?.hide();
     }
   }
 

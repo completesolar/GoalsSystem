@@ -1,3 +1,4 @@
+import pytz
 from sqlalchemy.orm import Session
 
 # from schemas.schema import Goals
@@ -94,11 +95,9 @@ def get_action(db: Session):
     print("Fetched actions:", db_action)
     return jsonable_encoder(db_action)
 
-
 def get_mst_now():
-    utc_now = datetime.utcnow()
-    mst_now = utc_now - timedelta(hours=7)
-    return mst_now
+    tz = pytz.timezone("America/Denver")
+    return datetime.now(tz)
 
 def create_goal(db: Session, goal: Goals):
     from sqlalchemy import text
