@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { GoalsService } from '../../services/goals.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { TableModule } from 'primeng/table';
+import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import { DialogModule } from 'primeng/dialog';
@@ -222,5 +222,12 @@ export class BeginningWeekComponent {
       label: val,
       value: val,
     }));
+  }
+
+  resetFilter() {
+    // Reset selected filters
+    this.selectedFilters = {};
+    this.activeFilters = {};
+    this.bList = [...this.allBList];
   }
 }

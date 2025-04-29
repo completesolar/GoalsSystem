@@ -217,4 +217,11 @@ export class EndWeekComponent {
       value: val,
     }));
   }
+
+  resetFilter() {
+    // Reset selected filters
+    this.selectedFilters = {};
+    this.activeFilters = {};
+    this.EList = [...this.allEList];
+  }
 }

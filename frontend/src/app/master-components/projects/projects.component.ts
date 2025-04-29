@@ -16,10 +16,10 @@ import { MultiSelectModule } from 'primeng/multiselect';
     CommonModule,
     TableModule,
     SelectModule,
-    ButtonModule,
     ReactiveFormsModule,
     FormsModule,
     MultiSelectModule,
+    ButtonModule,
   ],
   providers: [MessageService],
   templateUrl: './projects.component.html',
@@ -215,5 +215,11 @@ export class ProjectsComponent {
       label: val,
       value: val,
     }));
+  }
+  resetFilter() {
+    // Reset selected filters
+    this.selectedFilters = {};
+    this.activeFilters = {};
+    this.projList = [...this.allProjList];
   }
 }

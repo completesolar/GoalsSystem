@@ -120,3 +120,38 @@
 .invalid-border {
   border: 1px solid red !important;
 }
+
+::ng-deep .p-sortable-column-icon {
+  height: 10px;
+  /* Adjust as needed */
+  vertical-align: middle;
+}
+
+.test {
+  align-items: center;
+  display: flex;
+}
+
+::ng-deep .filter-active button.p-datatable-column-filter-button {
+  background-color: #c9c9c9 !important;
+  color: black !important;
+}
+
+::ng-deep .filter-active .pi-filter {
+  color: #007ad9;
+  font-size: 12px;
+}
+
+.filter-icon-button {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.filter-dropdown {
+  min-width: 200px;
+}

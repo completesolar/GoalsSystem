@@ -226,4 +226,11 @@ export class DelinquentComponent {
       value: val,
     }));
   }
+
+  resetFilter() {
+    // Reset selected filters
+    this.selectedFilters = {};
+    this.activeFilters = {};
+    this.DList = [...this.allDdata];
+  }
 }

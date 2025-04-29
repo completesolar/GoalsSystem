@@ -10,8 +10,8 @@
       <div class="flex gap-2 items-end justify-between align-items-end">
         <div class=" text-center">
           <div class="font-bold">Project</div>
-          <input type="text" pInputText [(ngModel)]="project"
-            [ngClass]="{'invalid-border': !isValid && !project?.trim()}" class="no-spinner" />
+          <input type="number" pInputText [(ngModel)]="project" class="p-inputtext"
+            [ngClass]="{'invalid-border': !isValid && !project?.trim()}" />
         </div>
         <div class=" text-center">
           <div class="font-bold">Status</div>
@@ -20,9 +20,11 @@
         </div>
         <div class="text-center">
           <div class="font-bold">Remarks</div>
-          <input pInputText [(ngModel)]="remarks" />
+          <input pInputText class="p-inputtext" [(ngModel)]="remarks" />
         </div>
         <p-button icon="pi pi-plus" (click)="saveNewProject()" severity="success" size="small" label="Add"
+          [style]="{ height: '24px', fontSize: '12px' }"></p-button>
+        <p-button icon="pi pi-filter-slash" (click)="resetFilter()" severity="success" size="small" label="Clear"
           [style]="{ height: '24px', fontSize: '12px' }"></p-button>
       </div>
     </div>
@@ -69,7 +71,7 @@
           <td>{{ item.id }}</td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewproj">
-              <input type="text" pInputText [(ngModel)]="editingItem.proj" style="width: 100px" />
+              <input type="text" class="p-inputtext" pInputText [(ngModel)]="editingItem.proj" style="width: 100px" />
             </ng-container>
             <ng-template #viewproj>{{ item.proj }}</ng-template>
           </td>
@@ -82,7 +84,8 @@
           </td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewRenarks">
-              <input type="text" pInputText [(ngModel)]="editingItem.remarks" style="width: 100px" />
+              <input type="text" class="p-inputtext" pInputText [(ngModel)]="editingItem.remarks"
+                style="width: 100px" />
             </ng-container>
             <ng-template #viewRenarks>{{ item.remarks }}</ng-template>
           </td>

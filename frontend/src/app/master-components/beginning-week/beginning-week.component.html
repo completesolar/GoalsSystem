@@ -12,7 +12,7 @@
         <div class=" text-center">
           <div class="font-bold">B</div>
           <input type="number" pInputText [(ngModel)]="b" [ngClass]="{'invalid-border': !isValid && !b}"
-            class="no-spinner" />
+            class="p-inputtext" />
         </div>
         <div class="text-center">
           <div class="font-bold">Status</div>
@@ -24,6 +24,8 @@
           <input pInputText [(ngModel)]="remarks" />
         </div>
         <p-button icon="pi pi-plus" (click)="saveNewb()" severity="success" size="small" label="Add"
+          [style]="{ height: '24px', fontSize: '12px' }"></p-button>
+        <p-button icon="pi pi-filter-slash" (click)="resetFilter()" severity="success" size="small" label="Clear"
           [style]="{ height: '24px', fontSize: '12px' }"></p-button>
       </div>
     </div>
@@ -38,7 +40,7 @@
         <tr>
           <th *ngFor="let col of columns">
             <div class="flex items-center justify-between">
-              <div [pSortableColumn]="col.field" *ngIf="col.field !== 'action'; else noSort">
+              <div class="test" [pSortableColumn]="col.field" *ngIf="col.field !== 'action'; else noSort">
                 <b>{{ col.header }}</b>
                 <p-sortIcon [field]="col.field"></p-sortIcon>
               </div>
@@ -46,7 +48,7 @@
                 <b>{{ col.header }}</b>
               </ng-template>
 
-              <div class="flex justify-center" *ngIf="col.field !== 'action' && col.field !== 'sno'">
+              <div class="relative" *ngIf="col.field !== 'action' && col.field !== 'sno'">
                 <p-multiSelect [options]="getFilterOptions(col.field)" [(ngModel)]="selectedFilters[col.field]"
                   (onChange)="onFilterChange()" optionLabel="label" display="chip" [style]="{
                     width: '1.5rem',
