@@ -1983,4 +1983,5 @@ export class GoalsComponent implements AfterViewInit {
 
     return resultChunks;
   }
+  // no changes
 }
