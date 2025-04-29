@@ -10,3 +10,4 @@ passlib[bcrypt]
 python-jose
 python-dotenv
 fastapi[standard]
+pytz
