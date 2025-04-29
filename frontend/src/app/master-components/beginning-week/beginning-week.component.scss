@@ -120,3 +120,62 @@
 .invalid-border {
   border: 1px solid red !important;
 }
+
+::ng-deep .p-sortable-column-icon {
+  height: 10px;
+  /* Adjust as needed */
+  vertical-align: middle;
+}
+
+.test {
+  align-items: center;
+  display: flex;
+}
+
+::ng-deep .filter-active button.p-datatable-column-filter-button {
+  background-color: #c9c9c9 !important;
+  color: black !important;
+}
+
+::ng-deep .filter-active .pi-filter {
+  color: #007ad9;
+  font-size: 12px;
+}
+
+.filter-icon-button {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.filter-dropdown {
+  min-width: 200px;
+}
+
+.p-inputtext {
+  font-family: inherit;
+  font-feature-settings: inherit;
+  font-size: 1rem;
+  color: var(--p-inputtext-color);
+  background: var(--p-inputtext-background);
+
+  padding: {
+    block: var(--p-inputtext-padding-y);
+    inline: var(--p-inputtext-padding-x);
+  }
+
+  border: 1px solid var(--p-inputtext-border-color);
+  transition: background var(--p-inputtext-transition-duration),
+  color var(--p-inputtext-transition-duration),
+  border-color var(--p-inputtext-transition-duration),
+  outline-color var(--p-inputtext-transition-duration),
+  box-shadow var(--p-inputtext-transition-duration);
+  appearance: none;
+  border-radius: var(--p-inputtext-border-radius);
+  outline-color: transparent;
+  box-shadow: var(--p-inputtext-shadow);
+}

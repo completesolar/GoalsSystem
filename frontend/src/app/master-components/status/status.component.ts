@@ -224,4 +224,14 @@ export class StatusComponent {
       value: val,
     }));
   }
+  resetFilter() {
+    // Reset selected filters
+    this.selectedFilters = {};
+    this.activeFilters = {};
+    this.statusList = [...this.allStatusList];
+  }
+
+  onSelectionChange(newValue: any[]) {
+    console.log('newValue: any[]', newValue);
+  }
 }

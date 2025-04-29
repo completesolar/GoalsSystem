@@ -10,8 +10,8 @@
       <div class="flex gap-2 items-end justify-between align-items-end">
         <div class="text-center">
           <div class="font-bold">Priority</div>
-          <input type="number" pInputText [(ngModel)]="priority" [ngClass]="{'invalid-border': !isValid && !priority}"
-            class="no-spinner" />
+          <input type="number" pInputText [(ngModel)]="priority"
+            [ngClass]="{'invalid-border': !isValid && !priority}" />
         </div>
         <div class="text-center">
           <div class="font-bold">Status</div>
@@ -23,6 +23,8 @@
           <input pInputText [(ngModel)]="remarks" />
         </div>
         <p-button icon="pi pi-plus" (click)="saveNewPriority()" severity="success" size="small" label="Add"
+          [style]="{ height: '24px', fontSize: '12px' }"></p-button>
+        <p-button icon="pi pi-filter-slash" (click)="resetFilter()" severity="success" size="small" label="Clear"
           [style]="{ height: '24px', fontSize: '12px' }"></p-button>
       </div>
     </div>

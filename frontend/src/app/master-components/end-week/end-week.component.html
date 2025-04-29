@@ -11,8 +11,8 @@
       <div class="flex gap-2 items-end justify-between align-items-end">
         <div class=" text-center">
           <div class="font-bold">E</div>
-          <input type="number" pInputText [(ngModel)]="e" [ngClass]="{'invalid-border': !isValid && e===undefined}"
-            class="no-spinner" />
+          <input type="number" class="p-inputtext" pInputText [(ngModel)]="e"
+            [ngClass]="{'invalid-border': !isValid && e===undefined}" />
         </div>
         <div class=" text-center">
           <div class="font-bold">Status</div>
@@ -21,10 +21,12 @@
         </div>
         <div class="text-center">
           <div class="font-bold">Remarks</div>
-          <input pInputText [(ngModel)]="remarks" />
+          <input class="p-inputtext" pInputText [(ngModel)]="remarks" />
         </div>
         <p-button icon="pi pi-plus" (click)="saveNewE()" severity="success" size="small" label="Add"
           [style]="{ height: '24px', fontSize: '12px' }"></p-button>
+          <p-button icon="pi pi-filter-slash" (click)="resetFilter()" severity="success" size="small" label="Clear"
+            [style]="{ height: '24px', fontSize: '12px' }"></p-button>
       </div>
     </div>
   </div>
@@ -37,7 +39,7 @@
         <tr>
           <th *ngFor="let col of columns" class="">
             <div class="flex items-center justify-between">
-              <div [pSortableColumn]="col.field" *ngIf="col.field !== 'action'; else noSort">
+              <div class="test" [pSortableColumn]="col.field" *ngIf="col.field !== 'action'; else noSort">
                 <b>{{ col.header }}</b>
                 <p-sortIcon [field]="col.field"></p-sortIcon>
               </div>
@@ -70,7 +72,7 @@
           <td>{{ item.id }}</td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewE">
-              <input type="number" pInputText [(ngModel)]="editingItem.e" style="width: 100px" />
+              <input type="number" class="p-inputtext" pInputText [(ngModel)]="editingItem.e" style="width: 100px" />
             </ng-container>
             <ng-template #viewE>{{ item.e }}</ng-template>
           </td>
@@ -83,7 +85,8 @@
           </td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewRenarks">
-              <input type="text" pInputText [(ngModel)]="editingItem.remarks" style="width: 100px" />
+              <input type="text" class="p-inputtext" pInputText [(ngModel)]="editingItem.remarks"
+                style="width: 100px" />
             </ng-container>
             <ng-template #viewRenarks>{{ item.remarks }}</ng-template>
           </td>

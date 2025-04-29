@@ -174,7 +174,7 @@ export class PriorityComponent {
   }
 
   // Filter added
-  
+
   applyFilters(): void {
     this.priorityList = [...this.allPriorities].filter((row: any) => {
       return Object.entries(this.selectedFilters).every(
@@ -222,5 +222,12 @@ export class PriorityComponent {
       label: val,
       value: val,
     }));
+  }
+
+  resetFilter() {
+    // Reset selected filters
+    this.selectedFilters = {};
+    this.activeFilters = {};
+    this.priorityList = [...this.allPriorities];
   }
 }
