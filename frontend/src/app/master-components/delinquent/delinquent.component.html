@@ -48,7 +48,7 @@
 
               <div class="flex justify-center" *ngIf="col.field !== 'action' && col.field !== 'sno'">
                 <p-multiSelect [options]="getFilterOptions(col.field)" [(ngModel)]="selectedFilters[col.field]"
-                  (onChange)="onFilterChange()" optionLabel="label" display="chip" [style]="{
+                  (onChange)="onFilterChange(col.field)" optionLabel="label" display="chip" [style]="{
                     width: '1.5rem',
                     height: '1.5rem',
                     padding: 0,

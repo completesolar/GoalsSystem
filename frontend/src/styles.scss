@@ -9,7 +9,7 @@ body {
   background-color: whitesmoke;
 }
 
-//deployment issue 
+//deployment issue
 
 // td,
 // input,
@@ -187,7 +187,7 @@ span.p-multiselect-dropdown-icon.pi.pi-filter {
   }
 
   #year-input {
-    width: 100px !important;
+    width: 55px !important;
   }
 
   .p-datatable-table {
@@ -351,6 +351,12 @@ span.p-multiselect-dropdown-icon.pi.pi-filter {
   .goal-history-table td:last-child {
     width: 180px !important;
   }
+
+  .edit th:nth-child(10),
+  .edit td:nth-child(10) {
+    width: 670px !important;
+  }
+
 }
 
 

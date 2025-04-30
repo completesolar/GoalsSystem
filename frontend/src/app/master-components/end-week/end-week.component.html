@@ -25,8 +25,8 @@
         </div>
         <p-button icon="pi pi-plus" (click)="saveNewE()" severity="success" size="small" label="Add"
           [style]="{ height: '24px', fontSize: '12px' }"></p-button>
-          <p-button icon="pi pi-filter-slash" (click)="resetFilter()" severity="success" size="small" label="Clear"
-            [style]="{ height: '24px', fontSize: '12px' }"></p-button>
+        <p-button icon="pi pi-filter-slash" (click)="resetFilter()" severity="success" size="small" label="Clear"
+          [style]="{ height: '24px', fontSize: '12px' }"></p-button>
       </div>
     </div>
   </div>
@@ -48,7 +48,7 @@
               </ng-template>
               <div class="flex justify-center" *ngIf="col.field !== 'action' && col.field !== 'sno'">
                 <p-multiSelect [options]="getFilterOptions(col.field)" [(ngModel)]="selectedFilters[col.field]"
-                  (onChange)="onFilterChange()" optionLabel="label" display="chip" [style]="{
+                  (onChange)="onFilterChange(col.field)" optionLabel="label" display="chip" [style]="{
                                   width: '1.5rem',
                                   height: '1.5rem',
                                   padding: 0,

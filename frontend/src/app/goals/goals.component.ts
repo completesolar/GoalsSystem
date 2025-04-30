@@ -533,9 +533,7 @@ export class GoalsComponent implements AfterViewInit {
       this.messageService.add({
         severity: 'warn',
         summary: 'Please Add the below fields for the new goal',
-        detail: `${missingFields.join(
-          ', '
-        )}: Please fill in the following required field(s).`,
+        detail: `${missingFields.join(', ')}: Please fill in the following required field(s).`,
       });
       return;
     }
@@ -557,10 +555,18 @@ export class GoalsComponent implements AfterViewInit {
         };
 
         console.log('createddatetime', newGoal.createddatetime);
-        this.goal = [
-          newGoal,
-          ...this.goal.filter((g: Goals) => g.goalid !== newGoal.goalid),
-        ];
+        // Add the new goal to the top of the allGoals array
+        this.allGoals = [newGoal, ...this.allGoals];
+        // Clear the selected filters before adding the new goal to the table
+        Object.keys(this.selectedFilters).forEach((field) => {
+          this.clearFilter(field); 
+        });
+  
+        // Clear the goal description search text
+        this.gdbSearchText = '';
+  
+        // Reapply the filters (now with the cleared goal description filter)
+        this.applyFilters();
         if (this.dataTable) {
           this.dataTable.clear();
         }
@@ -610,6 +616,7 @@ export class GoalsComponent implements AfterViewInit {
         worksheet.mergeCells('A6:K6');
 
         const columns = [
+          { header: 'Goal ID', key: 'goalid' },
           { header: 'WHO', key: 'who' },
           { header: 'P', key: 'p' },
           { header: 'PROJ', key: 'proj' },
@@ -619,7 +626,7 @@ export class GoalsComponent implements AfterViewInit {
           { header: 'D', key: 'd' },
           { header: 'S', key: 's' },
           { header: 'Year', key: 'fiscalyear' },
-          { header: 'GOAL DELIVERABLE', key: 'gdb' },
+          { header: 'Goal Deliverable', key: 'gdb' },
         ];
 
         const date = new Date();
@@ -646,8 +653,8 @@ export class GoalsComponent implements AfterViewInit {
         const keyText = [
           'Key:',
           'WHO = Owner of the goal, P = Priority, PROJ = Project, VP = Boss of Goal Owner, B = WW goal was given, E = WW goal is due',
-          'S =Status of the goal, N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
-          'PROJ TYPES: TJRM, TJRS, SHIP, SOX, BATT, ADMN, RCCA,SLES',
+          'S = Status of the goal, N = New, C = Complete, ND = Newly Delinquent, CD = Continuing Delinquent, R = Revised, K = Killed, D = Delinquent',
+          'PROJ TYPES: TJRM, TJRS, SHIP, SOX, BATT, ADMN, RCCA, SLES',
         ];
 
         const keyStartRow = 8;
@@ -679,10 +686,12 @@ export class GoalsComponent implements AfterViewInit {
             fgColor: { argb: 'E2EFDA' },
           };
           cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          worksheet.getColumn(index + 1).width = 15;
           if (col.key === 'gdb') {
-            worksheet.getColumn(index + 1).width = 100;
-          } else {
-            worksheet.getColumn(index + 1).width = 15;
+            worksheet.getColumn(index + 1).width = 40;
+          }
+          if (col.key === 'goalid') {
+            worksheet.getColumn(index + 1).width = 20;
           }
         });
 
@@ -724,7 +733,7 @@ export class GoalsComponent implements AfterViewInit {
               cell.alignment = {
                 horizontal: 'left',
                 vertical: 'middle',
-                wrapText: false,
+                wrapText: true,
               };
             } else {
               cell.alignment = {
@@ -825,80 +834,92 @@ export class GoalsComponent implements AfterViewInit {
 
       const tableStartY = keyStartY + 4;
 
-      const columns = [
-        'Who',
-        'P',
-        'Proj',
-        'VP',
-        'B',
-        'E',
-        'D',
-        'S',
-        'Year',
-        'Goal Deliverable',
-      ];
+    const columns = [
+      'Goal ID',
+      'Who',
+      'P',
+      'Proj',
+      'VP',
+      'B',
+      'E',
+      'D',
+      'S',
+      'Year',
+      'Goal Deliverable',
+    ];
 
-      const rows = this.goal.map((goal: any) => [
-        goal.who,
-        goal.p,
-        goal.proj,
-        goal.vp,
-        goal.b,
-        goal.e,
-        goal.d ?? '',
-        goal.s,
-        goal.fiscalyear,
-        `${goal.action ?? ''} ${goal.description ?? ''} ${
-          goal.memo ?? ''
-        }`.trim(),
-      ]);
+    const rows = this.goal.map((goal: any) => [
+      goal.goalid,
+      goal.who,
+      goal.p,
+      goal.proj,
+      goal.vp,
+      goal.b,
+      goal.e,
+      goal.d ?? '',
+      goal.s,
+      goal.fiscalyear,
+      `${goal.action ?? ''} ${goal.description ?? ''} ${goal.memo ?? ''}`.trim(),
+    ]);
 
-      const totalPagesExp = '{total_pages_count_string}';
+    const totalPagesExp = '{total_pages_count_string}';
 
-      autoTable(doc, {
-        startY: tableStartY,
-        head: [columns],
-        body: rows,
-        theme: 'striped',
-        headStyles: {
-          fillColor: [226, 239, 218],
-          textColor: [0, 0, 0],
-        },
-        bodyStyles: {
-          textColor: [0, 0, 0],
-          fontSize: 10,
-          valign: 'middle',
-        },
-        columnStyles: {
-          8: { cellWidth: 20, halign: 'left' },
-          9: { cellWidth: 120, halign: 'left' },
-        },
-        margin: { top: 10 },
-        didDrawPage: (data) => {
-          const pageNumber = doc.getCurrentPageInfo().pageNumber;
-          doc.setFontSize(9);
-          doc.text(`Reported: ${displayTime}`, 14, pageHeight - 10, {
-            align: 'left',
-          });
-          doc.text('Company Confidential', pageWidth / 2, pageHeight - 10, {
-            align: 'center',
-          });
+    autoTable(doc, {
+      startY: tableStartY,
+      head: [columns],
+      body: rows,
+      theme: 'striped',
+      headStyles: {
+        fillColor: [226, 239, 218],
+        textColor: [0, 0, 0],
+        halign: 'center',
+        valign: 'middle',
+        fontSize: 10
+      },
+      bodyStyles: {
+        textColor: [0, 0, 0],
+        fontSize: 10,
+        valign: 'middle',
+      },
+      columnStyles: {
+        0: { cellWidth: 25, halign: 'center' }, 
+        1: { cellWidth: 25, halign: 'center' },
+        2: { cellWidth: 15, halign: 'center' },
+        3: { cellWidth: 25, halign: 'center' },
+        4: { cellWidth: 25, halign: 'center' },
+        5: { cellWidth: 15, halign: 'center' },
+        6: { cellWidth: 15, halign: 'center' },
+        7: { cellWidth: 15, halign: 'center' },
+        8: { cellWidth: 15, halign: 'center' },
+        9: { cellWidth: 20, halign: 'center' },
+        10: { cellWidth: 80, halign: 'left' },
+      },
+      margin: { top: 10 },
+      didDrawPage: (data) => {
+        const pageNumber = doc.getCurrentPageInfo().pageNumber;
+        doc.setFontSize(9);
+        doc.text(`Reported: ${displayTime}`, 14, pageHeight - 10, {
+          align: 'left',
+        });
+        doc.text('Company Confidential', pageWidth / 2, pageHeight - 10, {
+          align: 'center',
+        });
 
-          const footerText = `Page ${pageNumber} of ${totalPagesExp}`;
-          doc.text(footerText, pageWidth - 1, pageHeight - 10, {
-            align: 'right',
-          });
-        },
-      });
+        const footerText = `Page ${pageNumber} of ${totalPagesExp}`;
+        doc.text(footerText, pageWidth - 1, pageHeight - 10, {
+          align: 'right',
+        });
+      },
+    });
 
-      if (typeof doc.putTotalPages === 'function') {
-        doc.putTotalPages(totalPagesExp);
-      }
+    if (typeof doc.putTotalPages === 'function') {
+      doc.putTotalPages(totalPagesExp);
+    }
 
-      const fileName = `Goals_${fileNameDate}_${formattedTime}.pdf`;
-      doc.save(fileName);
-    };
-  }
+    const fileName = `Goals_${fileNameDate}_${formattedTime}.pdf`;
+    doc.save(fileName);
+  };
+}
 
   // enableEdit(row: any): void {
   //   row.isEditable = true;
@@ -1359,13 +1380,18 @@ export class GoalsComponent implements AfterViewInit {
   }
 
   onFilterChange(field: string): void {
+    Object.keys(this.selectedFilters).forEach((key) => {
+      if (key !== field) {
+        this.selectedFilters[key] = [];
+        this.activeFilters[key] = false;
+      }
+    });
     this.applyFilters();
-
-    this.activeFilters = this.activeFilters || {};
     this.activeFilters[field] =
       Array.isArray(this.selectedFilters[field]) &&
       this.selectedFilters[field].length > 0;
   }
+
   onGdbFilterChange(): void {
     this.applyFilters();
     this.activeFilters = this.activeFilters || {};
@@ -1377,23 +1403,18 @@ export class GoalsComponent implements AfterViewInit {
       const matchMultiSelect = Object.entries(this.selectedFilters).every(
         ([filterField, selectedValues]: any) => {
           if (!selectedValues || selectedValues.length === 0) return true;
-          const includedValues = selectedValues.map(
-            (option: any) => option.value
-          );
+          const includedValues = selectedValues.map((option: any) => option.value);
           return includedValues.includes(row[filterField]);
         }
       );
-
-      const gdbText = `${row.action ?? ''} ${row.description ?? ''} ${
-        row.memo ?? ''
-      }`.toLowerCase();
-      const matchGdb =
-        !this.gdbSearchText ||
-        gdbText.includes(this.gdbSearchText.toLowerCase());
-
+  
+      const gdbText = `${row.action ?? ''} ${row.description ?? ''} ${row.memo ?? ''}`.toLowerCase();
+      const matchGdb = !this.gdbSearchText || gdbText.includes(this.gdbSearchText.toLowerCase());
+  
       return matchMultiSelect && matchGdb;
     });
   }
+  
 
   clearFilter(field: string): void {
     if (field === 'gdb') {
@@ -1983,5 +2004,4 @@ export class GoalsComponent implements AfterViewInit {
 
     return resultChunks;
   }
-  // no changes
 }

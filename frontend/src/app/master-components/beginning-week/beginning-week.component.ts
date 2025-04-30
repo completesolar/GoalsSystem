@@ -200,7 +200,14 @@ export class BeginningWeekComponent {
       );
     });
   }
-  onFilterChange(): void {
+  onFilterChange(field: string): void {
+    Object.keys(this.selectedFilters).forEach((key) => {
+      if (key !== field) {
+        this.selectedFilters[key] = [];
+        this.activeFilters[key] = false;
+      }
+    });
+
     this.applyFilters();
     Object.keys(this.selectedFilters).forEach((field) => {
       this.activeFilters[field] = !!this.selectedFilters[field]?.length;
