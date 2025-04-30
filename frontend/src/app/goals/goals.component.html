@@ -155,11 +155,10 @@
     <p-table #dataTable [value]="goal" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
       [rowsPerPageOptions]="[10, 20, 50]" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} goals"
       [paginatorPosition]="'bottom'" [sortMode]="'multiple'" scrollable="false"
-      [style]="{ width: '100%', height: 'auto', tableLayout: 'fixed' }" [tableStyleClass]="
-        isEdit
-          ? 'custom-goal-table fixed-table edit'
-          : 'custom-goal-table fixed-table'
-      ">
+      [style]="{ width: '100%', height: 'auto', tableLayout: 'fixed' }" [ngClass]="{
+        'custom-goal-table fixed-table': true,
+        'edit': isAnyRowEditable()
+      }">
       <ng-template pTemplate="header">
         <tr>
           <th *ngFor="let col of columns" [hidden]="
@@ -228,7 +227,7 @@
             <div #whoSelectWrapper [pTooltip]="getLabelForValue(row.who)" tooltipPosition="bottom">
               <p-select #whoSelect [options]="whoOptions" [(ngModel)]="row.who" [disabled]="!row.isEditable"
                 optionLabel="label" optionValue="value" filter [ngClass]="{ saved: !row.isEditable }"
-                [tabindex]="rowIndex * 100 + 1"   (keydown)="onKeydownGeneric($event, whoOptions, 'who', whoSelect, row)">
+                [tabindex]="rowIndex * 100 + 1" (keydown)="onKeydownGeneric($event, whoOptions, 'who', whoSelect, row)">
                 <ng-template let-option pTemplate="item">
                   {{ option.label }}
                 </ng-template>

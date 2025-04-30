@@ -1359,13 +1359,18 @@ export class GoalsComponent implements AfterViewInit {
   }
 
   onFilterChange(field: string): void {
+    Object.keys(this.selectedFilters).forEach((key) => {
+      if (key !== field) {
+        this.selectedFilters[key] = [];
+        this.activeFilters[key] = false;
+      }
+    });
     this.applyFilters();
-
-    this.activeFilters = this.activeFilters || {};
     this.activeFilters[field] =
       Array.isArray(this.selectedFilters[field]) &&
       this.selectedFilters[field].length > 0;
   }
+
   onGdbFilterChange(): void {
     this.applyFilters();
     this.activeFilters = this.activeFilters || {};
@@ -1983,5 +1988,4 @@ export class GoalsComponent implements AfterViewInit {
 
     return resultChunks;
   }
-  // no changes
 }
