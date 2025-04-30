@@ -55,18 +55,31 @@ export class GoalsMetricsComponent implements OnInit {
   };
 
   yearChartOptions: BarChartOptions = {
-    series: [],
-    chart: { type: 'bar', height: 3000, stacked: false, toolbar: { show: false } },
-    xaxis: { categories: [] },
-    title: { text: '' },
+    series: [
+      { name: 'Assigned', data: [] }, // Empty data initially
+      { name: 'Completed', data: [] }, // Empty data initially
+      { name: 'Delinquent', data: [] } // Empty data initially
+    ],
+    chart: { 
+      type: 'bar', 
+      height: 350, 
+      stacked: false, 
+      toolbar: { show: false } 
+    },
+    xaxis: { 
+      categories: [] // Categories will be set dynamically
+    },
+    title: { 
+      text: 'Goals by Project',
+      align: 'center',
+      style: { fontFamily: 'Arial' }
+    },
     plotOptions: {
       bar: {
         horizontal: true,
         barHeight: '80%',
         columnWidth: '60%',
-        dataLabels: {
-          position: 'right'
-        }
+        dataLabels: { position: 'right' }
       }
     },
     dataLabels: {
@@ -80,9 +93,16 @@ export class GoalsMetricsComponent implements OnInit {
       },
       offsetX: 25
     },
-    legend: { show: true, position: 'bottom' },
-    colors: ['#82a3a1', '#607744', '#768948', '#76c893', '#52b69a', '#34a0a4', '#9cc5a1', '#77bfa3'],
+    legend: {
+      show: true,
+      position: 'bottom',
+      labels: {
+        colors: ['#007bff', '#28a745', '#dc3545'] // Custom legend colors
+      }
+    },
+    colors: ['#007bff', '#28a745', '#dc3545'], // Blue for Assigned, Green for Completed, Red for Delinquent
   };
+  
 
   statusPieOptions: PieChartOptions = {
     series: [],
@@ -182,7 +202,7 @@ export class GoalsMetricsComponent implements OnInit {
 
   onFilterChange(): void {
     const formattedFilters: any = {};
-
+  
     if (this.filters.vp) formattedFilters.vp = this.filters.vp;
     if (this.filters.proj) formattedFilters.proj = this.filters.proj;
     if (this.filters.priority !== null && this.filters.priority !== undefined) {
@@ -194,10 +214,10 @@ export class GoalsMetricsComponent implements OnInit {
     if (this.filters.created_to) {
       formattedFilters.created_to = this.formatDate(this.filters.created_to);
     }
-
+  
     this.goalsService.getGoalsMetrics(formattedFilters).subscribe((res) => {
       const cd = res.completedAndDelinquent;
-
+  
       this.statusPieOptions = {
         series: [cd.Completed, cd.Delinquent],
         labels: ['Completed', 'Delinquent'],
@@ -206,21 +226,11 @@ export class GoalsMetricsComponent implements OnInit {
         align: 'center',
         style: {
           fontFamily: 'Arial'
-        }
-      },
+        }},
         fill: { type: 'none' },
         colors: ['#66a182', '#b5e48c', '#99d98c', '#76c893', '#52b69a', '#34a0a4', '#9cc5a1', '#77bfa3'],
-        theme: {
-          mode: undefined,
-          palette: undefined,
-          monochrome: undefined
-        },
-        dataLabels: {
-          enabled: true,
-          style: {
-            fontSize: '12px'
-          }
-        },
+        theme: { mode: undefined, palette: undefined, monochrome: undefined },
+        dataLabels: { enabled: true, style: { fontSize: '12px' }},
         legend: {
           show: true,
           position: 'right',
@@ -229,13 +239,12 @@ export class GoalsMetricsComponent implements OnInit {
             return `${seriesName}: ${value}`;
           }
         },
-        plotOptions: {
-          pie: { expandOnClick: false, dataLabels: { offset: 30 } }
-        }
+        plotOptions: { pie: { expandOnClick: false, dataLabels: { offset: 30 } } }
       };
-
+  
+      // Sort the projects data by total
       const sortedProjects = res.projectWise.slice().sort((a: any, b: any) => b.total - a.total);
-
+  
       this.yearChartOptions = {
         series: [
           { name: 'Total', data: sortedProjects.map((p: any) => p.total) },
@@ -254,38 +263,29 @@ export class GoalsMetricsComponent implements OnInit {
         title: {
           text: `Goals by Project: Total, Completed, Delinquent (Total: ${sortedProjects.reduce((sum: number, p: any) => sum + p.total, 0)})`,
           align: 'center',
-          style: {
-            fontFamily: 'Arial'
-          }
+          style: { fontFamily: 'Arial' }
         },
         plotOptions: {
           bar: {
             horizontal: true,
             barHeight: '80%',
             columnWidth: '60%',
-            dataLabels: {
-              position: 'right'
-            }
+            dataLabels: { position: 'right' }
           }
         },
-        colors: ['#99d19c', '#596f62', '#bec5ad', '#76c893', '#52b69a', '#34a0a4', '#9cc5a1', '#77bfa3'],
+        colors: ['#007bff', '#28a745', '#dc3545'], // Assign colors for Total, Completed, and Delinquent
         dataLabels: {
           enabled: true,
           formatter: function (val: number) {
             return val === 0 ? '' : val.toString();
           },
-          style: {
-            fontSize: '12px',
-            colors: ['#000']
-          },
+          style: { fontSize: '12px', colors: ['#000'] },
           offsetX: 25
         },
-        legend: {
-          show: true,
-          position: 'bottom'
-        }
+        legend: { show: true, position: 'top' }
       };
-
+      
+  
       this.yearWiseChartOptions = {
         ...this.yearWiseChartOptions,
         series: [{
@@ -296,7 +296,7 @@ export class GoalsMetricsComponent implements OnInit {
           categories: res.yearWise.map((y: any) => y.year.toString())
         }
       };
-
+  
       this.statusWiseChartOptions = {
         ...this.statusWiseChartOptions,
         series: res.statusWise.map((s: any) => s.count),
@@ -304,4 +304,5 @@ export class GoalsMetricsComponent implements OnInit {
       };
     });
   }
+  
 }
