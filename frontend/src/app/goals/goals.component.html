@@ -155,10 +155,11 @@
     <p-table #dataTable [value]="goal" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
       [rowsPerPageOptions]="[10, 20, 50]" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} goals"
       [paginatorPosition]="'bottom'" [sortMode]="'multiple'" scrollable="false"
-      [style]="{ width: '100%', height: 'auto', tableLayout: 'fixed' }" [ngClass]="{
-        'custom-goal-table fixed-table': true,
-        'edit': isAnyRowEditable()
-      }">
+      [style]="{ width: '100%', height: 'auto', tableLayout: 'fixed' }" [tableStyleClass]="
+         isEdit
+           ? 'custom-goal-table fixed-table edit'
+           : 'custom-goal-table fixed-table'
+       ">
       <ng-template pTemplate="header">
         <tr>
           <th *ngFor="let col of columns" [hidden]="
@@ -321,10 +322,10 @@
                 optionValue="value" [tabindex]="rowIndex * 100 + 9" id="action-select">
               </p-select>
               <input pInputText [(ngModel)]="row.description" [disabled]="!row.isEditable" [pTooltip]="row.description"
-                tooltipPosition="bottom" placeholder="Goal Description" [tabindex]="rowIndex * 100 + 10"
+                tooltipPosition="bottom" placeholder="Goal Description" [tabindex]="rowIndex * 100 + 10" maxlength="70"
                 id="goal-select" />
               <input pInputText [(ngModel)]="row.memo" [disabled]="!row.isEditable" [pTooltip]="row.memo"
-                tooltipPosition="bottom" placeholder="SPEC/MEMO" [tabindex]="rowIndex * 100 + 11" id="spec-select" />
+                tooltipPosition="bottom" placeholder="SPEC/MEMO" [tabindex]="rowIndex * 100 + 11" maxlength="17" id="spec-select" />
             </div>
             <ng-template #viewMode>
               <div class="saved">
