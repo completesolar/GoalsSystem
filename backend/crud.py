@@ -99,16 +99,14 @@ def get_action(db: Session):
 
 def get_mst_now():
     # Get current UTC time
-    utc_now = datetime.utcnow().replace(tzinfo=pytz.utc)
+    utc_now = datetime.utcnow().replace(tzinfo=ZoneInfo("UTC"))
+    print(f"UTC Time: {utc_now}")  # Debugging: Check UTC time
 
-    # Convert UTC to PST (America/Los_Angeles)
-    pst = pytz.timezone('US/Pacific')  # PST timezone
-    pst_time = utc_now.astimezone(pst)
+    # Convert UTC to MST (America/Denver)
+    mst = ZoneInfo("America/Denver")  
+    mst_time = utc_now.astimezone(mst)
 
-    # Convert PST to MST (America/Denver)
-    mst = pytz.timezone('US/Mountain')  # MST timezone
-    mst_time = pst_time.astimezone(mst)
-
+    print(f"MST Time: {mst_time}")  
     return mst_time
 
 def create_goal(db: Session, goal: Goals):
