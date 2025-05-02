@@ -98,9 +98,18 @@ def get_action(db: Session):
     return jsonable_encoder(db_action)
 
 def get_mst_now():
-    utc_now = datetime.utcnow().replace(tzinfo=tz.tzutc())
-    mst = tz.gettz("America/Denver")
-    return utc_now.astimezone(mst)
+    # Get current UTC time
+    utc_now = datetime.utcnow().replace(tzinfo=pytz.utc)
+
+    # Convert UTC to PST (America/Los_Angeles)
+    pst = pytz.timezone('US/Pacific')  # PST timezone
+    pst_time = utc_now.astimezone(pst)
+
+    # Convert PST to MST (America/Denver)
+    mst = pytz.timezone('US/Mountain')  # MST timezone
+    mst_time = pst_time.astimezone(mst)
+
+    return mst_time
 
 def create_goal(db: Session, goal: Goals):
     from sqlalchemy import text
