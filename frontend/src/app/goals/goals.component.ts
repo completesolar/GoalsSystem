@@ -26,7 +26,7 @@ import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { Subject } from 'rxjs';
 import { TooltipModule } from 'primeng/tooltip';
-import { MultiSelectModule } from 'primeng/multiselect';
+import { MultiSelect, MultiSelectModule } from 'primeng/multiselect';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -78,6 +78,8 @@ interface Year {
 export class GoalsComponent implements AfterViewInit {
   @ViewChild('dataTable') dataTable: Table | undefined;
   @ViewChildren('whoSelectWrapper') whoSelectWrappers!: QueryList<ElementRef>;
+  @ViewChild('multiSelect') multiSelect: MultiSelect | any;
+
   goal: any = [];
   goalHistory: any = [];
   today: Date = new Date();
@@ -185,6 +187,7 @@ export class GoalsComponent implements AfterViewInit {
   displayModal: boolean = false;
   selectedRow: any = null;
   previousRow: any = [];
+  showAddGoalDialog: boolean = false;
   colorPalette = [
     '#000000',
     'rgb(002, 081, 150)',
@@ -377,8 +380,7 @@ export class GoalsComponent implements AfterViewInit {
       this.originalGoal = [...this.goal];
       // console.log("this.goal", this.goal);
     });
-  }
-
+  } 
   onWhoSelected() {
     const currentWeek = this.getCurrentWeekNumber();
     this.newRow.p = 99;
@@ -485,6 +487,7 @@ export class GoalsComponent implements AfterViewInit {
       }
     );
   }
+ 
 
   onYearChange() {
     this.loadGoals();
@@ -528,6 +531,7 @@ export class GoalsComponent implements AfterViewInit {
   }
 
   addGoal() {
+    this.showAddGoalDialog = false;
     const missingFields = this.isValidGoalData(this.newRow);
     if (missingFields.length > 0) {
       this.messageService.add({
@@ -920,34 +924,6 @@ export class GoalsComponent implements AfterViewInit {
     doc.save(fileName);
   };
 }
-
-  // enableEdit(row: any): void {
-  //   row.isEditable = true;
-  //   this.previousRow = JSON.parse(JSON.stringify(row));
-  //   this.cdr.detectChanges();
-
-  //   setTimeout(() => {
-  //     const index = this.goal.findIndex((g: any) => g === row);
-  //     const wrapperRef = this.whoSelectWrappers.get(index);
-
-  //     if (wrapperRef?.nativeElement) {
-  //       const wrapperEl = wrapperRef.nativeElement;
-
-  //       const triggerEl: HTMLElement = wrapperEl.querySelector('.p-select-label');
-
-  //       if (triggerEl) {
-  //         triggerEl.focus();
-  //         triggerEl.click();
-
-  //       } else {
-  //         console.warn('Could not find .p-select-label inside WHO');
-  //         console.log('Wrapper content:', wrapperEl.innerHTML);
-  //       }
-  //     } else {
-  //       console.warn('No wrapper found for WHO at index', index);
-  //     }
-  //   }, 100);
-  // }
   enableEdit(row: any): void {
     this.isEdit = true;
     row.isEditable = true;
@@ -961,15 +937,12 @@ export class GoalsComponent implements AfterViewInit {
       if (wrapperRef?.nativeElement) {
         const wrapperEl = wrapperRef.nativeElement;
 
-        // Focus the dropdown input or label
         const triggerEl: HTMLElement =
           wrapperEl.querySelector('.p-select-label');
 
         if (triggerEl) {
           triggerEl.focus();
           triggerEl.click();
-
-          // Now add keyboard event listener
           const inputEl: HTMLInputElement = wrapperEl.querySelector('input');
 
           if (inputEl) {
@@ -980,13 +953,12 @@ export class GoalsComponent implements AfterViewInit {
                   console.log('Tab pressed - move to next field');
                   triggerEl.click();
 
-                  // Optional: blur and let natural tab order continue
                 } else {
                   console.log('Key pressed:', event.key);
                 }
               },
               { once: true }
-            ); // add { once: true } to avoid duplicate handlers
+            );
           } else {
             console.warn('No input element found for WHO');
           }
@@ -1000,7 +972,6 @@ export class GoalsComponent implements AfterViewInit {
     }, 100);
   }
 
-  // Function to get element by tabindex
   getElementByTabIndex(tabIndex: number): HTMLElement | null {
     return document.querySelector(`[tabindex="${tabIndex}"]`);
   }
@@ -2004,4 +1975,33 @@ export class GoalsComponent implements AfterViewInit {
 
     return resultChunks;
   }
+
+  onFilterEvent(event: any) {
+    console.log('Filter event:', event);
+}
+
+
+ 
+onKeydownGenericFilter(event: KeyboardEvent, options: any[], selectRef: MultiSelect) {
+ console.log("onKeydownGenericFilter",event.key)
+  if (event.key === 'Enter') {
+ const filterValue = (selectRef?.filterValue || '').toString().toUpperCase();
+
+ const filteredOptions = options.filter(
+ (option) =>
+ option.label != null &&
+ option.label.toString().toUpperCase().includes(filterValue)
+ );
+
+ if (filteredOptions.length > 0) {
+ selectRef.value = [...(selectRef.value || []), filteredOptions[0].value];
+ } else {
+ selectRef.value = [...(selectRef.value || []), filterValue];
+ }
+
+ selectRef.hide();
+ }
+ }
+ 
+
 }
