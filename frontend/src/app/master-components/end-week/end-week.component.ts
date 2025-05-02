@@ -98,9 +98,6 @@ export class EndWeekComponent {
     this.goalsService.updateE(this.editingItem).subscribe({
       next: (response: any) => {
         if (response && response.id) {
-          this.EList = this.EList.map((p: any) =>
-            p.id === response.id ? { ...response } : p
-          );
           this.getE();
           this.messageService.add({
             severity: 'success',
@@ -112,6 +109,11 @@ export class EndWeekComponent {
       },
       error: (err) => {
         console.error('Update failed:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'E',
+          detail: `${this.editingItem.e} already exist.`,
+        });
       },
     });
   }

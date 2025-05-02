@@ -1,5 +1,3 @@
-
-
 .fixed-table {
   table-layout: fixed;
   width: 100%;
@@ -8,7 +6,8 @@
 .fixed-table th,
 .fixed-table td {
   width: 70px;
-  word-wrap: break-word; /* optional: helps break long text */
+  word-wrap: break-word;
+  /* optional: helps break long text */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -22,15 +21,19 @@
   width: 99%;
   font-size: 12px;
 }
-.export-text{
+
+.export-text {
   font-size: 12px;
 }
+
 ::ng-deep .custom-goal-table th:nth-child(10),
 ::ng-deep .custom-goal-table td:nth-child(10) {
   width: 400px;
 }
-.goals-text{
-font-size: 12px;}
+
+.goals-text {
+  font-size: 12px;
+}
 
 
 ::ng-deep button.p-ripple.p-button.p-component.p-button-icon-only.p-button-secondary.p-button-rounded.p-button-text.p-datatable-column-filter-button {
@@ -55,18 +58,19 @@ font-size: 12px;}
 
 ::ng-deep .custom-goal-table th {
   background-color: rgb(226, 239, 218) !important;
-  color: white; /* Optionally set text color */
+  color: white;
+  /* Optionally set text color */
   height: 40px;
 }
 
 /* Optionally, you can style the header row further */
 ::ng-deep .custom-goal-table .p-d-flex.p-ai-center {
-  background-color: rgb(
-    226,
-    239,
-    218
-  ) !important; /* Set your desired color here */
-  color: white; /* White text for contrast */
+  background-color: rgb(226,
+      239,
+      218) !important;
+  /* Set your desired color here */
+  color: white;
+  /* White text for contrast */
 }
 
 ::ng-deep .p-inputtext {
@@ -80,12 +84,15 @@ font-size: 12px;}
 
 /* Set a fixed width for the dropdowns */
 ::ng-deep .p-dropdown {
-  width: 100% !important; /* Make sure the dropdowns take up the full column width */ /* Set a minimum width to prevent shrinking */
+  width: 100% !important;
+  /* Make sure the dropdowns take up the full column width */
+  /* Set a minimum width to prevent shrinking */
 }
 
 /* Adjust other table elements to ensure consistency */
 ::ng-deep .p-dropdown .p-dropdown-label {
-  width: 100% !important; /* Ensure the label area fills the dropdown container */
+  width: 100% !important;
+  /* Ensure the label area fills the dropdown container */
 }
 
 
@@ -102,8 +109,10 @@ font-size: 12px;}
   top: 22px;
   z-index: 2;
 }
+
 ::ng-deep .p-sortable-column-icon {
-  height: 10px; /* Adjust as needed */
+  height: 10px;
+  /* Adjust as needed */
   vertical-align: middle;
 }
 
@@ -122,13 +131,15 @@ font-size: 12px;}
   cursor: pointer;
 }
 
-::ng-deep .custom-goal-table .p-datatable-tbody > tr > td,
-::ng-deep .custom-goal-table .p-datatable-thead > tr > th {
+::ng-deep .custom-goal-table .p-datatable-tbody>tr>td,
+::ng-deep .custom-goal-table .p-datatable-thead>tr>th {
   padding: 2px 8px !important;
-  font-size: 12px !important; /* reduce font size */
+  font-size: 12px !important;
+  /* reduce font size */
   line-height: 1 !important;
-  height: 28px !important; /* tighter row spacing */
- 
+  height: 28px !important;
+  /* tighter row spacing */
+
 }
 
 
@@ -154,15 +165,18 @@ font-size: 12px;}
   margin: 0 auto;
   border-radius: 10px;
 }
+
 .legend-sec {
   max-width: 95%;
   margin: 0 auto;
 }
+
 .body {
   background-color: whitesmoke;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 11px;
 }
+
 .logo-section {
   background-color: #fff;
   padding: 6px;
@@ -174,6 +188,7 @@ font-size: 12px;}
   max-width: 96%;
   // margin: 0 auto 20px auto;
 }
+
 .titles {
   text-align: right;
 }
@@ -249,6 +264,7 @@ font-size: 12px;}
   width: 75px;
   padding: 0 0 0 6px;
 }
+
 ::ng-deep .custom-goal-table tbody tr:nth-child(even) {
   background-color: rgb(226, 239, 218) !important;
 }
@@ -271,14 +287,17 @@ font-size: 12px;}
 ::ng-deep .custom-goal-table tbody tr:nth-child(odd) .p-select {
   background-color: rgb(255, 255, 255) !important;
 }
+
 ::ng-deep .goal-history-table tbody tr:nth-child(even) {
   background-color: rgb(226, 239, 218) !important;
 }
+
 ::ng-deep .goal-history-table th {
   background-color: rgb(226, 239, 218) !important;
   color: white;
   height: 40px;
 }
+
 ::ng-deep .goal-history-table tbody tr:nth-child(odd) {
   background-color: rgb(255, 255, 255) !important;
 }
@@ -286,8 +305,9 @@ font-size: 12px;}
 :host ::ng-deep .custom-select-width {
   width: 8rem !important;
 }
+
 ::ng-deep .p-paginator-rpp-dropdown,
-::ng-deep .p-paginator-rpp-dropdown > ::ng-deep .p-select-label {
+::ng-deep .p-paginator-rpp-dropdown> ::ng-deep .p-select-label {
   width: 5rem !important;
   align-items: center;
   display: flex;
@@ -296,7 +316,8 @@ font-size: 12px;}
 
 /* Add space between the calendar icon and the date */
 .calendar-icon {
-  margin-right: 5px; /* Adds 10px space to the right of the icon */
+  margin-right: 5px;
+  /* Adds 10px space to the right of the icon */
 }
 
 
@@ -304,7 +325,8 @@ font-size: 12px;}
 .legend-toggle {
   background-color: transparent;
   color: #4caf50;
-  border: none; /* Removes the border */
+  border: none;
+  /* Removes the border */
   font-size: 13px;
   cursor: pointer;
   display: flex;
@@ -312,19 +334,18 @@ font-size: 12px;}
 }
 
 .legend-toggle i {
-  margin-right: 5px; /* Space between the arrow and the label */
+  margin-right: 5px;
+  /* Space between the arrow and the label */
 }
 
 .legend-toggle:hover {
   color: #45a049;
-  background-color: transparent; /* Ensures no background color when hovered */
+  background-color: transparent;
+  /* Ensures no background color when hovered */
 }
 
 
-::ng-deep
-  .custom-goal-table
-  .p-datatable-tbody
-  > tr.add-row.head.first-data-row {
+::ng-deep .custom-goal-table .p-datatable-tbody>tr.add-row.head.first-data-row {
   background-color: rgb(139, 139, 212) !important;
 }
 
@@ -335,8 +356,10 @@ font-size: 12px;}
 
 .calendar-icon {
   vertical-align: middle;
-  margin-bottom: 1px; /* optional fine-tuning */
+  margin-bottom: 1px;
+  /* optional fine-tuning */
 }
+
 .settingSelect .p-dropdown-label {
   vertical-align: middle;
 }
@@ -348,17 +371,20 @@ font-size: 12px;}
 ::ng-deep .p-multiselect-label-container {
   max-height: 30px;
 }
+
 .icon-actions-column {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px; /* Adjust spacing between icons as needed */
+  gap: 10px;
+  /* Adjust spacing between icons as needed */
 }
 
 .actions {
   font-size: 1.2rem;
   cursor: pointer;
 }
+
 .highlight-change {
   background-color: yellow;
   color: black;
@@ -369,10 +395,11 @@ font-size: 12px;}
   color: black !important;
 }
 
-::ng-deep .filter-active .pi-filter {
-  color: #007ad9; 
-  font-size: 12px;
+::ng-deep .filter-active .pi-filter-fill {
+  color: #22c55e;
+  font-size: 12px !important;
 }
+
 .filter-icon-button {
   position: absolute;
   right: 8px;
@@ -382,16 +409,18 @@ font-size: 12px;}
   border: none;
   cursor: pointer;
 }
+
 .filter-dropdown {
   min-width: 200px;
 }
 
 
-.custom-close-button{
+.custom-close-button {
   background: #ffbbbb;
   color: #942020;
 }
-.custom-close-button:hover{
+
+.custom-close-button:hover {
   background: #ffbbbb;
   color: #942020;
 }

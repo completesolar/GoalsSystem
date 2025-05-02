@@ -108,9 +108,7 @@ export class BeginningWeekComponent {
     this.goalsService.updateB(this.editingItem).subscribe({
       next: (response: any) => {
         if (response && response.id) {
-          this.bList = this.bList.map((p: any) =>
-            p.id === response.id ? { ...response } : p
-          );
+          this.getb();
           this.editingItem = null;
           this.messageService.add({
             severity: 'success',
@@ -121,6 +119,11 @@ export class BeginningWeekComponent {
       },
       error: (err) => {
         console.error('Update failed:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'B',
+          detail: `${this.editingItem.b} already exist.`,
+        });
       },
     });
   }

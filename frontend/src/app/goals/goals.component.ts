@@ -26,7 +26,7 @@ import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { Subject } from 'rxjs';
 import { TooltipModule } from 'primeng/tooltip';
-import { MultiSelectModule } from 'primeng/multiselect';
+import { MultiSelect, MultiSelectModule } from 'primeng/multiselect';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -78,6 +78,8 @@ interface Year {
 export class GoalsComponent implements AfterViewInit {
   @ViewChild('dataTable') dataTable: Table | undefined;
   @ViewChildren('whoSelectWrapper') whoSelectWrappers!: QueryList<ElementRef>;
+
+  // @ViewChild('multiSelect') multiSelect: MultiSelect | undefined;
   goal: any = [];
   goalHistory: any = [];
   today: Date = new Date();
@@ -533,7 +535,9 @@ export class GoalsComponent implements AfterViewInit {
       this.messageService.add({
         severity: 'warn',
         summary: 'Please Add the below fields for the new goal',
-        detail: `${missingFields.join(', ')}: Please fill in the following required field(s).`,
+        detail: `${missingFields.join(
+          ', '
+        )}: Please fill in the following required field(s).`,
       });
       return;
     }
@@ -559,12 +563,12 @@ export class GoalsComponent implements AfterViewInit {
         this.allGoals = [newGoal, ...this.allGoals];
         // Clear the selected filters before adding the new goal to the table
         Object.keys(this.selectedFilters).forEach((field) => {
-          this.clearFilter(field); 
+          this.clearFilter(field);
         });
-  
+
         // Clear the goal description search text
         this.gdbSearchText = '';
-  
+
         // Reapply the filters (now with the cleared goal description filter)
         this.applyFilters();
         if (this.dataTable) {
@@ -834,92 +838,94 @@ export class GoalsComponent implements AfterViewInit {
 
       const tableStartY = keyStartY + 4;
 
-    const columns = [
-      'Goal ID',
-      'Who',
-      'P',
-      'Proj',
-      'VP',
-      'B',
-      'E',
-      'D',
-      'S',
-      'Year',
-      'Goal Deliverable',
-    ];
+      const columns = [
+        'Goal ID',
+        'Who',
+        'P',
+        'Proj',
+        'VP',
+        'B',
+        'E',
+        'D',
+        'S',
+        'Year',
+        'Goal Deliverable',
+      ];
 
-    const rows = this.goal.map((goal: any) => [
-      goal.goalid,
-      goal.who,
-      goal.p,
-      goal.proj,
-      goal.vp,
-      goal.b,
-      goal.e,
-      goal.d ?? '',
-      goal.s,
-      goal.fiscalyear,
-      `${goal.action ?? ''} ${goal.description ?? ''} ${goal.memo ?? ''}`.trim(),
-    ]);
+      const rows = this.goal.map((goal: any) => [
+        goal.goalid,
+        goal.who,
+        goal.p,
+        goal.proj,
+        goal.vp,
+        goal.b,
+        goal.e,
+        goal.d ?? '',
+        goal.s,
+        goal.fiscalyear,
+        `${goal.action ?? ''} ${goal.description ?? ''} ${
+          goal.memo ?? ''
+        }`.trim(),
+      ]);
 
-    const totalPagesExp = '{total_pages_count_string}';
+      const totalPagesExp = '{total_pages_count_string}';
 
-    autoTable(doc, {
-      startY: tableStartY,
-      head: [columns],
-      body: rows,
-      theme: 'striped',
-      headStyles: {
-        fillColor: [226, 239, 218],
-        textColor: [0, 0, 0],
-        halign: 'center',
-        valign: 'middle',
-        fontSize: 10
-      },
-      bodyStyles: {
-        textColor: [0, 0, 0],
-        fontSize: 10,
-        valign: 'middle',
-      },
-      columnStyles: {
-        0: { cellWidth: 25, halign: 'center' }, 
-        1: { cellWidth: 25, halign: 'center' },
-        2: { cellWidth: 15, halign: 'center' },
-        3: { cellWidth: 25, halign: 'center' },
-        4: { cellWidth: 25, halign: 'center' },
-        5: { cellWidth: 15, halign: 'center' },
-        6: { cellWidth: 15, halign: 'center' },
-        7: { cellWidth: 15, halign: 'center' },
-        8: { cellWidth: 15, halign: 'center' },
-        9: { cellWidth: 20, halign: 'center' },
-        10: { cellWidth: 80, halign: 'left' },
-      },
-      margin: { top: 10 },
-      didDrawPage: (data) => {
-        const pageNumber = doc.getCurrentPageInfo().pageNumber;
-        doc.setFontSize(9);
-        doc.text(`Reported: ${displayTime}`, 14, pageHeight - 10, {
-          align: 'left',
-        });
-        doc.text('Company Confidential', pageWidth / 2, pageHeight - 10, {
-          align: 'center',
-        });
+      autoTable(doc, {
+        startY: tableStartY,
+        head: [columns],
+        body: rows,
+        theme: 'striped',
+        headStyles: {
+          fillColor: [226, 239, 218],
+          textColor: [0, 0, 0],
+          halign: 'center',
+          valign: 'middle',
+          fontSize: 10,
+        },
+        bodyStyles: {
+          textColor: [0, 0, 0],
+          fontSize: 10,
+          valign: 'middle',
+        },
+        columnStyles: {
+          0: { cellWidth: 25, halign: 'center' },
+          1: { cellWidth: 25, halign: 'center' },
+          2: { cellWidth: 15, halign: 'center' },
+          3: { cellWidth: 25, halign: 'center' },
+          4: { cellWidth: 25, halign: 'center' },
+          5: { cellWidth: 15, halign: 'center' },
+          6: { cellWidth: 15, halign: 'center' },
+          7: { cellWidth: 15, halign: 'center' },
+          8: { cellWidth: 15, halign: 'center' },
+          9: { cellWidth: 20, halign: 'center' },
+          10: { cellWidth: 80, halign: 'left' },
+        },
+        margin: { top: 10 },
+        didDrawPage: (data) => {
+          const pageNumber = doc.getCurrentPageInfo().pageNumber;
+          doc.setFontSize(9);
+          doc.text(`Reported: ${displayTime}`, 14, pageHeight - 10, {
+            align: 'left',
+          });
+          doc.text('Company Confidential', pageWidth / 2, pageHeight - 10, {
+            align: 'center',
+          });
 
-        const footerText = `Page ${pageNumber} of ${totalPagesExp}`;
-        doc.text(footerText, pageWidth - 1, pageHeight - 10, {
-          align: 'right',
-        });
-      },
-    });
+          const footerText = `Page ${pageNumber} of ${totalPagesExp}`;
+          doc.text(footerText, pageWidth - 1, pageHeight - 10, {
+            align: 'right',
+          });
+        },
+      });
 
-    if (typeof doc.putTotalPages === 'function') {
-      doc.putTotalPages(totalPagesExp);
-    }
+      if (typeof doc.putTotalPages === 'function') {
+        doc.putTotalPages(totalPagesExp);
+      }
 
-    const fileName = `Goals_${fileNameDate}_${formattedTime}.pdf`;
-    doc.save(fileName);
-  };
-}
+      const fileName = `Goals_${fileNameDate}_${formattedTime}.pdf`;
+      doc.save(fileName);
+    };
+  }
 
   // enableEdit(row: any): void {
   //   row.isEditable = true;
@@ -1403,18 +1409,23 @@ export class GoalsComponent implements AfterViewInit {
       const matchMultiSelect = Object.entries(this.selectedFilters).every(
         ([filterField, selectedValues]: any) => {
           if (!selectedValues || selectedValues.length === 0) return true;
-          const includedValues = selectedValues.map((option: any) => option.value);
+          const includedValues = selectedValues.map(
+            (option: any) => option.value
+          );
           return includedValues.includes(row[filterField]);
         }
       );
-  
-      const gdbText = `${row.action ?? ''} ${row.description ?? ''} ${row.memo ?? ''}`.toLowerCase();
-      const matchGdb = !this.gdbSearchText || gdbText.includes(this.gdbSearchText.toLowerCase());
-  
+
+      const gdbText = `${row.action ?? ''} ${row.description ?? ''} ${
+        row.memo ?? ''
+      }`.toLowerCase();
+      const matchGdb =
+        !this.gdbSearchText ||
+        gdbText.includes(this.gdbSearchText.toLowerCase());
+
       return matchMultiSelect && matchGdb;
     });
   }
-  
 
   clearFilter(field: string): void {
     if (field === 'gdb') {
