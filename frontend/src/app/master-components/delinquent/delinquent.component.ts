@@ -107,9 +107,6 @@ export class DelinquentComponent {
     this.goalsService.updateD(this.editingItem).subscribe({
       next: (response: any) => {
         if (response && response.id) {
-          this.DList = this.DList.map((p: any) =>
-            p.id === response.id ? { ...response } : p
-          );
           this.getD();
           this.messageService.add({
             severity: 'success',
@@ -121,6 +118,11 @@ export class DelinquentComponent {
       },
       error: (err) => {
         console.error('Update failed:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'D',
+          detail: `${this.editingItem.d} already exist.`,
+        });
       },
     });
   }
@@ -203,14 +205,13 @@ export class DelinquentComponent {
       );
     });
   }
-  onFilterChange(field:string): void {
-
-     Object.keys(this.selectedFilters).forEach((key) => {
-       if (key !== field) {
-         this.selectedFilters[key] = [];
-         this.activeFilters[key] = false;
-       }
-     });
+  onFilterChange(field: string): void {
+    Object.keys(this.selectedFilters).forEach((key) => {
+      if (key !== field) {
+        this.selectedFilters[key] = [];
+        this.activeFilters[key] = false;
+      }
+    });
 
     this.applyFilters();
     Object.keys(this.selectedFilters).forEach((field) => {

@@ -52,16 +52,18 @@
                 <b>{{ col.header }}</b>
               </ng-template>
               <div class="flex justify-center" *ngIf="col.field !== 'action' && col.field !== 'sno'">
-                <p-multiSelect [options]="getFilterOptions(col.field)" [(ngModel)]="selectedFilters[col.field]"
-                  (onChange)="onFilterChange()" optionLabel="label" display="chip" [style]="{
+                <p-multiSelect [options]="getFilterOptions(col.field)" [autoOptionFocus]="true" [autofocusFilter]="true"
+                  [(ngModel)]="selectedFilters[col.field]" (onChange)="onFilterChange()" optionLabel="label"
+                  display="chip" [style]="{
                                                               width: '1.5rem',
                                                               height: '1.5rem',
                                                               padding: 0,
                                                               border: 'none',
                                                               background: 'transparent'
                                                             }" panelStyleClass="filter-dropdown-left"
-                  [showToggleAll]="true" [maxSelectedLabels]="0" [dropdownIcon]="'pi pi-filter'" appendTo="body"
-                  [ngClass]="{ 'filter-active': activeFilters[col.field] }">
+                  [showToggleAll]="true" [maxSelectedLabels]="0"
+                  [dropdownIcon]="activeFilters[col.field] ? 'pi pi-filter-fill' : 'pi pi-filter'"
+                  [resetFilterOnHide]="true" appendTo="body" [ngClass]="{ 'filter-active': activeFilters[col.field] }">
                   <ng-template let-value pTemplate="selectedItems">
                     <span class="sr-only">Filter</span>
                   </ng-template>

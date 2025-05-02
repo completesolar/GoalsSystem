@@ -98,9 +98,6 @@ export class ProjectsComponent {
     this.goalsService.updateProj(this.editingItem).subscribe({
       next: (response: any) => {
         if (response && response.id) {
-          this.projList = this.projList.map((p: any) =>
-            p.id === response.id ? { ...response } : p
-          );
           this.getProj();
           this.messageService.add({
             severity: 'success',
@@ -112,6 +109,11 @@ export class ProjectsComponent {
       },
       error: (err) => {
         console.error('Update failed:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Project',
+          detail: `${this.editingItem.project} already exist.`,
+        });
       },
     });
   }

@@ -102,9 +102,6 @@ export class StatusComponent {
     this.goalsService.updateStatus(this.editingItem).subscribe({
       next: (response: any) => {
         if (response && response.id) {
-          this.statusList = this.statusList.map((p: any) =>
-            p.id === response.id ? { ...response } : p
-          );
           this.getStatus();
           this.messageService.add({
             severity: 'success',
@@ -116,6 +113,11 @@ export class StatusComponent {
       },
       error: (err) => {
         console.error('Update failed:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Status',
+          detail: `${this.editingItem.status} already exist.`,
+        });
       },
     });
   }
@@ -210,7 +212,7 @@ export class StatusComponent {
   getFilterOptions(field: string): any[] {
     let options: any[];
 
-    if (field === 'status') {
+    if (field === 'active_status') {
       options = [
         { label: 'Active', value: 1 },
         { label: 'Inactive', value: 0 },

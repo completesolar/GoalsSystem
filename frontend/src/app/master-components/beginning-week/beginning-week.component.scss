@@ -137,9 +137,9 @@
   color: black !important;
 }
 
-::ng-deep .filter-active .pi-filter {
-  color: #007ad9;
-  font-size: 12px;
+::ng-deep .filter-active .pi-filter-fill {
+  color: #22c55e;
+  font-size: 12px !important;
 }
 
 .filter-icon-button {
@@ -154,28 +154,4 @@
 
 .filter-dropdown {
   min-width: 200px;
-}
-
-.p-inputtext {
-  font-family: inherit;
-  font-feature-settings: inherit;
-  font-size: 1rem;
-  color: var(--p-inputtext-color);
-  background: var(--p-inputtext-background);
-
-  padding: {
-    block: var(--p-inputtext-padding-y);
-    inline: var(--p-inputtext-padding-x);
-  }
-
-  border: 1px solid var(--p-inputtext-border-color);
-  transition: background var(--p-inputtext-transition-duration),
-  color var(--p-inputtext-transition-duration),
-  border-color var(--p-inputtext-transition-duration),
-  outline-color var(--p-inputtext-transition-duration),
-  box-shadow var(--p-inputtext-transition-duration);
-  appearance: none;
-  border-radius: var(--p-inputtext-border-radius);
-  outline-color: transparent;
-  box-shadow: var(--p-inputtext-shadow);
 }
