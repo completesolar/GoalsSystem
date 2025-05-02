@@ -11,3 +11,4 @@ python-jose
 python-dotenv
 fastapi[standard]
 pytz
+python-dateutil
