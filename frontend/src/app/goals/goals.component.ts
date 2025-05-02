@@ -537,30 +537,35 @@ export class GoalsComponent implements AfterViewInit {
       this.messageService.add({
         severity: 'warn',
         summary: 'Please Add the below fields for the new goal',
-        detail: `${missingFields.join(
-          ', '
-        )}: Please fill in the following required field(s).`,
+        detail: `${missingFields.join(', ')}: Please fill in the following required field(s).`,
       });
       return;
     }
-
+  
+    // Ensure fields are not empty or undefined
     this.newRow.e = this.newRow.e;
     this.newRow.d = this.newRow.d;
     this.newRow.action = `${this.newRow.action}:`;
     this.newRow.isconfidential = !!this.newRow.isconfidential;
-
+  
+    // Set created and updated times to UTC before sending to the backend
+    const utcMoment = moment.utc(); // This will store the time in UTC
+    this.newRow.createddatetime = utcMoment.toDate();  // UTC time
+    this.newRow.updateddatetime = utcMoment.toDate();  // UTC time
+  
+    // Send the goal data to the backend to create a new goal
     this.goalsService.createGoal(this.newRow).subscribe((response: any) => {
-      const mstMoment = moment.tz('America/Denver');
-      console.log('mst', mstMoment);
       if (response && response.goalid) {
+        // After goal creation, convert the time to MST for display
+        const mstMoment = moment.utc(response.createddatetime).tz('America/Denver');  // Convert stored UTC to MST
+  
         const newGoal: Goals = {
           ...this.newRow,
           goalid: response.goalid,
-          createddatetime: new Date(mstMoment.format()),
+          createddatetime: new Date(mstMoment.format()),  // Store in MST format for display
           isEditable: false,
         };
 
-        console.log('createddatetime', newGoal.createddatetime);
         // Add the new goal to the top of the allGoals array
         this.allGoals = [newGoal, ...this.allGoals];
         // Clear the selected filters before adding the new goal to the table
@@ -576,7 +581,7 @@ export class GoalsComponent implements AfterViewInit {
         if (this.dataTable) {
           this.dataTable.clear();
         }
-        this.loadGoalsHistory(response.goalid);
+        this.loadGoalsHistory(response.goalid); // Load the history of the newly created goal
         this.addNewRow();
 
         this.messageService.add({
