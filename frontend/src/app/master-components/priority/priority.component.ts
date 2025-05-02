@@ -109,9 +109,7 @@ export class PriorityComponent {
     this.goalsService.updateP(this.editingItem).subscribe({
       next: (response: any) => {
         if (response && response.id) {
-          this.priorityList = this.priorityList.map((p: any) =>
-            p.id === response.id ? { ...response } : p
-          );
+          this.getPriority();
           this.editingItem = null;
           this.messageService.add({
             severity: 'success',
@@ -122,6 +120,11 @@ export class PriorityComponent {
       },
       error: (err) => {
         console.error('Update failed:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Priority',
+          detail: `${this.editingItem.p} already exist.`,
+        });
       },
     });
   }
@@ -200,7 +203,7 @@ export class PriorityComponent {
       );
     });
   }
-  onFilterChange(field:string): void {
+  onFilterChange(field: string): void {
     Object.keys(this.selectedFilters).forEach((key) => {
       if (key !== field) {
         this.selectedFilters[key] = [];

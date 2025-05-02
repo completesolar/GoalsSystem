@@ -55,8 +55,9 @@
                                   border: 'none',
                                   background: 'transparent'
                                 }" panelStyleClass="filter-dropdown-left" [showToggleAll]="true"
-                  [maxSelectedLabels]="0" [dropdownIcon]="'pi pi-filter'" appendTo="body"
-                  [ngClass]="{ 'filter-active': activeFilters[col.field] }">
+                  [maxSelectedLabels]="0"
+                  [dropdownIcon]="activeFilters[col.field] ? 'pi pi-filter-fill' : 'pi pi-filter'"
+                  [resetFilterOnHide]="true" appendTo="body" [ngClass]="{ 'filter-active': activeFilters[col.field] }">
                   <ng-template let-value pTemplate="selectedItems">
                     <span class="sr-only">Filter</span>
                   </ng-template>

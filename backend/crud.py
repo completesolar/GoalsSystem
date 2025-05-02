@@ -1,3 +1,4 @@
+from zoneinfo import ZoneInfo
 import pytz
 from sqlalchemy.orm import Session
 
@@ -96,8 +97,8 @@ def get_action(db: Session):
     return jsonable_encoder(db_action)
 
 def get_mst_now():
-    tz = pytz.timezone("America/Denver")
-    return datetime.now(tz)
+    return datetime.now(ZoneInfo("America/Denver"))
+
 
 def create_goal(db: Session, goal: Goals):
     from sqlalchemy import text
