@@ -1,6 +1,7 @@
 from zoneinfo import ZoneInfo
 import pytz
 from sqlalchemy.orm import Session
+from dateutil import tz
 
 # from schemas.schema import Goals
 from models.models import Goals, Who, Proj, VP, Status, goalshistory, P, B, E, D, Action
@@ -97,7 +98,8 @@ def get_action(db: Session):
     return jsonable_encoder(db_action)
 
 def get_mst_now():
-    return datetime.now(ZoneInfo("America/Denver"))
+    mst = tz.gettz("America/Denver")
+    return datetime.now(mst)
 
 
 def create_goal(db: Session, goal: Goals):
