@@ -220,7 +220,7 @@
                 id="spec-select" />
             </div>
 
-            <ng-template #viewMode>
+            <!-- <ng-template #viewMode>
               <div class="saved" *ngIf="getGoalHistoryFor(row.goalid)" style="white-space: normal;">
                 <b>
                   <ng-container *ngFor="let chunk of getGoalHistoryFor(row.goalid)?.display?.action">
@@ -237,8 +237,8 @@
                   </ng-container>
                   </b>
               </div>
-            </ng-template>
-            <!-- <ng-template #viewMode>
+            </ng-template> -->
+             <ng-template #viewMode>
               <div class="saved">
                 <b>{{ row.action }}</b>
                 <span *ngIf="row.description.length > 55" class="description-link"
@@ -255,7 +255,7 @@
                   {{ row.memo }}
                 </b>
               </div>
-            </ng-template> -->
+            </ng-template>
 
 
 
