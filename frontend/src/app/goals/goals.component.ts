@@ -383,7 +383,7 @@ export class GoalsComponent implements AfterViewInit {
       this.originalGoal = [...this.goal];
       this.onPageChange({ first: 0, rows: 10 });
     });
-  }  
+  }
   onWhoSelected() {
     const currentWeek = this.getCurrentWeekNumber();
     this.newRow.p = 99;
@@ -407,7 +407,7 @@ export class GoalsComponent implements AfterViewInit {
       console.warn('Selected WHO has no supervisor_name.');
     }
   }
- 
+
   loadGoalsHistory(id: number) {
     this.goalsService.getGoalHistory(id).subscribe(
       (goalsHistory) => {
@@ -436,13 +436,13 @@ export class GoalsComponent implements AfterViewInit {
               description: [],
               memo: [],
             },
-          }; 
-          const highlightColor = this.colorPalette[i % this.colorPalette.length] || this.colorPalette[1]; 
+          };
+          const highlightColor = this.colorPalette[i % this.colorPalette.length] || this.colorPalette[1];
           if (i === 0) {
             rowDisplay.display.action = [{ text: current.action || '', color: this.colorPalette[0] }];
             rowDisplay.display.description = [{ text: current.description || '', color: this.colorPalette[0] }];
             rowDisplay.display.memo = [{ text: current.memo || '', color: this.colorPalette[0] }];
-  
+
             cumulativeAction = [...rowDisplay.display.action];
             cumulativeDescription = [...rowDisplay.display.description];
             cumulativeMemo = [...rowDisplay.display.memo];
@@ -450,12 +450,12 @@ export class GoalsComponent implements AfterViewInit {
             rowDisplay.display.action = this.getProgressiveChunks(cumulativeAction, current.action || '', highlightColor);
             rowDisplay.display.description = this.getProgressiveChunks(cumulativeDescription, current.description || '', highlightColor);
             rowDisplay.display.memo = this.getProgressiveChunks(cumulativeMemo, current.memo || '', highlightColor);
-  
+
             cumulativeAction = [...rowDisplay.display.action];
             cumulativeDescription = [...rowDisplay.display.description];
             cumulativeMemo = [...rowDisplay.display.memo];
           }
-  
+
           coloredHistory.push(rowDisplay);
         }
           this.goalHistoryMap[id] = coloredHistory.reverse()[0];
@@ -484,17 +484,13 @@ export class GoalsComponent implements AfterViewInit {
 
   isValidGoalData(goal: Goals): string[] {
     const missingFields: string[] = [];
-
-    // if (!goal.who) missingFields.push('WHO');
-    if (!goal.p) missingFields.push('Priority');
-    if (!goal.proj) missingFields.push('Project');
+    if (!goal.p) missingFields.push('P');
+    if (!goal.proj) missingFields.push('Proj');
     if (!goal.vp) missingFields.push('VP');
     if (!goal.b) missingFields.push('B');
-    if (!goal.s) missingFields.push('Status');
-    if (!goal.description) missingFields.push('GOAL DELIVERABLE');
+    if (!goal.s) missingFields.push('S');
     if (!goal.action) missingFields.push('Action');
-    //if (!goal.fiscalyear) missingFields.push('Year');
-
+    if (!goal.description) missingFields.push('Goal Deliverable');
     return missingFields;
   }
 
@@ -520,38 +516,42 @@ export class GoalsComponent implements AfterViewInit {
   }
 
   addGoal() {
-    this.showAddGoalDialog = false;
     const missingFields = this.isValidGoalData(this.newRow);
     if (missingFields.length > 0) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Please Add the below fields for the new goal',
-        detail: `${missingFields.join(', ')}: Please fill in the following required field(s).`,
+        detail: `${missingFields.join(
+          ', '
+        )}: Please fill in the following required field(s).`,
       });
       return;
     }
-  
+
+    this.showAddGoalDialog = false;
     // Ensure fields are not empty or undefined
     this.newRow.e = this.newRow.e;
     this.newRow.d = this.newRow.d;
     this.newRow.action = `${this.newRow.action}:`;
     this.newRow.isconfidential = !!this.newRow.isconfidential;
-  
+
     // Set created and updated times to UTC before sending to the backend
     const utcMoment = moment.utc(); // This will store the time in UTC
-    this.newRow.createddatetime = utcMoment.toDate();  // UTC time
-    this.newRow.updateddatetime = utcMoment.toDate();  // UTC time
-  
+    this.newRow.createddatetime = utcMoment.toDate(); // UTC time
+    this.newRow.updateddatetime = utcMoment.toDate(); // UTC time
+
     // Send the goal data to the backend to create a new goal
     this.goalsService.createGoal(this.newRow).subscribe((response: any) => {
       if (response && response.goalid) {
         // After goal creation, convert the time to MST for display
-        const mstMoment = moment.utc(response.createddatetime).tz('America/Denver');  // Convert stored UTC to MST
-  
+        const mstMoment = moment
+          .utc(response.createddatetime)
+          .tz('America/Denver'); // Convert stored UTC to MST
+
         const newGoal: Goals = {
           ...this.newRow,
           goalid: response.goalid,
-          createddatetime: new Date(mstMoment.format()),  // Store in MST format for display
+          createddatetime: new Date(mstMoment.format()), // Store in MST format for display
           isEditable: false,
         };
 
@@ -918,10 +918,10 @@ export class GoalsComponent implements AfterViewInit {
         doc.putTotalPages(totalPagesExp);
       }
 
-    const fileName = `Goals_${fileNameDate}_${formattedTime}.pdf`;
-    doc.save(fileName);
-  };
-}
+      const fileName = `Goals_${fileNameDate}_${formattedTime}.pdf`;
+      doc.save(fileName);
+    };
+  }
   enableEdit(row: any): void {
     this.isEdit = true;
     row.isEditable = true;
@@ -950,7 +950,6 @@ export class GoalsComponent implements AfterViewInit {
                 if (event.key === 'Tab') {
                   console.log('Tab pressed - move to next field');
                   triggerEl.click();
-
                 } else {
                   console.log('Key pressed:', event.key);
                 }
@@ -1984,29 +1983,6 @@ export class GoalsComponent implements AfterViewInit {
     console.log('Filter event:', event);
 }
 
-
- 
-onKeydownGenericFilter(event: KeyboardEvent, options: any[], selectRef: MultiSelect) {
-//  console.log("onKeydownGenericFilter",event.key)
-  if (event.key === 'Enter') {
- const filterValue = (selectRef?.filterValue || '').toString().toUpperCase();
-
- const filteredOptions = options.filter(
- (option) =>
- option.label != null &&
- option.label.toString().toUpperCase().includes(filterValue)
- );
-
- if (filteredOptions.length > 0) {
- selectRef.value = [...(selectRef.value || []), filteredOptions[0].value];
- } else {
- selectRef.value = [...(selectRef.value || []), filterValue];
- }
-
- selectRef.hide();
- }
- }
-   
  onPageChange(event: any): void {
   const startIndex = event.first;
   const pageSize = event.rows;

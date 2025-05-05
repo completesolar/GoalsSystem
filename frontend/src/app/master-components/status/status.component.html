@@ -52,7 +52,7 @@
                 <b>{{ col.header }}</b>
               </ng-template>
               <div class="flex justify-center" *ngIf="col.field !== 'action' && col.field !== 'sno'">
-                <p-multiSelect [options]="getFilterOptions(col.field)" [autoOptionFocus]="true" [autofocusFilter]="true"
+                <p-multiSelect [autoOptionFocus]="true" [autofocusFilter]="true" [options]="getFilterOptions(col.field)"
                   [(ngModel)]="selectedFilters[col.field]" (onChange)="onFilterChange()" optionLabel="label"
                   display="chip" [style]="{
                                                               width: '1.5rem',
@@ -74,7 +74,7 @@
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
-        <tr *ngIf="statusList.length">
+        <tr *ngIf="statusList.length" [ngClass]="{ 'editable-row': editingItem?.id === item.id }">
           <td>{{ item.sno }}</td>
           <td>{{ item.id }}</td>
           <td>
