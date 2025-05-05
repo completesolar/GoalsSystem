@@ -598,10 +598,16 @@ span.p-multiselect-dropdown-icon.pi.pi-filter {
   font-size: 12px !important;
 }
 
-.modal-title{
-font-size: 16px;
-font-weight: 700;
+.modal-title {
+  font-size: 16px;
+  font-weight: 700;
 }
-.p-select{
-height: 28px;
+
+.p-select {
+  height: 28px;
+}
+
+.editable-row {
+  background-color: #22c55e !important;
+  color: #fff !important;
 }
