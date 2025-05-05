@@ -381,7 +381,7 @@ export class GoalsComponent implements AfterViewInit {
       this.allGoals = filteredGoals;
       this.goal = [...filteredGoals];
       this.originalGoal = [...this.goal];
-      this.onPageChange({ first: 0, rows: 10 });
+      // this.onPageChange({ first: 0, rows: 10 });
     });
   }
   onWhoSelected() {
@@ -407,18 +407,20 @@ export class GoalsComponent implements AfterViewInit {
       console.warn('Selected WHO has no supervisor_name.');
     }
   }
-
   loadGoalsHistory(id: number) {
     this.goalsService.getGoalHistory(id).subscribe(
       (goalsHistory) => {
-        const sortedHistory = (goalsHistory as any[])
-          .map((g) => ({
+        let sortedHistory = (goalsHistory as any[])
+        .map((g) => {
+          const safeCreatedDate = g.createddate
+            ? moment.utc(g.createddate).tz('America/Denver').format('MM/DD/YYYY hh:mm:ss A')
+            : 'N/A';
+        
+          return {
             ...g,
-            createddateMST: moment(g.createddate)
-              .tz('America/Denver')
-              .format('MM/DD/YYYY hh:mm:ss A'),
-          }))
-          .sort(
+            createddateMST: safeCreatedDate,
+          };
+        }).sort(
             (a, b) =>
               new Date(a.createddate).getTime() -
               new Date(b.createddate).getTime()
@@ -437,9 +439,6 @@ export class GoalsComponent implements AfterViewInit {
               memo: [],
             },
           };
-          const highlightColor =
-            this.colorPalette[i % this.colorPalette.length] ||
-            this.colorPalette[1];
           if (i === 0) {
             rowDisplay.display.action = [
               { text: current.action || '', color: this.colorPalette[0] },
@@ -455,6 +454,10 @@ export class GoalsComponent implements AfterViewInit {
             cumulativeDescription = [...rowDisplay.display.description];
             cumulativeMemo = [...rowDisplay.display.memo];
           } else {
+            const highlightColor =
+              this.colorPalette[i % this.colorPalette.length] ||
+              this.colorPalette[1];
+
             rowDisplay.display.action = this.getProgressiveChunks(
               cumulativeAction,
               current.action || '',
@@ -478,8 +481,7 @@ export class GoalsComponent implements AfterViewInit {
 
           coloredHistory.push(rowDisplay);
         }
-        this.goalHistoryMap[id] = coloredHistory.reverse()[0];
-        this.goalHistory = coloredHistory;
+        this.goalHistory = coloredHistory.reverse();
       },
       (error) => {
         console.error('Error fetching goal history for ID:', id);
