@@ -209,6 +209,9 @@ export class GoalsComponent implements AfterViewInit {
   settingDropdownOpen: boolean = false;
   selectedSettingOption: string | undefined;
   isEdit: boolean = false;
+  goalHistoryMap: { [goalid: string]: any } = {};
+  loadedGoalHistoryIds = new Set<any>();
+
   constructor(
     @Inject(PLATFORM_ID) private platform: Object,
     private goalsService: GoalsService,
@@ -378,9 +381,9 @@ export class GoalsComponent implements AfterViewInit {
       this.allGoals = filteredGoals;
       this.goal = [...filteredGoals];
       this.originalGoal = [...this.goal];
-      // console.log("this.goal", this.goal);
+      this.onPageChange({ first: 0, rows: 10 });
     });
-  } 
+  }  
   onWhoSelected() {
     const currentWeek = this.getCurrentWeekNumber();
     this.newRow.p = 99;
@@ -404,11 +407,11 @@ export class GoalsComponent implements AfterViewInit {
       console.warn('Selected WHO has no supervisor_name.');
     }
   }
-
+ 
   loadGoalsHistory(id: number) {
     this.goalsService.getGoalHistory(id).subscribe(
       (goalsHistory) => {
-        let sortedHistory = (goalsHistory as any[])
+        const sortedHistory = (goalsHistory as any[])
           .map((g) => ({
             ...g,
             createddateMST: moment(g.createddate)
@@ -420,15 +423,12 @@ export class GoalsComponent implements AfterViewInit {
               new Date(a.createddate).getTime() -
               new Date(b.createddate).getTime()
           );
-
         const coloredHistory = [];
         let cumulativeMemo: { text: string; color: string }[] = [];
         let cumulativeAction: { text: string; color: string }[] = [];
         let cumulativeDescription: { text: string; color: string }[] = [];
-
         for (let i = 0; i < sortedHistory.length; i++) {
           const current = sortedHistory[i];
-
           const rowDisplay: any = {
             ...current,
             display: {
@@ -436,50 +436,29 @@ export class GoalsComponent implements AfterViewInit {
               description: [],
               memo: [],
             },
-          };
+          }; 
+          const highlightColor = this.colorPalette[i % this.colorPalette.length] || this.colorPalette[1]; 
           if (i === 0) {
-            rowDisplay.display.action = [
-              { text: current.action || '', color: this.colorPalette[0] },
-            ];
-            rowDisplay.display.description = [
-              { text: current.description || '', color: this.colorPalette[0] },
-            ];
-            rowDisplay.display.memo = [
-              { text: current.memo || '', color: this.colorPalette[0] },
-            ];
-
+            rowDisplay.display.action = [{ text: current.action || '', color: this.colorPalette[0] }];
+            rowDisplay.display.description = [{ text: current.description || '', color: this.colorPalette[0] }];
+            rowDisplay.display.memo = [{ text: current.memo || '', color: this.colorPalette[0] }];
+  
             cumulativeAction = [...rowDisplay.display.action];
             cumulativeDescription = [...rowDisplay.display.description];
             cumulativeMemo = [...rowDisplay.display.memo];
           } else {
-            const highlightColor =
-              this.colorPalette[i % this.colorPalette.length] ||
-              this.colorPalette[1];
-
-            rowDisplay.display.action = this.getProgressiveChunks(
-              cumulativeAction,
-              current.action || '',
-              highlightColor
-            );
-            rowDisplay.display.description = this.getProgressiveChunks(
-              cumulativeDescription,
-              current.description || '',
-              highlightColor
-            );
-            rowDisplay.display.memo = this.getProgressiveChunks(
-              cumulativeMemo,
-              current.memo || '',
-              highlightColor
-            ); // ✅ FIXED
-
+            rowDisplay.display.action = this.getProgressiveChunks(cumulativeAction, current.action || '', highlightColor);
+            rowDisplay.display.description = this.getProgressiveChunks(cumulativeDescription, current.description || '', highlightColor);
+            rowDisplay.display.memo = this.getProgressiveChunks(cumulativeMemo, current.memo || '', highlightColor);
+  
             cumulativeAction = [...rowDisplay.display.action];
             cumulativeDescription = [...rowDisplay.display.description];
             cumulativeMemo = [...rowDisplay.display.memo];
           }
-
+  
           coloredHistory.push(rowDisplay);
         }
-
+          this.goalHistoryMap[id] = coloredHistory.reverse()[0];
         this.goalHistory = coloredHistory.reverse();
       },
       (error) => {
@@ -487,7 +466,17 @@ export class GoalsComponent implements AfterViewInit {
       }
     );
   }
- 
+  getGoalHistoryFor(goalid: string) {
+    return this.goalHistoryMap[goalid];
+  }
+
+  loadHistoryIfNeeded(goalid: number): boolean {
+    if (!this.loadedGoalHistoryIds.has(goalid)) {
+      this.loadGoalsHistory(goalid);
+      this.loadedGoalHistoryIds.add(goalid);
+    }
+    return true;
+  }
 
   onYearChange() {
     this.loadGoals();
@@ -1455,6 +1444,7 @@ export class GoalsComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    this.onPageChange({ first: 0, rows: 10 });
     // if (!this.dataTable) {
     //   console.error('dataTable not found');
     // }
@@ -1570,7 +1560,7 @@ export class GoalsComponent implements AfterViewInit {
   }
 
   onHistoryExportChange(option: any, goalHistory: []) {
-    console.log('goalHistory', goalHistory);
+    // console.log('goalHistory', goalHistory);
     if (option?.value === 'excel') {
       this.exportHistoryExcelData(goalHistory);
     } else if (option?.value === 'pdf') {
@@ -1997,7 +1987,7 @@ export class GoalsComponent implements AfterViewInit {
 
  
 onKeydownGenericFilter(event: KeyboardEvent, options: any[], selectRef: MultiSelect) {
- console.log("onKeydownGenericFilter",event.key)
+//  console.log("onKeydownGenericFilter",event.key)
   if (event.key === 'Enter') {
  const filterValue = (selectRef?.filterValue || '').toString().toUpperCase();
 
@@ -2016,6 +2006,21 @@ onKeydownGenericFilter(event: KeyboardEvent, options: any[], selectRef: MultiSel
  selectRef.hide();
  }
  }
- 
+   
+ onPageChange(event: any): void {
+  const startIndex = event.first;
+  const pageSize = event.rows;
+
+  const visibleRows = this.goal.slice(startIndex, startIndex + pageSize);
+
+  visibleRows.forEach((row: { goalid: number }) => {
+    const goalid = row.goalid;
+    if (!this.loadedGoalHistoryIds.has(goalid)) {
+      this.loadGoalsHistory(goalid);
+      this.loadedGoalHistoryIds.add(goalid);
+    }
+  });
+}
+
 
 }

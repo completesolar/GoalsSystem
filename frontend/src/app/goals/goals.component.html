@@ -38,14 +38,17 @@
   </div>
 
   <div class="table-container pr-3 pl-3">
-    <p-table #dataTable [value]="goal" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
+    <p-table
+     #dataTable          (onPage)="onPageChange($event)"
+     [value]="goal" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
       [rowsPerPageOptions]="[10, 20, 50]" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} goals"
       [paginatorPosition]="'bottom'" [sortMode]="'multiple'" scrollable="false"
       [style]="{ width: '100%', height: 'auto', tableLayout: 'fixed' }" [tableStyleClass]="
          isEdit
            ? 'custom-goal-table fixed-table edit'
            : 'custom-goal-table fixed-table'
-       ">
+       "
+         >
       <ng-template pTemplate="header">
         <tr>
           <th *ngFor="let col of columns" [hidden]="
@@ -214,7 +217,26 @@
                 tooltipPosition="bottom" placeholder="SPEC/MEMO" [tabindex]="rowIndex * 100 + 11" maxlength="17"
                 id="spec-select" />
             </div>
+          
             <ng-template #viewMode>
+              <div class="saved" *ngIf="getGoalHistoryFor(row.goalid)" style="white-space: normal;">
+                <b>
+                  <ng-container *ngFor="let chunk of getGoalHistoryFor(row.goalid)?.display?.action">
+                    <span [style.color]="chunk.color">{{ chunk.text }}</span>
+                  </ng-container>        
+                </b>
+    
+                  <ng-container *ngFor="let chunk of getGoalHistoryFor(row.goalid)?.display?.description">
+                    <span [style.color]="chunk.color">{{ chunk.text }}</span>
+                  </ng-container>            
+                  <b>
+                    <ng-container *ngFor="let chunk of getGoalHistoryFor(row.goalid)?.display?.memo">
+                    <span [style.color]="chunk.color">{{ chunk.text }}</span>
+                  </ng-container>
+                  </b>
+              </div>
+            </ng-template>
+            <!-- <ng-template #viewMode>
               <div class="saved">
                 <b>{{ row.action }}</b>
                 <span *ngIf="row.description.length > 55" class="description-link"
@@ -231,7 +253,10 @@
                   {{ row.memo }}
                 </b>
               </div>
-            </ng-template>
+            </ng-template> -->
+
+            
+            
         <p-confirmPopup #descriptionPopup key="descPopup"></p-confirmPopup>
           </td>
           <td *ngIf="isAnyRowEditable()">

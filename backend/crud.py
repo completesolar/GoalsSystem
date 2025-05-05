@@ -97,47 +97,58 @@ def get_action(db: Session):
     print("Fetched actions:", db_action)
     return jsonable_encoder(db_action)
 
+# def get_mst_now():
+#     # Get current UTC time
+#     utc_now = datetime.utcnow().replace(tzinfo=ZoneInfo("UTC"))
+#     print(f"UTC Time: {utc_now}")  # Debugging: Check UTC time
+
+#     # Convert UTC to MST (America/Denver)
+#     mst = ZoneInfo("America/Denver")  
+#     mst_time = utc_now.astimezone(mst)
+
+#     print(f"MST Time: {mst_time}")  
+#     return mst_time
 def get_mst_now():
-    # Get current UTC time
+    """Return current time in MST (Mountain Standard Time)."""
     utc_now = datetime.utcnow().replace(tzinfo=ZoneInfo("UTC"))
-    print(f"UTC Time: {utc_now}")  # Debugging: Check UTC time
-
-    # Convert UTC to MST (America/Denver)
-    mst = ZoneInfo("America/Denver")  
-    mst_time = utc_now.astimezone(mst)
-
-    print(f"MST Time: {mst_time}")  
+    print(f"UTC Time: {utc_now}")
+    mst_time = utc_now.astimezone(ZoneInfo("America/Denver"))
+    print(f"MST Time: {mst_time}")
     return mst_time
+
+def convert_to_mst(dt: datetime) -> datetime:
+    """Convert any datetime (aware or naive) to MST."""
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=ZoneInfo("UTC"))  # Assume UTC if naive
+    mst_time = dt.astimezone(ZoneInfo("America/Denver"))
+    print(f"Converted to MST: {mst_time}")
+    return mst_time
+
 
 def create_goal(db: Session, goal: Goals):
     from sqlalchemy import text
+    date = get_mst_now()  # Already in MST
+    currentdate = convert_to_mst(date)
+    coverted_date = convert_to_mst(date)
 
-    currentdate = get_mst_now()
-
-    # Step 1: Generate correct prefix: YYWW
     now = get_mst_now()
     current_year = now.strftime("%y")
     current_week = now.isocalendar()[1]
     base_prefix = f"{current_year}{current_week:02d}"
 
-    # Step 2: Find highest matching goalid
     result = db.execute(
         text(f"SELECT MAX(goalid) FROM goals WHERE goalid::TEXT LIKE '{base_prefix}%'")
     ).fetchone()
+    db.execute(text("SET TIME ZONE 'America/Denver'"))
+
 
     max_goalid = result[0] if result and result[0] is not None else None
-
-    # Step 3: Safely calculate suffix
     if max_goalid and str(max_goalid).startswith(base_prefix):
         suffix_str = str(max_goalid)[4:]
         suffix = int(suffix_str) + 1 if suffix_str.isdigit() else 1
     else:
         suffix = 1
-
-    # Step 4: Generate new goalid
     new_goalid = int(f"{base_prefix}{str(suffix).zfill(4)}")  # Always 4 digits padded
-
-    # Step 5: Create the goal
     db_goal = Goals(
         goalid=new_goalid,
         who=goal.who,
@@ -154,8 +165,8 @@ def create_goal(db: Session, goal: Goals):
         fiscalyear=goal.fiscalyear,
         updateBy=goal.updateBy,
         isconfidential=goal.isconfidential,
-        createddatetime=currentdate,
-        updateddatetime=currentdate,
+        createddatetime=coverted_date,
+        updateddatetime=coverted_date,
     )
     db.add(db_goal)
     db.commit()
