@@ -103,7 +103,14 @@ export class DelinquentComponent {
 
   async updateD(item: any) {
     const isChanged = await this.isObjectChanged(item, this.editingItem);
-    if (!this.editingItem && isChanged) return;
+   if (isChanged === false) {
+     this.messageService.add({
+       severity: 'info',
+       summary: 'No Changes Detected',
+     });
+     this.cancelEdit();
+     return;
+   }
     this.goalsService.updateD(this.editingItem).subscribe({
       next: (response: any) => {
         if (response && response.id) {
