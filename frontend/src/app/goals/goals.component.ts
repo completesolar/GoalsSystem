@@ -437,19 +437,39 @@ export class GoalsComponent implements AfterViewInit {
               memo: [],
             },
           };
-          const highlightColor = this.colorPalette[i % this.colorPalette.length] || this.colorPalette[1];
+          const highlightColor =
+            this.colorPalette[i % this.colorPalette.length] ||
+            this.colorPalette[1];
           if (i === 0) {
-            rowDisplay.display.action = [{ text: current.action || '', color: this.colorPalette[0] }];
-            rowDisplay.display.description = [{ text: current.description || '', color: this.colorPalette[0] }];
-            rowDisplay.display.memo = [{ text: current.memo || '', color: this.colorPalette[0] }];
+            rowDisplay.display.action = [
+              { text: current.action || '', color: this.colorPalette[0] },
+            ];
+            rowDisplay.display.description = [
+              { text: current.description || '', color: this.colorPalette[0] },
+            ];
+            rowDisplay.display.memo = [
+              { text: current.memo || '', color: this.colorPalette[0] },
+            ];
 
             cumulativeAction = [...rowDisplay.display.action];
             cumulativeDescription = [...rowDisplay.display.description];
             cumulativeMemo = [...rowDisplay.display.memo];
           } else {
-            rowDisplay.display.action = this.getProgressiveChunks(cumulativeAction, current.action || '', highlightColor);
-            rowDisplay.display.description = this.getProgressiveChunks(cumulativeDescription, current.description || '', highlightColor);
-            rowDisplay.display.memo = this.getProgressiveChunks(cumulativeMemo, current.memo || '', highlightColor);
+            rowDisplay.display.action = this.getProgressiveChunks(
+              cumulativeAction,
+              current.action || '',
+              highlightColor
+            );
+            rowDisplay.display.description = this.getProgressiveChunks(
+              cumulativeDescription,
+              current.description || '',
+              highlightColor
+            );
+            rowDisplay.display.memo = this.getProgressiveChunks(
+              cumulativeMemo,
+              current.memo || '',
+              highlightColor
+            );
 
             cumulativeAction = [...rowDisplay.display.action];
             cumulativeDescription = [...rowDisplay.display.description];
@@ -458,8 +478,8 @@ export class GoalsComponent implements AfterViewInit {
 
           coloredHistory.push(rowDisplay);
         }
-          this.goalHistoryMap[id] = coloredHistory.reverse()[0];
-        this.goalHistory = coloredHistory.reverse();
+        this.goalHistoryMap[id] = coloredHistory.reverse()[0];
+        this.goalHistory = coloredHistory;
       },
       (error) => {
         console.error('Error fetching goal history for ID:', id);
@@ -1981,22 +2001,20 @@ export class GoalsComponent implements AfterViewInit {
 
   onFilterEvent(event: any) {
     console.log('Filter event:', event);
-}
+  }
 
- onPageChange(event: any): void {
-  const startIndex = event.first;
-  const pageSize = event.rows;
+  onPageChange(event: any): void {
+    const startIndex = event.first;
+    const pageSize = event.rows;
 
-  const visibleRows = this.goal.slice(startIndex, startIndex + pageSize);
+    const visibleRows = this.goal.slice(startIndex, startIndex + pageSize);
 
-  visibleRows.forEach((row: { goalid: number }) => {
-    const goalid = row.goalid;
-    if (!this.loadedGoalHistoryIds.has(goalid)) {
-      this.loadGoalsHistory(goalid);
-      this.loadedGoalHistoryIds.add(goalid);
-    }
-  });
-}
-
-
+    visibleRows.forEach((row: { goalid: number }) => {
+      const goalid = row.goalid;
+      if (!this.loadedGoalHistoryIds.has(goalid)) {
+        this.loadGoalsHistory(goalid);
+        this.loadedGoalHistoryIds.add(goalid);
+      }
+    });
+  }
 }
