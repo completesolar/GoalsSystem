@@ -65,8 +65,8 @@ class Goals(Base):
     description = Column(String)  # Allows long text descriptions
     fiscalyear = Column(Integer)
     updateBy = Column(String)
-    createddatetime = Column(DateTime, default=func.now())  # Auto-set on insert
-    updateddatetime = Column(DateTime, default=func.now(), onupdate=func.now())  # Auto-update on row update
+    createddatetime = Column(DateTime,)  # Auto-set on insert
+    updateddatetime = Column(DateTime)  # Auto-update on row update
     isconfidential = Column(Boolean, default=False)
 
 class Status(Base):
