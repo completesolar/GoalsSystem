@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from dateutil import tz
 
 # from schemas.schema import Goals
-from models.models import Goals, Who, Proj, VP, Status, goalshistory, P, B, E, D, Action
+from models.models import Goals, Who, Proj, VP, Status, goalshistory, P, B, E, D, Action,Role
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from schemas.schema import GoalsResponse, GoalsUpdate  # Pydantic schema
@@ -24,6 +24,7 @@ from json import dumps, loads
 from datetime import datetime, timedelta
 from copy import deepcopy
 from sqlalchemy import case, func,extract
+from schemas.role import RoleCreate,RoleResponse,RoleUpdate
 
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -96,6 +97,15 @@ def get_action(db: Session):
     db_action = db.query(Action).order_by(Action.id.desc()).all()
     print("Fetched actions:", db_action)
     return jsonable_encoder(db_action)
+
+
+def get_all_role(db: Session, response_model=list[RoleResponse]):
+    db_p = db.query(Role).order_by(Role.id.desc()).all()
+    return jsonable_encoder(db_p)
+
+def get_role_by_id(db: Session, id: int):
+    return db.query(Role).filter(Role.id == id).first()
+
 
 # def get_mst_now():
 #     # Get current UTC time
@@ -286,6 +296,24 @@ def update_p(db: Session, id: int, p_data: PUpdate):
     db.commit()
     db.refresh(db_p)
     return db_p
+
+
+def create_role(db: Session, role_data: RoleCreate):
+    db_role = Role(**role_data.dict())
+    db.add(db_role)
+    db.commit()
+    db.refresh(db_role)
+    return db_role
+
+def update_role(db: Session, id: int, role_data: RoleUpdate):
+    db_role = db.query(Role).filter(Role.id == id).first()
+    if not db_role:
+        return None
+    for key, value in role_data.dict(exclude_unset=True).items():
+        setattr(db_role, key, value)
+    db.commit()
+    db.refresh(db_role)
+    return db_role
 
 def update_goal(db: Session, goal_id: int, goal_update: GoalsUpdate):
     currentdate = datetime.now()
