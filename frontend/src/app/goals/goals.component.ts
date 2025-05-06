@@ -44,6 +44,7 @@ import {
   DIFF_DELETE,
 } from 'diff-match-patch';
 import { ViewChildren, QueryList, ElementRef } from '@angular/core';
+import { SafeHtmlPipe } from 'primeng/menu';
 
 interface Year {
   name: number;
@@ -70,6 +71,7 @@ interface Year {
     MultiSelectModule,
     ConfirmPopupModule,
     CheckboxModule,
+    SafeHtmlPipe,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './goals.component.html',
@@ -352,6 +354,8 @@ export class GoalsComponent implements AfterViewInit {
 
   loadGoals(): void {
     this.goalsService.getGoals().subscribe((goals: any[]) => {
+      console.log('goals', goals[0].description_diff);
+
       const filteredGoals = goals
         .filter((g: any) => +g.fiscalyear === this.selectedYear.code)
         .map((g) => ({

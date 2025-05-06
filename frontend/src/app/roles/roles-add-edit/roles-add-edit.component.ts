@@ -7,6 +7,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
+import { RolesService } from '../../services/roles.service';
 
 @Component({
   selector: 'app-roles-add-edit',
@@ -26,7 +27,7 @@ import { ToastModule } from 'primeng/toast';
 })
 export class RolesAddEditComponent implements OnInit {
   roleData = {
-    roleName: null as number | null,
+    roleName: null as string | null,
     status: null as any,
     remarks: '',
   };
@@ -50,18 +51,110 @@ export class RolesAddEditComponent implements OnInit {
     { label: 'Inactive', value: 0 },
   ];
 
-  constructor() {}
+  constructor(
+    public roleService: RolesService,
+    public messageService: MessageService
+  ) {}
 
   ngOnInit(): void {
     this.getRolesList();
   }
 
-  getRolesList() {}
+  //Get Roles List
+  getRolesList() {
+    this.roleService.getRole().subscribe({
+      next: (response: any) => {
+        console.log('Response', response);
+        this.rolesList = response;
+        this.allRoleList = response;
+        this.rolesList.forEach((item: any, index: number) => {
+          item.sno = index + 1;
+        });
+        console.log('this.rolesList', this.rolesList);
+      },
+      error: (err) => {
+        console.error('Get failed', err);
+      },
+    });
+  }
 
-  saveRole() {}
-  updateRole(item: any) {}
-  onEdit(item: any) {}
-  cancelEdit() {}
+  // Add new Role
+  saveRole() {
+    if (this.roleData.roleName === null) {
+      this.isValid = false;
+      return;
+    }
+    let data = {
+      role: this.roleData?.roleName,
+      status:
+        this.roleData.status?.value === null ? 1 : this.roleData.status?.value,
+      remarks: this.roleData.remarks || '',
+    };
+    this.roleService.createRole(data).subscribe({
+      next: (response: any) => {
+        if (response && response.id) {
+          this.getRolesList();
+          this.roleData = {
+            roleName: null as string | null,
+            status: null as any,
+            remarks: '',
+          };
+          this.isValid = true;
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Role',
+            detail: 'Added successfully!.',
+          });
+        }
+      },
+      error: (err) => {
+        console.error('Create failed', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Role',
+          detail: `${this.roleData.roleName} already exist.`,
+        });
+      },
+    });
+  }
+
+  // Update Role
+  async updateRole(item: any) {
+    const isChanged = await this.isObjectChanged(item, this.editingItem);
+    if (isChanged === false) {
+      this.messageService.add({
+        severity: 'info',
+        summary: 'No Changes Detected',
+      });
+      this.editingItem = null;
+      return;
+    }
+    this.roleService.updateRole(this.editingItem).subscribe({
+      next: (response: any) => {
+        if (response && response.id) {
+          this.getRolesList();
+          this.editingItem = null;
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Role',
+            detail: 'updated successfully!.',
+          });
+        }
+      },
+      error: (err) => {
+        console.error('Update failed:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Role',
+          detail: `${this.editingItem.role} already exist.`,
+        });
+      },
+    });
+  }
+
+  onEdit(item: any) {
+    this.editingItem = { ...item };
+  }
 
   isObjectChanged(objA: any, objB: any): boolean {
     const { isEditable: _, ...restA } = objA;
@@ -82,7 +175,7 @@ export class RolesAddEditComponent implements OnInit {
           }
           if (
             filterField === 'remarks' ||
-            filterField === 'b' ||
+            filterField === 'role' ||
             filterField === 'id'
           ) {
             return selectedValues.some(

@@ -39,17 +39,15 @@
   </div>
 
   <div class="table-container pr-3 pl-3">
-    <p-table
-     #dataTable          (onPage)="onPageChange($event)"
-     [value]="goal" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
-      [rowsPerPageOptions]="[10, 20, 50]" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} goals"
-      [paginatorPosition]="'bottom'" [sortMode]="'multiple'" scrollable="false"
-      [style]="{ width: '100%', height: 'auto', tableLayout: 'fixed' }" [tableStyleClass]="
+    <p-table #dataTable (onPage)="onPageChange($event)" [value]="goal" [paginator]="true" [rows]="10"
+      [showCurrentPageReport]="true" [rowsPerPageOptions]="[10, 20, 50]"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} goals" [paginatorPosition]="'bottom'"
+      [sortMode]="'multiple'" scrollable="false" [style]="{ width: '100%', height: 'auto', tableLayout: 'fixed' }"
+      [tableStyleClass]="
          isEdit
            ? 'custom-goal-table fixed-table edit'
            : 'custom-goal-table fixed-table'
-       "
-         >
+       ">
       <ng-template pTemplate="header">
         <tr>
           <th *ngFor="let col of columns" [hidden]="
@@ -238,28 +236,10 @@
                   </b>
               </div>
             </ng-template> -->
-             <ng-template #viewMode>
-              <div class="saved">
-                <b>{{ row.action }}</b>
-                <span *ngIf="row.description.length > 55" class="description-link"
-                  (click)="showDescription($event, row.description)" [pTooltip]="
-                    row.action + ' ' + row.description + ' ' + row.memo
-                  " tooltipPosition="bottom">
-                  {{ row.description | slice : 0 : 55 }}...
-                </span>
-
-                <span *ngIf="row.description.length <= 55">
-                  {{ row.description }}
-                </span>
-                <b>
-                  {{ row.memo }}
-                </b>
-              </div>
+            <ng-template #viewMode>
+              <div class="saved" [innerHTML]="row.description_diff?.combined_diff | safeHtml"></div>
             </ng-template>
-
-
-
-        <p-confirmPopup #descriptionPopup key="descPopup"></p-confirmPopup>
+            <p-confirmPopup #descriptionPopup key="descPopup"></p-confirmPopup>
           </td>
           <td *ngIf="isAnyRowEditable()">
             <input pInputText [(ngModel)]="row.fiscalyear" [disabled]="!row.isEditable" [readonly]="!row.isEditable"

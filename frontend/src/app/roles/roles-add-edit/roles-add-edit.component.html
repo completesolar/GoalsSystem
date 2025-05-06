@@ -77,9 +77,9 @@
           <td>{{ item.id }}</td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewb">
-              <input type="number" pInputText [(ngModel)]="editingItem.b" style="width: 100px" />
+              <input type="text" pInputText [(ngModel)]="editingItem.role" style="width: 100px" />
             </ng-container>
-            <ng-template #viewb>{{ item.b }}</ng-template>
+            <ng-template #viewb>{{ item.role }}</ng-template>
           </td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewStatus">
@@ -97,7 +97,7 @@
           <td class="icon-actions-column">
             <i [ngClass]="editingItem?.id === item.id ? 'pi pi-save actions' : 'pi pi-pencil actions'"
               (click)="editingItem?.id === item.id ? updateRole(item) : onEdit(item)" tabindex="13"></i>
-            <i *ngIf="editingItem?.id === item.id" class="pi pi-times actions" (click)="cancelEdit()"
+            <i *ngIf="editingItem?.id === item.id" class="pi pi-times actions" (click)="this.editingItem = null;"
               pTooltip="Cancel Edit" tooltipPosition="bottom"></i>
           </td>
         </tr>
