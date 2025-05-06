@@ -1,0 +1,108 @@
+<div class="body">
+  <div class="mb-2 logo-section flex p-2 items-center justify-content-between">
+
+    <div class="px-2 title-section flex items-center justify-between  w-full">
+      <div class="main-title font-semibold " style="font-size: 16px;font-weight: 600;">Roles</div>
+    </div>
+  </div>
+
+  <div class="p-2 mx-2 bg-white mb-2 border-round-md border-1 border-green-400">
+    <div class="pl-2 w-full">
+      <div class="flex gap-2 items-end justify-between align-items-end">
+        <div class=" text-center">
+          <div class="font-bold">Role Name</div>
+          <input type="text" pInputText [(ngModel)]="roleData.roleName"
+            [ngClass]="{'invalid-border': !isValid && !roleData.roleName}" class="p-inputtext" />
+        </div>
+        <div class="text-center">
+          <div class="font-bold">Status</div>
+          <p-select [options]="statusOptions" [(ngModel)]="roleData.status" optionLabel="label"
+            placeholder="Select a status"></p-select>
+        </div>
+        <div class="text-center">
+          <div class="font-bold">Remarks</div>
+          <input class="p-inputtext" pInputText [(ngModel)]="roleData.remarks" />
+        </div>
+        <p-button icon="pi pi-plus" (click)="saveRole()" severity="success" size="small" label="Add"
+          [style]="{ height: '24px', fontSize: '12px' }"></p-button>
+        <p-button icon="pi pi-filter-slash" (click)="resetFilter()" severity="success" size="small" label="Clear"
+          [style]="{ height: '24px', fontSize: '12px' }"></p-button>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-container pr-3 pl-3">
+    <p-table #dataTable [value]="rolesList" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
+      [rowsPerPageOptions]="[10, 20, 50]" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} goals"
+      [paginatorPosition]="'bottom'" [sortMode]="'multiple'" scrollable="false"
+      [style]="{ width: '100%', height: 'auto', tableLayout: 'fixed' }" tableStyleClass="custom-goal-table fixed-table">
+      <ng-template pTemplate="header">
+        <tr>
+          <th *ngFor="let col of columns">
+            <div class="flex items-center justify-between">
+              <div class="test" [pSortableColumn]="col.field" *ngIf="col.field !== 'action'; else noSort">
+                <b>{{ col.header }}</b>
+                <p-sortIcon [field]="col.field"></p-sortIcon>
+              </div>
+              <ng-template #noSort>
+                <b>{{ col.header }}</b>
+              </ng-template>
+
+              <div class="relative" *ngIf="col.field !== 'action' && col.field !== 'sno'">
+                <p-multiSelect [autoOptionFocus]="true" [autofocusFilter]="true" [options]="getFilterOptions(col.field)"
+                  [(ngModel)]="selectedFilters[col.field]" (onChange)="onFilterChange(col.field)" optionLabel="label"
+                  display="chip" [style]="{
+                    width: '1.5rem',
+                    height: '1.5rem',
+                    padding: 0,
+                    border: 'none',
+                    background: 'transparent'
+                  }" panelStyleClass="filter-dropdown-left" [showToggleAll]="true" [maxSelectedLabels]="0"
+                  [dropdownIcon]="activeFilters[col.field] ? 'pi pi-filter-fill' : 'pi pi-filter'"
+                  [resetFilterOnHide]="true" appendTo="body" [ngClass]="{ 'filter-active': activeFilters[col.field] }">
+                  <ng-template let-value pTemplate="selectedItems">
+                    <span class="sr-only">Filter</span>
+                  </ng-template>
+                </p-multiSelect>
+              </div>
+            </div>
+          </th>
+
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+        <tr *ngIf="rolesList.length" [ngClass]="{ 'editable-row': editingItem?.id === item.id }">
+          <td>{{ item.sno }}</td>
+          <td>{{ item.id }}</td>
+          <td>
+            <ng-container *ngIf="editingItem?.id === item.id; else viewb">
+              <input type="number" pInputText [(ngModel)]="editingItem.b" style="width: 100px" />
+            </ng-container>
+            <ng-template #viewb>{{ item.b }}</ng-template>
+          </td>
+          <td>
+            <ng-container *ngIf="editingItem?.id === item.id; else viewStatus">
+              <p-select [options]="statusOptions" [(ngModel)]="editingItem.status" optionLabel="label"
+                optionValue="value"></p-select>
+            </ng-container>
+            <ng-template #viewStatus>{{ item.status === 1 ? 'Active' : 'Inactive' }}</ng-template>
+          </td>
+          <td>
+            <ng-container *ngIf="editingItem?.id === item.id; else viewRenarks">
+              <input type="text" pInputText [(ngModel)]="editingItem.remarks" style="width: 100px" />
+            </ng-container>
+            <ng-template #viewRenarks>{{ item.remarks }}</ng-template>
+          </td>
+          <td class="icon-actions-column">
+            <i [ngClass]="editingItem?.id === item.id ? 'pi pi-save actions' : 'pi pi-pencil actions'"
+              (click)="editingItem?.id === item.id ? updateRole(item) : onEdit(item)" tabindex="13"></i>
+            <i *ngIf="editingItem?.id === item.id" class="pi pi-times actions" (click)="cancelEdit()"
+              pTooltip="Cancel Edit" tooltipPosition="bottom"></i>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+<p-toast></p-toast>
