@@ -44,6 +44,7 @@ import {
   DIFF_DELETE,
 } from 'diff-match-patch';
 import { ViewChildren, QueryList, ElementRef } from '@angular/core';
+import { SafeHtmlPipe } from 'primeng/menu';
 
 interface Year {
   name: number;
@@ -70,6 +71,7 @@ interface Year {
     MultiSelectModule,
     ConfirmPopupModule,
     CheckboxModule,
+    SafeHtmlPipe,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './goals.component.html',
@@ -352,6 +354,8 @@ export class GoalsComponent implements AfterViewInit {
 
   loadGoals(): void {
     this.goalsService.getGoals().subscribe((goals: any[]) => {
+      console.log('goals', goals[0].description_diff);
+
       const filteredGoals = goals
         .filter((g: any) => +g.fiscalyear === this.selectedYear.code)
         .map((g) => ({
@@ -411,16 +415,20 @@ export class GoalsComponent implements AfterViewInit {
     this.goalsService.getGoalHistory(id).subscribe(
       (goalsHistory) => {
         let sortedHistory = (goalsHistory as any[])
-        .map((g) => {
-          const safeCreatedDate = g.createddate
-            ? moment.utc(g.createddate).tz('America/Denver').format('MM/DD/YYYY hh:mm:ss A')
-            : 'N/A';
-        
-          return {
-            ...g,
-            createddateMST: safeCreatedDate,
-          };
-        }).sort(
+          .map((g) => {
+            const safeCreatedDate = g.createddate
+              ? moment
+                  .utc(g.createddate)
+                  .tz('America/Denver')
+                  .format('MM/DD/YYYY hh:mm:ss A')
+              : 'N/A';
+
+            return {
+              ...g,
+              createddateMST: safeCreatedDate,
+            };
+          })
+          .sort(
             (a, b) =>
               new Date(a.createddate).getTime() -
               new Date(b.createddate).getTime()
@@ -1354,11 +1362,12 @@ export class GoalsComponent implements AfterViewInit {
 
   getFilterOptions(field: string): any[] {
     let options: any[];
-
     if (field === 'who') {
-      options = this.whoOptions;
+      options = [...this.whoOptions];
     } else if (field === 'vp') {
-      options = this.vpOptions;
+      options = [...this.vpOptions];
+    } else if (field === 's') {
+      options = [...this.statusOptions];
     } else {
       const uniqueValues = [
         ...new Set(this.allGoals.map((row: any) => row[field] ?? '')),

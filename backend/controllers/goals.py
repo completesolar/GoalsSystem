@@ -16,9 +16,11 @@ from schemas.action import ActionResponse
 from typing import Optional
 from database import get_db
 from crud import (
+    bind_diffs_to_goals,
     create_goal,
     get_goals_by_id,
     get_all_goals,
+    get_latest_goal_diff_by_goalid,
     update_goal,
     get_all_goals_history,
     get_goalshistory_by_id,
@@ -94,7 +96,12 @@ def create_goals(goal: Goals, db: Session = Depends(get_db)):
 
 @router.get("/api/goals", response_model=list[GoalsResponse])
 def read_goals(db: Session = Depends(get_db)):
-    return get_all_goals(db)
+    goals = get_all_goals(db)
+    return bind_diffs_to_goals(db, goals)
+
+@router.get("/goal/{goalid}/history-diff")
+def goal_history_diff(goalid: int, db: Session = Depends(get_db)):
+    return get_latest_goal_diff_by_goalid(db, goalid)
 
 @router.get("/api/goals/metrics")
 def read_goals_metrics(
@@ -121,9 +128,16 @@ def read_goal(goalid: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Goal not found")
     return db_goal
 
-@router.put("/api/goals/{goalid}", response_model=GoalsUpdate)
+@router.put("/api/goals/{goalid}")
 def update_goals(goalid: int, goal_update: GoalsUpdate, db: Session = Depends(get_db)):
-    return update_goal(db=db, goal_id=goalid, goal_update=goal_update)
+    updated_goal = update_goal(db=db, goal_id=goalid, goal_update=goal_update)
+    diff = get_latest_goal_diff_by_goalid(db, goalid)
+    
+    # Attach the diff to the response
+    response = updated_goal.__dict__ if not isinstance(updated_goal, dict) else updated_goal
+    response["description_diff"] = diff
+    return response
+
 
 @router.get("/api/goalshistory/{goalid}", response_model=list[goalhistoryResponse])
 async def get_goalshistory(goalid: int, db: Session = Depends(get_db)):

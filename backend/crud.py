@@ -1,3 +1,5 @@
+import difflib
+from typing import Dict, List
 from zoneinfo import ZoneInfo
 import pytz
 from sqlalchemy.orm import Session
@@ -632,3 +634,67 @@ def update_d(db: Session, id: int, d_data: DUpdate):
     db.commit()
     db.refresh(db_d)
     return db_d
+
+
+HIGHLIGHT_COLORS = [
+    'rgb(002, 081, 150)',
+    'rgb(081, 040, 136)',
+    'rgb(041, 094, 017)',
+    'rgb(235, 097, 035)',
+    'rgb(064, 176, 166)',
+    'rgb(255, 190, 106)',
+    'rgb(191, 044, 035)',
+    'rgb(253, 179, 056)',
+    'rgb(219, 076, 119)',
+    'rgb(120, 120, 120)'
+]
+
+
+def highlight_word_diff(old_text: str, new_text: str) -> str:
+    import difflib
+    old_words = old_text.split()
+    new_words = new_text.split()
+    sm = difflib.SequenceMatcher(None, old_words, new_words)
+
+    highlighted = []
+    color_index = 0
+
+    for tag, i1, i2, j1, j2 in sm.get_opcodes():
+        if tag == 'equal':
+            highlighted.extend(new_words[j1:j2])
+        elif tag in ('replace', 'insert'):
+            for word in new_words[j1:j2]:
+                color = HIGHLIGHT_COLORS[color_index % len(HIGHLIGHT_COLORS)]
+                highlighted.append(f'<span style="color:{color}; font-weight:bold;">{word}</span>')
+                color_index += 1
+    return ' '.join(highlighted)
+
+def get_latest_goal_diff_by_goalid(db: Session, goalid: int) -> Dict:
+    entries = db.query(goalshistory).filter(goalshistory.goalid == goalid).order_by(goalshistory.createddate).all()
+    if not entries:
+        return {}
+
+    first_entry = entries[0]
+    latest_entry = entries[-1] 
+
+    current_text = f"{latest_entry.action or ''} {latest_entry.description or ''} {latest_entry.memo or ''}".strip()
+    original_text = f"{first_entry.action or ''} {first_entry.description or ''} {first_entry.memo or ''}".strip()
+
+    if original_text:
+        highlighted = highlight_word_diff(original_text, current_text)
+    else:
+        highlighted = current_text
+
+    return {
+        "id": latest_entry.id,
+        "goalid": latest_entry.goalid,
+        "createddate": latest_entry.createddate,
+        "combined_diff": highlighted
+    }
+
+def bind_diffs_to_goals(db: Session, goals: List[Dict]) -> List[Dict]:
+    for goal in goals:
+        goalid = goal.get("goalid")
+        diff_result = get_latest_goal_diff_by_goalid(db, goalid)
+        goal["description_diff"] = diff_result
+    return goals

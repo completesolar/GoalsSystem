@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, field_serializer
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from datetime import datetime
 
 @field_serializer("createddatetime", "updateddatetime", mode="plain")
@@ -82,6 +82,7 @@ class GoalsResponse(BaseModel):
     updateddatetime: datetime
     description: Optional[str]
     isconfidential: Optional[bool] = False
+    description_diff: Optional[Dict[str, Any]] = None
 
     class Config:
         from_attributes = True

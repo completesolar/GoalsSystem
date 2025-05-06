@@ -62,6 +62,14 @@ export class HeaderComponent {
       label: 'Project',
       routerLink: ['/project'],
     },
+    {
+      label: 'Roles',
+      routerLink: ['/roles'],
+    },
+    {
+      label: 'Manage Roles',
+      routerLink: ['/manage-roles'],
+    },
     // {
     //   label: 'Goals',
     //   icon: 'pi pi-bullseye',
