@@ -34,7 +34,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 // import { weekConstant } from '../common/common';
 import { DropdownModule } from 'primeng/dropdown';
 import { SelectModule } from 'primeng/select';
-import { Goals } from '../models/goals';
+import { Goals, GoalUpdateResponse } from '../models/goals';
 import { BadgeModule } from 'primeng/badge';
 import { OverlayBadgeModule } from 'primeng/overlaybadge';
 import {
@@ -576,13 +576,16 @@ export class GoalsComponent implements AfterViewInit {
         // After goal creation, convert the time to MST for display
         const mstMoment = moment
           .utc(response.createddatetime)
-          .tz('America/Denver'); // Convert stored UTC to MST
+          .tz('America/Denver');
 
         const newGoal: Goals = {
           ...this.newRow,
           goalid: response.goalid,
-          createddatetime: new Date(mstMoment.format()), // Store in MST format for display
+          createddatetime: new Date(mstMoment.format()),
           isEditable: false,
+          description_diff: {
+            combined_diff: `${response.action} ${response.description} ${response.memo}`
+          }
         };
 
         // Add the new goal to the top of the allGoals array
@@ -955,6 +958,11 @@ export class GoalsComponent implements AfterViewInit {
   enableEdit(row: any): void {
     this.isEdit = true;
     row.isEditable = true;
+  
+    // Strip trailing colon from action for dropdown match
+    if (typeof row.action === 'string') {
+      row.action = row.action.replace(/:$/, '');
+    } 
     this.previousRow = JSON.parse(JSON.stringify(row));
     this.cdr.detectChanges();
 
@@ -1055,10 +1063,18 @@ export class GoalsComponent implements AfterViewInit {
       updateddatetime: moment().tz('America/Denver').toDate(),
     };
     // console.log("updateddatetime",updatedGoal.updateddatetime)
-    this.goalsService.updateGoal(updatedGoal).subscribe((response) => {
+    this.goalsService.updateGoal(updatedGoal).subscribe((response:GoalUpdateResponse) => {
       if (response) {
         const updatedGoals = this.goal.map((g: Goals) =>
-          g.goalid === goalid ? { ...updatedGoal, isEditable: false } : g
+          g.goalid === goalid
+            ? {
+                ...updatedGoal,
+                isEditable: false,
+                description_diff: {
+                  combined_diff: response.description_diff?.combined_diff
+                }
+              }
+            : g
         );
 
         const newTopGoal = updatedGoals.find((g: Goals) => g.goalid === goalid);
