@@ -947,6 +947,11 @@ export class GoalsComponent implements AfterViewInit {
   enableEdit(row: any): void {
     this.isEdit = true;
     row.isEditable = true;
+  
+    // Strip trailing colon from action for dropdown match
+    if (typeof row.action === 'string') {
+      row.action = row.action.replace(/:$/, '');
+    } 
     this.previousRow = JSON.parse(JSON.stringify(row));
     this.cdr.detectChanges();
 
