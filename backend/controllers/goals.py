@@ -8,6 +8,7 @@ from schemas.status import StatusCreate, StatusUpdate, StatusResponse
 from schemas.proj import ProjResponse,ProjUpdate,ProjCreate
 from schemas.vp import VPResponse
 from schemas.p import PCreate, PResponse, PUpdate
+from schemas.role import RoleUpdate,RoleResponse,RoleCreate
 from schemas.b import BResponse,BCreate,BUpdate
 from schemas.e import EResponse,ECreate,EUpdate
 from schemas.d import DResponse,DUpdate,DCreate
@@ -51,7 +52,11 @@ from crud import (
     get_p_by_id,
     get_proj_by_id,
     create_proj,
-    update_proj
+    update_proj,
+    get_all_role,
+    get_role_by_id,
+    create_role,
+    update_role
 )
 from typing import Annotated
 
@@ -332,3 +337,33 @@ def update_proj_endpoint(id: int, proj: ProjUpdate, db: Session = Depends(get_db
     if not db_proj:
         raise HTTPException(status_code=404, detail="Item not found")
     return db_proj
+
+# role
+@router.get("/api/role", response_model=list[RoleResponse])
+def read_role(db: Session = Depends(get_db)):
+    return get_all_role(db)
+
+@router.get("/api/role/{id}", response_model=RoleResponse)
+def read_role(id: int, db: Session = Depends(get_db)):
+    db_role = get_role_by_id(db, id=id)
+    if db_role is None:
+        raise HTTPException(status_code=404, detail="role not found")
+    return db_role
+
+
+@router.post("/api/role", response_model=RoleResponse)
+def create_role_endpoint(role: RoleCreate, db: Session = Depends(get_db)):
+    try:
+        return create_role(db=db, role_data=role)
+    except IntegrityError as e:
+        db.rollback() 
+        if 'duplicate key value violates unique constraint' in str(e):
+            raise HTTPException(status_code=400, detail="Duplicate data: this entry already exists.")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
+    
+@router.put("/api/role/{id}", response_model=RoleResponse)
+def update_role_endpoint(id: int, role: RoleUpdate, db: Session = Depends(get_db)):
+    db_role = update_role(db=db, id=id, role_data=role)
+    if not db_role:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return db_role

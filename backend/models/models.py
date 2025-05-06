@@ -152,3 +152,11 @@ class Action(Base):
     __tablename__ = "action"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     action = Column(String, unique=True, index=True)
+
+
+class Role(Base):
+    __tablename__ = "role"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    role = Column(String,nullable=True,unique=True)
+    status = Column(Integer, default=1)  
+    remarks = Column(String, nullable=True)
