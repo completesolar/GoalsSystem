@@ -17,5 +17,13 @@ export interface Goals {
   action:string;
   [key: string]: any;
   isconfidential: boolean;
-
+  description_diff?: {
+    combined_diff: any;
+  };
 }
+
+export interface GoalUpdateResponse {
+  description_diff?: {
+    combined_diff: string;
+  };
+} 
