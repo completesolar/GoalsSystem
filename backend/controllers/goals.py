@@ -15,9 +15,11 @@ from schemas.d import DResponse,DUpdate,DCreate
 from schemas.action import ActionResponse
 from typing import Optional
 from database import get_db
+from schemas.roleMaster import RoleMasterCreate,RoleMasterUpdate,RoleMasterResponse
 from crud import (
     bind_diffs_to_goals,
     create_goal,
+    get_all_goal_diffs_by_goalid,
     get_goals_by_id,
     get_all_goals,
     get_latest_goal_diff_by_goalid,
@@ -58,7 +60,11 @@ from crud import (
     get_all_role,
     get_role_by_id,
     create_role,
-    update_role
+    update_role,
+    get_all_roleMaster,
+    get_roleMaster_by_id,
+    create_roleMaster,
+    update_roleMaster
 )
 from typing import Annotated
 
@@ -99,9 +105,9 @@ def read_goals(db: Session = Depends(get_db)):
     goals = get_all_goals(db)
     return bind_diffs_to_goals(db, goals)
 
-@router.get("/goal/{goalid}/history-diff")
+@router.get("/api/{goalid}/history-diff")
 def goal_history_diff(goalid: int, db: Session = Depends(get_db)):
-    return get_latest_goal_diff_by_goalid(db, goalid)
+    return get_all_goal_diffs_by_goalid(db, goalid)
 
 @router.get("/api/goals/metrics")
 def read_goals_metrics(
@@ -137,12 +143,6 @@ def update_goals(goalid: int, goal_update: GoalsUpdate, db: Session = Depends(ge
     response = updated_goal.__dict__ if not isinstance(updated_goal, dict) else updated_goal
     response["description_diff"] = diff
     return response
-
-
-@router.get("/api/goalshistory/{goalid}", response_model=list[goalhistoryResponse])
-async def get_goalshistory(goalid: int, db: Session = Depends(get_db)):
-    records = get_goalshistory_by_id(db, goalid=goalid)
-    return [goalhistoryResponse.model_validate(record).model_dump() for record in records]
 
 
 
@@ -381,3 +381,34 @@ def update_role_endpoint(id: int, role: RoleUpdate, db: Session = Depends(get_db
     if not db_role:
         raise HTTPException(status_code=404, detail="Item not found")
     return db_role
+
+
+# role master
+@router.get("/api/roleMaster", response_model=list[RoleMasterResponse])
+def read_role(db: Session = Depends(get_db)):
+    return get_all_roleMaster(db)
+
+@router.get("/api/roleMaster/{id}", response_model=RoleMasterResponse)
+def read_role(id: int, db: Session = Depends(get_db)):
+    db_roleMaster = get_roleMaster_by_id(db, id=id)
+    if db_roleMaster is None:
+        raise HTTPException(status_code=404, detail="role not found")
+    return db_roleMaster
+
+
+@router.post("/api/roleMaster", response_model=RoleMasterResponse)
+def create_roleMaster_endpoint(role: RoleMasterCreate, db: Session = Depends(get_db)):
+    try:
+        return create_roleMaster(db=db, roleMaster_data=role)
+    except IntegrityError as e:
+        db.rollback() 
+        if 'duplicate key value violates unique constraint' in str(e):
+            raise HTTPException(status_code=400, detail="Duplicate data: this entry already exists.")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
+    
+@router.put("/api/roleMaster/{id}", response_model=RoleMasterResponse)
+def update_role_endpoint(id: int, role: RoleMasterUpdate, db: Session = Depends(get_db)):
+    db_roleMaster = update_roleMaster(db=db, id=id, roleMaster_data=role)
+    if not db_roleMaster:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return db_roleMaster

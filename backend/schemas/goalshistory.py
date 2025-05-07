@@ -24,6 +24,7 @@ class goalshistory(BaseModel):
     fiscalyear: Optional[int] = None
     updateBy: Optional[str] = None
     description: Optional[str] = None
+    combined_diff: Optional[str] = None
 
     class Config:
         from_attributes = True

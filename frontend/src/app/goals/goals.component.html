@@ -304,25 +304,7 @@
             <td>{{ row.s }}</td>
 
             <td>
-              <div class="flex flex-wrap items-center gap-2">
-                <b class="flex">
-                  <ng-container *ngFor="let part of row.display.action">
-                    <span [style.color]="part.color" style="white-space: pre-wrap;">{{ part.text }}</span>
-                  </ng-container>
-                </b>
-
-                <span class="flex">
-                  <ng-container *ngFor="let part of row.display.description">
-                    <span [style.color]="part.color" style="white-space: pre-wrap;">{{ part.text }}</span>
-                  </ng-container>
-                </span>
-
-                <b class="flex">
-                  <ng-container *ngFor="let part of row.display.memo">
-                    <span [style.color]="part.color" style="white-space: pre-wrap;">{{ part.text }}</span>
-                  </ng-container>
-                </b>
-              </div>
+              <div [innerHTML]="row.combined_diff| safeHtml "></div>
             </td>
 
             <td>{{ row.createddateMST }}</td>

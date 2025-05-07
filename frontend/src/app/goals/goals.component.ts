@@ -190,18 +190,6 @@ export class GoalsComponent implements AfterViewInit {
   selectedRow: any = null;
   previousRow: any = [];
   showAddGoalDialog: boolean = false;
-  colorPalette = [
-    '#000000',
-    'rgb(002, 081, 150)',
-    'rgb(081, 040, 136)',
-    'rgb(041, 094, 017)',
-    'rgb(235, 097, 035)',
-    'rgb(064, 176, 166)',
-    'rgb(255, 190, 106)',
-    'rgb(191, 044, 035)',
-    'rgb(253, 179, 056)',
-    'rgb(219, 076, 119)',
-  ];
   gdbSearchText: string = '';
 
   settingsDropdownOptions = [
@@ -411,94 +399,26 @@ export class GoalsComponent implements AfterViewInit {
       console.warn('Selected WHO has no supervisor_name.');
     }
   }
-  loadGoalsHistory(id: number) {
-    this.goalsService.getGoalHistory(id).subscribe(
-      (goalsHistory) => {
-        let sortedHistory = (goalsHistory as any[])
-          .map((g) => {
-            const safeCreatedDate = g.createddate
-              ? moment
-                  .utc(g.createddate)
-                  .tz('America/Denver')
-                  .format('MM/DD/YYYY hh:mm:ss A')
-              : 'N/A';
-
-            return {
-              ...g,
-              createddateMST: safeCreatedDate,
-            };
-          })
-          .sort(
-            (a, b) =>
-              new Date(a.createddate).getTime() -
-              new Date(b.createddate).getTime()
-          );
-        const coloredHistory = [];
-        let cumulativeMemo: { text: string; color: string }[] = [];
-        let cumulativeAction: { text: string; color: string }[] = [];
-        let cumulativeDescription: { text: string; color: string }[] = [];
-        for (let i = 0; i < sortedHistory.length; i++) {
-          const current = sortedHistory[i];
-          const rowDisplay: any = {
-            ...current,
-            display: {
-              action: [],
-              description: [],
-              memo: [],
-            },
-          };
-          if (i === 0) {
-            rowDisplay.display.action = [
-              { text: current.action || '', color: this.colorPalette[0] },
-            ];
-            rowDisplay.display.description = [
-              { text: current.description || '', color: this.colorPalette[0] },
-            ];
-            rowDisplay.display.memo = [
-              { text: current.memo || '', color: this.colorPalette[0] },
-            ];
-
-            cumulativeAction = [...rowDisplay.display.action];
-            cumulativeDescription = [...rowDisplay.display.description];
-            cumulativeMemo = [...rowDisplay.display.memo];
-          } else {
-            const highlightColor =
-              this.colorPalette[i % this.colorPalette.length] ||
-              this.colorPalette[1];
-
-            rowDisplay.display.action = this.getProgressiveChunks(
-              cumulativeAction,
-              current.action || '',
-              highlightColor
-            );
-            rowDisplay.display.description = this.getProgressiveChunks(
-              cumulativeDescription,
-              current.description || '',
-              highlightColor
-            );
-            rowDisplay.display.memo = this.getProgressiveChunks(
-              cumulativeMemo,
-              current.memo || '',
-              highlightColor
-            );
-
-            cumulativeAction = [...rowDisplay.display.action];
-            cumulativeDescription = [...rowDisplay.display.description];
-            cumulativeMemo = [...rowDisplay.display.memo];
-          }
-
-          coloredHistory.push(rowDisplay);
-        }
-        this.goalHistory = coloredHistory.reverse();
+  loadGoalsHistory(id: number): void {
+    this.goalsService.getGoalHistory(id).subscribe({
+      next: (goalsHistory: any[]) => {
+        this.goalHistory = goalsHistory.map((g) => ({
+          ...g,
+          createddateMST: this.formatDateToMST(g.createddate),
+        }));
       },
-      (error) => {
-        console.error('Error fetching goal history for ID:', id);
-      }
-    );
+      error: (error) => {
+        console.error(`Error fetching goal history for ID ${id}:`, error);
+      },
+    });
   }
-  getGoalHistoryFor(goalid: string) {
-    return this.goalHistoryMap[goalid];
+
+  private formatDateToMST(date: string | null | undefined): string {
+    return date
+      ? moment.utc(date).tz('America/Denver').format('MM/DD/YYYY hh:mm:ss A')
+      : 'N/A';
   }
+
 
   loadHistoryIfNeeded(goalid: number): boolean {
     if (!this.loadedGoalHistoryIds.has(goalid)) {
@@ -958,7 +878,7 @@ export class GoalsComponent implements AfterViewInit {
   enableEdit(row: any): void {
     this.isEdit = true;
     row.isEditable = true;
-  
+
     // Strip trailing colon from action for dropdown match
     if (typeof row.action === 'string') {
       row.action = row.action.replace(/:$/, '');
@@ -1063,37 +983,41 @@ export class GoalsComponent implements AfterViewInit {
       updateddatetime: moment().tz('America/Denver').toDate(),
     };
     // console.log("updateddatetime",updatedGoal.updateddatetime)
-    this.goalsService.updateGoal(updatedGoal).subscribe((response:GoalUpdateResponse) => {
-      if (response) {
-        const updatedGoals = this.goal.map((g: Goals) =>
-          g.goalid === goalid
-            ? {
-                ...updatedGoal,
-                isEditable: false,
-                description_diff: {
-                  combined_diff: response.description_diff?.combined_diff
+    this.goalsService
+      .updateGoal(updatedGoal)
+      .subscribe((response: GoalUpdateResponse) => {
+        if (response) {
+          const updatedGoals = this.goal.map((g: Goals) =>
+            g.goalid === goalid
+              ? {
+                  ...updatedGoal,
+                  isEditable: false,
+                  description_diff: {
+                    combined_diff: response.description_diff?.combined_diff,
+                  },
                 }
-              }
-            : g
-        );
+              : g
+          );
 
-        const newTopGoal = updatedGoals.find((g: Goals) => g.goalid === goalid);
-        const restGoals = updatedGoals.filter(
-          (g: Goals) => g.goalid !== goalid
-        );
-        this.goal = newTopGoal ? [newTopGoal, ...restGoals] : updatedGoals;
+          const newTopGoal = updatedGoals.find(
+            (g: Goals) => g.goalid === goalid
+          );
+          const restGoals = updatedGoals.filter(
+            (g: Goals) => g.goalid !== goalid
+          );
+          this.goal = newTopGoal ? [newTopGoal, ...restGoals] : updatedGoals;
 
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Goal Updated',
-          detail: 'Goal updated successfully.',
-        });
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Goal Updated',
+            detail: 'Goal updated successfully.',
+          });
 
-        if (goalid) {
-          this.loadGoalsHistory(goalid);
+          if (goalid) {
+            this.loadGoalsHistory(goalid);
+          }
         }
-      }
-    });
+      });
   }
 
   isEqualGoal(goal1: Goals, goal2: Goals): boolean {

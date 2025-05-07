@@ -66,10 +66,10 @@ export class HeaderComponent {
       label: 'Roles',
       routerLink: ['/roles'],
     },
-    {
-      label: 'Manage Roles',
-      routerLink: ['/manage-roles'],
-    },
+    // {
+    //   label: 'Manage Roles',
+    //   routerLink: ['/manage-roles'],
+    // },
     // {
     //   label: 'Goals',
     //   icon: 'pi pi-bullseye',
