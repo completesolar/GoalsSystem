@@ -160,3 +160,12 @@ class Role(Base):
     role = Column(String,nullable=True,unique=True)
     status = Column(Integer, default=1)  
     remarks = Column(String, nullable=True)
+
+class RoleMaster(Base):
+    __tablename__ = "roleMaster"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    role = Column(String,nullable=True,unique=True)
+    role_id = Column(Integer)
+    user = Column(String)
+    user_id = Column(Integer)
+    remarks = Column(String, nullable=True)

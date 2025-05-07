@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from dateutil import tz
 
 # from schemas.schema import Goals
-from models.models import Goals, Who, Proj, VP, Status, goalshistory, P, B, E, D, Action,Role
+from models.models import Goals, Who, Proj, VP, Status, goalshistory, P, B, E, D, Action,Role,RoleMaster
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from schemas.schema import GoalsResponse, GoalsUpdate  # Pydantic schema
@@ -27,6 +27,7 @@ from datetime import datetime, timedelta
 from copy import deepcopy
 from sqlalchemy import case, func,extract
 from schemas.role import RoleCreate,RoleResponse,RoleUpdate
+from schemas.roleMaster import RoleMasterCreate,RoleMasterUpdate,RoleMasterResponse
 
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -646,7 +647,6 @@ HIGHLIGHT_COLORS = [
     'rgb(191, 044, 035)',
     'rgb(253, 179, 056)',
     'rgb(219, 076, 119)',
-    'rgb(120, 120, 120)'
 ]
 
 
@@ -698,3 +698,61 @@ def bind_diffs_to_goals(db: Session, goals: List[Dict]) -> List[Dict]:
         diff_result = get_latest_goal_diff_by_goalid(db, goalid)
         goal["description_diff"] = diff_result
     return goals
+
+def get_all_goal_diffs_by_goalid(db: Session, goalid: int) -> List[Dict]:
+    entries = db.query(goalshistory).filter(goalshistory.goalid == goalid).order_by(goalshistory.createddate.desc()).all()
+    if not entries:
+        return []
+    first_entry = entries[-1]
+    original_text = f"{first_entry.action or ''} {first_entry.description or ''} {first_entry.memo or ''}".strip()
+    diffs = []
+    for current_entry in entries:
+        current_text = f"{current_entry.action or ''} {current_entry.description or ''} {current_entry.memo or ''}".strip()
+        highlighted = highlight_word_diff(original_text, current_text)
+        
+        diffs.append({
+            "id": current_entry.id,
+            "goalid": current_entry.goalid,
+            "createddate": current_entry.createddate,
+            "createdby": current_entry.createdby,
+            "who": current_entry.who,
+            "p": current_entry.p,
+            "proj": current_entry.proj,
+            "vp": current_entry.vp,
+            "b": current_entry.b,
+            "e": current_entry.e,
+            "d": current_entry.d,
+            "s": current_entry.s,
+            "action": current_entry.action,
+            "memo": current_entry.memo,
+            "fiscalyear": current_entry.fiscalyear,
+            "updateBy": current_entry.updateBy,
+            "description": current_entry.description,
+            "combined_diff": highlighted
+        })
+    return diffs
+
+def get_all_roleMaster(db: Session, response_model=list[RoleMasterResponse]):
+    db_roleMaster = db.query(RoleMaster).order_by(RoleMaster.id.desc()).all()
+    return jsonable_encoder(db_roleMaster)
+
+def get_roleMaster_by_id(db: Session, id: int):
+    return db.query(RoleMaster).filter(RoleMaster.id == id).first()
+
+
+def create_roleMaster(db: Session, roleMaster_data: RoleMasterCreate):
+    db_roleMaster = RoleMaster(**roleMaster_data.dict())
+    db.add(db_roleMaster)
+    db.commit()
+    db.refresh(db_roleMaster)
+    return db_roleMaster
+
+def update_roleMaster(db: Session, id: int, role_data: RoleMasterUpdate):
+    db_roleMaster = db.query(RoleMaster).filter(RoleMaster.id == id).first()
+    if not db_roleMaster:
+        return None
+    for key, value in role_data.dict(exclude_unset=True).items():
+        setattr(db_roleMaster, key, value)
+    db.commit()
+    db.refresh(db_roleMaster)
+    return db_roleMaster
