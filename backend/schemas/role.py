@@ -5,6 +5,7 @@ class RoleBase(BaseModel):
     role: Optional[str] = None
     status: Optional[int] = None
     remarks: Optional[str] = None
+    access: Optional[str] = None
 
 class RoleCreate(RoleBase):
     pass
