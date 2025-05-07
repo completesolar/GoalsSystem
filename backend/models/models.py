@@ -160,3 +160,4 @@ class Role(Base):
     role = Column(String,nullable=True,unique=True)
     status = Column(Integer, default=1)  
     remarks = Column(String, nullable=True)
+    access = Column(String)
