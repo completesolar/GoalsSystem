@@ -8,7 +8,9 @@ import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { RolesService } from '../../services/roles.service';
-
+import { TreeSelectModule } from 'primeng/treeselect';
+import { style } from '@angular/animations';
+import { InputTextModule } from 'primeng/inputtext';
 @Component({
   selector: 'app-roles-add-edit',
   imports: [
@@ -19,6 +21,8 @@ import { RolesService } from '../../services/roles.service';
     TableModule,
     MultiSelectModule,
     SelectModule,
+    InputTextModule,
+    TreeSelectModule
   ],
   standalone: true,
   providers: [MessageService],
@@ -29,6 +33,7 @@ export class RolesAddEditComponent implements OnInit {
   roleData = {
     roleName: null as string | null,
     status: null as any,
+    actions:[],
     remarks: '',
   };
   rolesList: any[] = [];
@@ -37,11 +42,45 @@ export class RolesAddEditComponent implements OnInit {
   isValid = true;
   selectedFilters: { [key: string]: any[] } = {};
   activeFilters: { [key: string]: boolean } = {};
-
+  selectedNodes: any[] = [];
+  accessOptions = [
+    {
+      key: 'goals',
+      label: 'Goals',
+    },
+    {
+      key: 'dashboard',
+      label: 'Dashboard',
+      
+    },
+    {
+      key: 'master',
+      label: 'Master',
+      children: [
+        { key: 'priority', label: 'Priority' },
+        { key: 'status', label: 'Status' },
+        { key: 'project', label: 'Project' },
+        { key: 'beginning_week', label: 'Beginning week' },
+        { key: 'end_week', label: 'End week' },
+        { key: 'delinquent', label: 'Delinquent' }
+      ]
+    },
+    {
+      key: 'roles',
+      label: 'Roles',
+      children: [
+        { key: 'add_roles', label: 'Add roles' },
+        { key: 'manage_role', label: 'Manage role' }
+      ]
+    }
+  ];
+  
+  
   columns = [
     { field: 'sno', header: 'S.No', tooltip: '' },
     { field: 'id', header: 'Role ID', tooltip: '' },
     { field: 'role', header: 'Role', tooltip: '' },
+    { field: 'access', header: 'Access', tooltip: '' },
     { field: 'status', header: 'Status', tooltip: '' },
     { field: 'remarks', header: 'Remarks', tooltip: '' },
     { field: 'action', header: 'ACTION', tooltip: '' },
@@ -60,17 +99,16 @@ export class RolesAddEditComponent implements OnInit {
     this.getRolesList();
   }
 
-  //Get Roles List
   getRolesList() {
     this.roleService.getRole().subscribe({
       next: (response: any) => {
-        console.log('Response', response);
+        // console.log('Response', response);
         this.rolesList = response;
         this.allRoleList = response;
         this.rolesList.forEach((item: any, index: number) => {
           item.sno = index + 1;
         });
-        console.log('this.rolesList', this.rolesList);
+        // console.log('this.rolesList', this.rolesList);
       },
       error: (err) => {
         console.error('Get failed', err);
@@ -84,12 +122,26 @@ export class RolesAddEditComponent implements OnInit {
       this.isValid = false;
       return;
     }
+  
+    const extractLeafKeys = (nodes: any[]): string[] => {
+      let keys: string[] = [];
+      for (const node of nodes) {
+        if (!node.children || node.children.length === 0) {
+          keys.push(node.key);
+        } else if (node.children) {
+          keys = keys.concat(extractLeafKeys(node.children));
+        }
+      }
+      return keys;
+    };
+  
     let data = {
       role: this.roleData?.roleName,
-      status:
-        this.roleData.status?.value === null ? 1 : this.roleData.status?.value,
+      status: this.roleData.status?.value === null ? 1 : this.roleData.status?.value,
       remarks: this.roleData.remarks || '',
+      access: extractLeafKeys(this.selectedNodes || []),
     };
+  
     this.roleService.createRole(data).subscribe({
       next: (response: any) => {
         if (response && response.id) {
@@ -97,8 +149,10 @@ export class RolesAddEditComponent implements OnInit {
           this.roleData = {
             roleName: null as string | null,
             status: null as any,
+            actions: [],
             remarks: '',
           };
+          this.selectedNodes = [];
           this.isValid = true;
           this.messageService.add({
             severity: 'success',
@@ -112,24 +166,35 @@ export class RolesAddEditComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Role',
-          detail: `${this.roleData.roleName} already exist.`,
+          detail: `${this.roleData.roleName} already exists.`,
         });
       },
     });
   }
+  
+  
 
   // Update Role
   async updateRole(item: any) {
-    const isChanged = await this.isObjectChanged(item, this.editingItem);
-    if (isChanged === false) {
-      this.messageService.add({
-        severity: 'info',
-        summary: 'No Changes Detected',
-      });
-      this.editingItem = null;
-      return;
+    // const isChanged = await this.isObjectChanged(item, this.editingItem);
+    // if (isChanged === false) {
+    //   this.messageService.add({
+    //     severity: 'info',
+    //     summary: 'No Changes Detected',
+    //   });
+    //   this.editingItem = null;
+    //   return;
+    // }
+  
+    // Clone the item to avoid mutating the original object
+    const payload = { ...this.editingItem };
+  
+    // Only keep `key` values in access
+    if (payload.access && Array.isArray(payload.access)) {
+      payload.access = payload.access.map((a: { key: any; }) => a.key);
     }
-    this.roleService.updateRole(this.editingItem).subscribe({
+  
+    this.roleService.updateRole(payload).subscribe({
       next: (response: any) => {
         if (response && response.id) {
           this.getRolesList();
@@ -151,9 +216,16 @@ export class RolesAddEditComponent implements OnInit {
       },
     });
   }
+  
 
   onEdit(item: any) {
+    // console.log("Item",item);
+    
     this.editingItem = { ...item };
+    this.editingItem.access = this.getSelectedNodesFromKeys(item.access, this.accessOptions);
+    // console.log("editingItem",this.editingItem);
+    
+
   }
 
   isObjectChanged(objA: any, objB: any): boolean {
@@ -239,4 +311,42 @@ export class RolesAddEditComponent implements OnInit {
     this.activeFilters = {};
     this.rolesList = [...this.allRoleList];
   }
+
+  getLabelsFromKeys(keys: string[], options: any[]): string[] {
+    let labels: string[] = [];
+  
+    const traverse = (nodes: any[]) => {
+      for (const node of nodes) {
+        if (keys.includes(node.key)) {
+          labels.push(node.label);
+        }
+        if (node.children) {
+          traverse(node.children);
+        }
+      }
+    };
+  
+    traverse(options);
+    return labels;
+  }
+  
+  getSelectedNodesFromKeys(keys: string[], options: any[]): any[] {
+    const selectedNodes: any[] = [];
+  
+    const traverse = (nodes: any[]) => {
+      for (const node of nodes) {
+        if (keys.includes(node.key)) {
+          selectedNodes.push(node);
+        }
+        if (node.children) {
+          traverse(node.children);
+        }
+      }
+    };
+  
+    traverse(options);
+    return selectedNodes;
+  }
+  
+  
 }

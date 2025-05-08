@@ -47,7 +47,7 @@ export class HeaderComponent {
       routerLink: ['/status'],
     },
     {
-      label: 'Begnning Week',
+      label: 'Beginning Week',
       routerLink: ['/b_week'],
     },
     {

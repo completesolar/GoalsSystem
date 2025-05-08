@@ -1,11 +1,11 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Dict, List, Optional
 
 class RoleBase(BaseModel):
     role: Optional[str] = None
     status: Optional[int] = None
     remarks: Optional[str] = None
-    access: Optional[str] = None
+    access: Optional[List[str]] = None
 
 class RoleCreate(RoleBase):
     pass

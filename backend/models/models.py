@@ -1,4 +1,5 @@
 from sqlalchemy import (
+    JSON,
     Column,
     Integer,
     String,
@@ -160,13 +161,13 @@ class Role(Base):
     role = Column(String,nullable=True,unique=True)
     status = Column(Integer, default=1)  
     remarks = Column(String, nullable=True)
-    access = Column(String)
+    access = Column(JSON)
 
 class RoleMaster(Base):
     __tablename__ = "roleMaster"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     role = Column(String,nullable=True,unique=True)
     role_id = Column(Integer)
-    user = Column(String)
+    user = Column(JSON)
     user_id = Column(Integer)
     remarks = Column(String, nullable=True)
