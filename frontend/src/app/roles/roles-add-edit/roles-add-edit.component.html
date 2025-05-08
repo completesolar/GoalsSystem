@@ -15,6 +15,12 @@
             [ngClass]="{'invalid-border': !isValid && !roleData.roleName}" class="p-inputtext" />
         </div>
         <div class="text-center">
+          <div class="font-bold">Access</div>
+          <p-treeselect class="w-full md:w-80" containerStyleClass="w-full" [(ngModel)]="selectedNodes"
+            [options]="accessOptions" display="chip" [metaKeySelection]="false" selectionMode="checkbox"
+            placeholder="Select Access" showClear="true" appendTo="body" />
+        </div>
+        <div class="text-center">
           <div class="font-bold">Status</div>
           <p-select [options]="statusOptions" [(ngModel)]="roleData.status" optionLabel="label"
             placeholder="Select a status"></p-select>
@@ -59,7 +65,7 @@
                     background: 'transparent'
                   }" panelStyleClass="filter-dropdown-left" [showToggleAll]="true" [maxSelectedLabels]="0"
                   [dropdownIcon]="activeFilters[col.field] ? 'pi pi-filter-fill' : 'pi pi-filter'"
-                  [resetFilterOnHide]="true" appendTo="body" [ngClass]="{ 'filter-active': activeFilters[col.field] }">
+                  [resetFilterOnHide]="true" [ngClass]="{ 'filter-active': activeFilters[col.field] }">
                   <ng-template let-value pTemplate="selectedItems">
                     <span class="sr-only">Filter</span>
                   </ng-template>
@@ -77,9 +83,18 @@
           <td>{{ item.id }}</td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewb">
-              <input type="text" pInputText [(ngModel)]="editingItem.role" style="width: 100px" />
+              <input type="text" pInputText class="p-inputtext" [(ngModel)]="editingItem.role" style="width: 100px" />
             </ng-container>
             <ng-template #viewb>{{ item.role }}</ng-template>
+          </td>
+          <td>
+            <ng-container *ngIf="editingItem?.id === item.id; else viewAccess">
+              <p-treeselect class="w-full md:w-80" containerStyleClass="w-full" [(ngModel)]="editingItem.access"
+                [options]="accessOptions" display="chip" [metaKeySelection]="false" selectionMode="checkbox"
+                placeholder="Select Access" showClear="true" appendTo="body" /> </ng-container>
+            <ng-template #viewAccess>
+              {{ getLabelsFromKeys(item.access, accessOptions).join(', ') }}
+            </ng-template>
           </td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewStatus">
@@ -90,7 +105,8 @@
           </td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewRenarks">
-              <input type="text" pInputText [(ngModel)]="editingItem.remarks" style="width: 100px" />
+              <input type="text" pInputText class="p-inputtext" [(ngModel)]="editingItem.remarks"
+                style="width: 100px; text-overflow: ellipsis;" />
             </ng-container>
             <ng-template #viewRenarks>{{ item.remarks }}</ng-template>
           </td>

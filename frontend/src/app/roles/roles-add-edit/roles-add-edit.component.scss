@@ -159,3 +159,40 @@
 .p-select {
   height: 32px !important;
 }
+
+::ng-deep {
+.custom-goal-table th:nth-child(1),
+  .custom-goal-table td:nth-child(1) {
+    width: 60px !important;
+  }
+
+  .custom-goal-table th:nth-child(2),
+  .custom-goal-table td:nth-child(2) {
+    width: 100px !important;
+  }
+
+  .custom-goal-table th:nth-child(3),
+  .custom-goal-table td:nth-child(3) {
+    width: 150px !important;
+  }
+
+  .custom-goal-table th:nth-child(4),
+  .custom-goal-table td:nth-child(4) {
+    width: auto !important;
+  }
+
+  .custom-goal-table th:nth-child(5),
+  .custom-goal-table td:nth-child(5) {
+    width: 80px !important;
+  }
+
+  .custom-goal-table th:nth-child(6),
+  .custom-goal-table td:nth-child(6) {
+    width: 100px !important;
+  }
+
+  .custom-goal-table th:last-child,
+  .custom-goal-table td:last-child {
+    width: 120px !important;
+  }
+}
