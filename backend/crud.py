@@ -1,6 +1,7 @@
 import difflib
 from typing import Dict, List
 from zoneinfo import ZoneInfo
+from fastapi import HTTPException
 import pytz
 from sqlalchemy.orm import Session
 from dateutil import tz
@@ -747,40 +748,36 @@ def get_roleMaster_by_id(db: Session, id: int):
 #     db.commit()
 #     db.refresh(db_roleMaster)
 #     return db_roleMaster
+
 def create_roleMaster(db: Session, roleMaster_data: RoleMasterCreate):
-    created_entries = []  
-    for user_id in roleMaster_data.user_id or []:
-        user_details = db.query(Who).filter(Who.id == user_id).first()
-        print("user_details", user_details)
-        print("user_details", user_details.employee_name if user_details else None)
-        print("roleMaster_data", roleMaster_data)
-        username = user_details.employee_name if user_details else None
-        print("roleMaster_data.role", roleMaster_data.role)
-        print("username", username)
-        print("user_id", user_id)
-        print("role_id", roleMaster_data.role_id)
-        print("remarks", roleMaster_data.remarks)
+    try:
+        created_records: List[RoleMasterResponse] = [] 
+        for user, user_id in zip(roleMaster_data.user, roleMaster_data.user_id):
+            db_roleMaster = RoleMaster(
+                role=roleMaster_data.role,
+                user=[user],
+                user_id=[user_id], 
+                role_id=roleMaster_data.role_id,
+                remarks=roleMaster_data.remarks
+            )
+            db.add(db_roleMaster)
+            db.commit() 
+            db.refresh(db_roleMaster)  
+            created_records.append(RoleMasterResponse(
+                id=db_roleMaster.id,
+                role=db_roleMaster.role,
+                user=[], 
+                user_id=[],
+                role_id=db_roleMaster.role_id,
+                remarks=db_roleMaster.remarks
+            ))
 
-        db_roleMaster = RoleMaster(
+        return created_records 
 
-            role=roleMaster_data.role,
-            user=username,  
-            user_id=user_id,
-            role_id=roleMaster_data.role_id,
-            remarks=roleMaster_data.remarks
-        )
-
-        db.add(db_roleMaster) 
-
-        created_entries.append(db_roleMaster)
-
-    db.commit()  
-
-    for entry in created_entries:
-
-        db.refresh(entry) 
-
-    return created_entries
+    except Exception as e:
+        db.rollback()  
+        print(f"Error occurred while creating RoleMaster: {e}")
+        raise HTTPException(status_code=500, detail="An error occurred while creating RoleMaster")
 
 def update_roleMaster(db: Session, id: int, role_data: RoleMasterUpdate):
     db_roleMaster = db.query(RoleMaster).filter(RoleMaster.id == id).first()

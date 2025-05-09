@@ -13,7 +13,7 @@ from schemas.b import BResponse,BCreate,BUpdate
 from schemas.e import EResponse,ECreate,EUpdate
 from schemas.d import DResponse,DUpdate,DCreate
 from schemas.action import ActionResponse
-from typing import Optional
+from typing import List, Optional
 from database import get_db
 from schemas.roleMaster import RoleMasterCreate,RoleMasterUpdate,RoleMasterResponse
 from crud import (
@@ -396,7 +396,7 @@ def read_role(id: int, db: Session = Depends(get_db)):
     return db_roleMaster
 
 
-@router.post("/api/roleMaster", response_model=RoleMasterResponse)
+@router.post("/api/roleMaster", response_model=List[RoleMasterResponse])
 def create_roleMaster_endpoint(role: RoleMasterCreate, db: Session = Depends(get_db)):
     try:
         return create_roleMaster(db=db, roleMaster_data=role)

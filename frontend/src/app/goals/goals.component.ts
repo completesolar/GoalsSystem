@@ -193,7 +193,18 @@ export class GoalsComponent implements AfterViewInit {
   isEdit: boolean = false;
   goalHistoryMap: { [goalid: string]: any } = {};
   loadedGoalHistoryIds = new Set<any>();
-
+  colorPalette = [
+    '#000000',
+    'rgb(002, 081, 150)',
+    'rgb(081, 040, 136)',
+    'rgb(041, 094, 017)',
+    'rgb(235, 097, 035)',
+    'rgb(064, 176, 166)',
+    'rgb(255, 190, 106)',
+    'rgb(191, 044, 035)',
+    'rgb(253, 179, 056)',
+    'rgb(219, 076, 119)',
+  ];
   constructor(
     @Inject(PLATFORM_ID) private platform: Object,
     private goalsService: GoalsService,
@@ -334,8 +345,6 @@ export class GoalsComponent implements AfterViewInit {
 
   loadGoals(): void {
     this.goalsService.getGoals().subscribe((goals: any[]) => {
-      console.log('goals', goals[0].description_diff);
-
       const filteredGoals = goals
         .filter((g: any) => +g.fiscalyear === this.selectedYear.code)
         .map((g) => ({
@@ -365,9 +374,10 @@ export class GoalsComponent implements AfterViewInit {
       this.allGoals = filteredGoals;
       this.goal = [...filteredGoals];
       this.originalGoal = [...this.goal];
-      // this.onPageChange({ first: 0, rows: 10 });
+      // console.log("this.goal", this.goal);
     });
   }
+
   onWhoSelected() {
     const currentWeek = this.getCurrentWeekNumber();
     this.newRow.p = 99;
@@ -391,18 +401,64 @@ export class GoalsComponent implements AfterViewInit {
       console.warn('Selected WHO has no supervisor_name.');
     }
   }
-  loadGoalsHistory(id: number): void {
-    this.goalsService.getGoalHistory(id).subscribe({
-      next: (goalsHistory: any[]) => {
-        this.goalHistory = goalsHistory.map((g) => ({
-          ...g,
-          createddateMST: this.formatDateToMST(g.createddate),
-        }));
+  loadGoalsHistory(id: number) {
+    this.goalsService.getGoalHistory(id).subscribe(
+      (goalsHistory) => {
+        let sortedHistory = (goalsHistory as any[])
+          .map(g => ({
+            ...g,
+            createddateMST: moment(g.createddate)
+              .tz('America/Denver')
+              .format('MM/DD/YYYY hh:mm:ss A')
+          }))
+          .sort((a, b) => new Date(a.createddate).getTime() - new Date(b.createddate).getTime());
+  
+        const coloredHistory = [];
+        let cumulativeMemo: { text: string; color: string }[] = [];
+        let cumulativeAction: { text: string; color: string }[] = [];
+        let cumulativeDescription: { text: string; color: string }[] = [];
+  
+        for (let i = 0; i < sortedHistory.length; i++) {
+          const current = sortedHistory[i];
+  
+          const rowDisplay: any = {
+            ...current,
+            display: {
+              action: [],
+              description: [],
+              memo: []
+            }
+          };
+  
+          if (i === 0) {
+            rowDisplay.display.action = [{ text: current.action || '', color: this.colorPalette[0] }];
+            rowDisplay.display.description = [{ text: current.description || '', color: this.colorPalette[0] }];
+            rowDisplay.display.memo = [{ text: current.memo || '', color: this.colorPalette[0] }];
+  
+            cumulativeAction = [...rowDisplay.display.action];
+            cumulativeDescription = [...rowDisplay.display.description];
+            cumulativeMemo = [...rowDisplay.display.memo];
+          } else {
+            const highlightColor = this.colorPalette[i % this.colorPalette.length] || this.colorPalette[1];
+  
+            rowDisplay.display.action = this.getProgressiveChunks(cumulativeAction, current.action || '', highlightColor);
+            rowDisplay.display.description = this.getProgressiveChunks(cumulativeDescription, current.description || '', highlightColor);
+            rowDisplay.display.memo = this.getProgressiveChunks(cumulativeDescription, current.memo || '', highlightColor);
+  
+            cumulativeAction = [...rowDisplay.display.action];
+            cumulativeDescription = [...rowDisplay.display.description];
+            cumulativeMemo = [...rowDisplay.display.memo];
+          }
+  
+          coloredHistory.push(rowDisplay);
+        }
+  
+        this.goalHistory = coloredHistory.reverse();
       },
-      error: (error) => {
-        console.error(`Error fetching goal history for ID ${id}:`, error);
-      },
-    });
+      error => {
+        console.error('Error fetching goal history for ID:', id);
+      }
+    );
   }
 
   private formatDateToMST(date: string | null | undefined): string {

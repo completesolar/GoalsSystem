@@ -217,8 +217,29 @@
                 tooltipPosition="bottom" placeholder="SPEC/MEMO" [tabindex]="rowIndex * 100 + 11" maxlength="17"
                 id="spec-select" />
             </div>
+      
             <ng-template #viewMode>
-              <div class="saved" [innerHTML]="row.description_diff?.combined_diff | safeHtml"></div>
+              <div class="saved">
+                <b>{{ row.action }}</b>
+                <span
+                  *ngIf="row.description.length > 55"
+                  class="description-link"
+                  (click)="showDescription($event, row.description)"
+                  [pTooltip]="
+                    row.action + ' ' + row.description + ' ' + row.memo
+                  "
+                  tooltipPosition="bottom"
+                >
+                  {{ row.description | slice : 0 : 55 }}...
+                </span>
+
+                <span *ngIf="row.description.length <= 55">
+                  {{ row.description }}
+                </span>
+                <b>
+                  {{ row.memo }}
+                </b>
+              </div>
             </ng-template>
             <p-confirmPopup #descriptionPopup key="descPopup"></p-confirmPopup>
           </td>

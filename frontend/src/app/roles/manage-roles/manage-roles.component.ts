@@ -54,7 +54,7 @@ export class ManageRolesComponent {
     { label: 'Active', value: 1 },
     { label: 'Inactive', value: 0 },
   ];
-  rolesOptions: { label: string; value: string }[] = [];
+  rolesOptions: { label: string; value: string;id:number }[] = [];
   usersOptions: { label: string; value: string }[] = [];
   loading: boolean = false;
 
@@ -65,7 +65,6 @@ export class ManageRolesComponent {
   ) {}
 
   ngOnInit(): void {
-    this.getRolesList();
     this.getWhoList();
     this.getRoleList();
   }
@@ -87,28 +86,12 @@ export class ManageRolesComponent {
         return {
           label: item.role,
           value: item.role.toLowerCase(),
+          id: item.id,
         };
       });
     });
   }
 
-  //Get Roles List
-  getRolesList() {
-    // this.roleService.getRole().subscribe({
-    //   next: (response: any) => {
-    //     console.log('Response', response);
-    //     this.rolesList = response;
-    //     this.allRoleList = response;
-    //     this.rolesList.forEach((item: any, index: number) => {
-    //       item.sno = index + 1;
-    //     });
-    //     console.log('this.rolesList', this.rolesList);
-    //   },
-    //   error: (err) => {
-    //     console.error('Get failed', err);
-    //   },
-    // });
-  }
 
   // Add new Role
   saveManageRole() {
@@ -120,6 +103,8 @@ export class ManageRolesComponent {
     }
     let data = {
       role: this.roleData?.role?.value,
+      role_id: this.roleData?.role?.id,
+      user: this.roleData?.users?.map((user: any) => user.label),
       user_id: this.roleData?.users?.map((user: any) => user.value),
       remarks: this.roleData?.remarks || '',
     };
@@ -128,7 +113,6 @@ export class ManageRolesComponent {
     this.roleService.createRoleMaster(data).subscribe({
       next: (response: any) => {
         if (response && response.id) {
-          this.getRolesList();
           this.roleData = {
             role: null as string | null,
             status: null as any,
@@ -168,7 +152,6 @@ export class ManageRolesComponent {
     this.roleService.updateRole(this.editingItem).subscribe({
       next: (response: any) => {
         if (response && response.id) {
-          this.getRolesList();
           this.editingItem = null;
           this.messageService.add({
             severity: 'success',
