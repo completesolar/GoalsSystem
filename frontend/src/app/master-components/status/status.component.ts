@@ -8,6 +8,7 @@ import { SelectModule } from 'primeng/select';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'app-status',
@@ -20,6 +21,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
     SelectModule,
     ToastModule,
     MultiSelectModule,
+    InputTextModule
   ],
   providers: [MessageService],
   templateUrl: './status.component.html',

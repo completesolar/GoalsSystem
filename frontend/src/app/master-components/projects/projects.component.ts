@@ -8,6 +8,7 @@ import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { GoalsService } from '../../services/goals.service';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'app-projects',
@@ -20,6 +21,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
     FormsModule,
     MultiSelectModule,
     ButtonModule,
+    InputTextModule
   ],
   providers: [MessageService],
   templateUrl: './projects.component.html',

@@ -44,7 +44,6 @@ import {
   DIFF_DELETE,
 } from 'diff-match-patch';
 import { ViewChildren, QueryList, ElementRef } from '@angular/core';
-import { SafeHtmlPipe } from 'primeng/menu';
 
 interface Year {
   name: number;
@@ -71,7 +70,6 @@ interface Year {
     MultiSelectModule,
     ConfirmPopupModule,
     CheckboxModule,
-    SafeHtmlPipe,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './goals.component.html',
@@ -80,8 +78,8 @@ interface Year {
 export class GoalsComponent implements AfterViewInit {
   @ViewChild('dataTable') dataTable: Table | undefined;
   @ViewChildren('whoSelectWrapper') whoSelectWrappers!: QueryList<ElementRef>;
+  @ViewChild('whoNewSelect', { read: ElementRef }) whoNewSelectRef!: ElementRef;
 
-  // @ViewChild('multiSelect') multiSelect: MultiSelect | undefined;
   goal: any = [];
   goalHistory: any = [];
   today: Date = new Date();
@@ -101,14 +99,6 @@ export class GoalsComponent implements AfterViewInit {
   private readonly _destroying$ = new Subject<void>();
   selectedSettings: string | undefined;
   isLegendVisible = false;
-  // weekOptions = weekConstant.map((value) => ({
-  //   label: value.toString(),
-  //   value,
-  // }));
-  // weekOptionsseb = weekConstant.map((value) => ({
-  //   label: value.toString(),
-  //   value: value.toString(),
-  // }));
   statusOptions: { label: string; value: string }[] = [];
   priorityOptions: { label: number; value: number }[] = [];
   priorityOptionsE: { label: number; value: number }[] = [];
@@ -201,7 +191,18 @@ export class GoalsComponent implements AfterViewInit {
   isEdit: boolean = false;
   goalHistoryMap: { [goalid: string]: any } = {};
   loadedGoalHistoryIds = new Set<any>();
-
+  colorPalette = [
+    '#000000',
+    'rgb(002, 081, 150)',
+    'rgb(081, 040, 136)',
+    'rgb(041, 094, 017)',
+    'rgb(235, 097, 035)',
+    'rgb(064, 176, 166)',
+    'rgb(255, 190, 106)',
+    'rgb(191, 044, 035)',
+    'rgb(253, 179, 056)',
+    'rgb(219, 076, 119)',
+  ];
   constructor(
     @Inject(PLATFORM_ID) private platform: Object,
     private goalsService: GoalsService,
@@ -342,8 +343,6 @@ export class GoalsComponent implements AfterViewInit {
 
   loadGoals(): void {
     this.goalsService.getGoals().subscribe((goals: any[]) => {
-      console.log('goals', goals[0].description_diff);
-
       const filteredGoals = goals
         .filter((g: any) => +g.fiscalyear === this.selectedYear.code)
         .map((g) => ({
@@ -373,9 +372,10 @@ export class GoalsComponent implements AfterViewInit {
       this.allGoals = filteredGoals;
       this.goal = [...filteredGoals];
       this.originalGoal = [...this.goal];
-      // this.onPageChange({ first: 0, rows: 10 });
+      // console.log("this.goal", this.goal);
     });
   }
+
   onWhoSelected() {
     const currentWeek = this.getCurrentWeekNumber();
     this.newRow.p = 99;
@@ -399,18 +399,88 @@ export class GoalsComponent implements AfterViewInit {
       console.warn('Selected WHO has no supervisor_name.');
     }
   }
-  loadGoalsHistory(id: number): void {
-    this.goalsService.getGoalHistory(id).subscribe({
-      next: (goalsHistory: any[]) => {
-        this.goalHistory = goalsHistory.map((g) => ({
-          ...g,
-          createddateMST: this.formatDateToMST(g.createddate),
-        }));
+  loadGoalsHistory(id: number) {
+    this.goalsService.getGoalHistory(id).subscribe(
+      (goalsHistory) => {
+        let sortedHistory = (goalsHistory as any[])
+          .map((g) => ({
+            ...g,
+            createddateMST: moment(g.createddate)
+              .tz('America/Denver')
+              .format('MM/DD/YYYY hh:mm:ss A'),
+          }))
+          .sort(
+            (a, b) =>
+              new Date(a.createddate).getTime() -
+              new Date(b.createddate).getTime()
+          );
+
+        const coloredHistory = [];
+        let cumulativeMemo: { text: string; color: string }[] = [];
+        let cumulativeAction: { text: string; color: string }[] = [];
+        let cumulativeDescription: { text: string; color: string }[] = [];
+
+        for (let i = 0; i < sortedHistory.length; i++) {
+          const current = sortedHistory[i];
+
+          const rowDisplay: any = {
+            ...current,
+            display: {
+              action: [],
+              description: [],
+              memo: [],
+            },
+          };
+
+          if (i === 0) {
+            rowDisplay.display.action = [
+              { text: current.action || '', color: this.colorPalette[0] },
+            ];
+            rowDisplay.display.description = [
+              { text: current.description || '', color: this.colorPalette[0] },
+            ];
+            rowDisplay.display.memo = [
+              { text: current.memo || '', color: this.colorPalette[0] },
+            ];
+
+            cumulativeAction = [...rowDisplay.display.action];
+            cumulativeDescription = [...rowDisplay.display.description];
+            cumulativeMemo = [...rowDisplay.display.memo];
+          } else {
+            const highlightColor =
+              this.colorPalette[i % this.colorPalette.length] ||
+              this.colorPalette[1];
+
+            rowDisplay.display.action = this.getProgressiveChunks(
+              cumulativeAction,
+              current.action || '',
+              highlightColor
+            );
+            rowDisplay.display.description = this.getProgressiveChunks(
+              cumulativeDescription,
+              current.description || '',
+              highlightColor
+            );
+            rowDisplay.display.memo = this.getProgressiveChunks(
+              cumulativeDescription,
+              current.memo || '',
+              highlightColor
+            );
+
+            cumulativeAction = [...rowDisplay.display.action];
+            cumulativeDescription = [...rowDisplay.display.description];
+            cumulativeMemo = [...rowDisplay.display.memo];
+          }
+
+          coloredHistory.push(rowDisplay);
+        }
+
+        this.goalHistory = coloredHistory.reverse();
       },
-      error: (error) => {
-        console.error(`Error fetching goal history for ID ${id}:`, error);
-      },
-    });
+      (error) => {
+        console.error('Error fetching goal history for ID:', id);
+      }
+    );
   }
 
   private formatDateToMST(date: string | null | undefined): string {
@@ -418,7 +488,6 @@ export class GoalsComponent implements AfterViewInit {
       ? moment.utc(date).tz('America/Denver').format('MM/DD/YYYY hh:mm:ss A')
       : 'N/A';
   }
-
 
   loadHistoryIfNeeded(goalid: number): boolean {
     if (!this.loadedGoalHistoryIds.has(goalid)) {
@@ -504,8 +573,8 @@ export class GoalsComponent implements AfterViewInit {
           createddatetime: new Date(mstMoment.format()),
           isEditable: false,
           description_diff: {
-            combined_diff: `${response.action} ${response.description} ${response.memo}`
-          }
+            combined_diff: `${response.action} ${response.description} ${response.memo}`,
+          },
         };
 
         // Add the new goal to the top of the allGoals array
@@ -882,7 +951,7 @@ export class GoalsComponent implements AfterViewInit {
     // Strip trailing colon from action for dropdown match
     if (typeof row.action === 'string') {
       row.action = row.action.replace(/:$/, '');
-    } 
+    }
     this.previousRow = JSON.parse(JSON.stringify(row));
     this.cdr.detectChanges();
 
@@ -906,10 +975,10 @@ export class GoalsComponent implements AfterViewInit {
               'keydown',
               (event: KeyboardEvent) => {
                 if (event.key === 'Tab') {
-                  console.log('Tab pressed - move to next field');
+                  // console.log('Tab pressed - move to next field');
                   triggerEl.click();
                 } else {
-                  console.log('Key pressed:', event.key);
+                  // console.log('Key pressed:', event.key);
                 }
               },
               { once: true }
@@ -919,7 +988,7 @@ export class GoalsComponent implements AfterViewInit {
           }
         } else {
           console.warn('Could not find .p-select-label inside WHO');
-          console.log('Wrapper content:', wrapperEl.innerHTML);
+          // console.log('Wrapper content:', wrapperEl.innerHTML);
         }
       } else {
         console.warn('No wrapper found for WHO at index', index);
@@ -932,8 +1001,6 @@ export class GoalsComponent implements AfterViewInit {
   }
 
   updateGoal(row: Goals): void {
-    console.log('previousRow', this.previousRow);
-    console.log('currentRow', row);
     this.checkDifferences(this.previousRow, row);
     const missingFields = this.isValidGoalData(row);
     if (missingFields.length > 0) {
@@ -1064,7 +1131,6 @@ export class GoalsComponent implements AfterViewInit {
       'fiscalyear',
     ];
 
-    // console.log('--- Field Differences ---');
     for (const field of fieldsToCompare) {
       const originalValue = original[field];
       const updatedValue = updated[field];
@@ -1184,7 +1250,6 @@ export class GoalsComponent implements AfterViewInit {
   getDData() {
     this.goalsService.getD().subscribe({
       next: (response) => {
-        // console.log(" d response",response)
         const numData = response as Array<{
           d: number;
           id: number;
@@ -1205,7 +1270,6 @@ export class GoalsComponent implements AfterViewInit {
   getEData() {
     this.goalsService.getE().subscribe({
       next: (response) => {
-        // console.log(" e response",response)
         const numData = response as Array<{
           e: number;
           id: number;
@@ -1227,7 +1291,6 @@ export class GoalsComponent implements AfterViewInit {
   getBData() {
     this.goalsService.getB().subscribe({
       next: (response) => {
-        // console.log("b response",response)
         const numData = response as Array<{
           b: number;
           id: number;
@@ -1247,7 +1310,6 @@ export class GoalsComponent implements AfterViewInit {
   }
 
   logout() {
-    // console.log("logout")
     if (isPlatformBrowser(this.platform)) {
       this.msalService.logoutRedirect({
         postLogoutRedirectUri:
@@ -1302,7 +1364,6 @@ export class GoalsComponent implements AfterViewInit {
       }));
     }
 
-    // Sort options to bring selected values to the top
     const selected = this.selectedFilters[field] || [];
     return options.sort((a, b) => {
       const isSelectedA = selected.some((sel: any) => sel.value === a.value);
@@ -1530,7 +1591,6 @@ export class GoalsComponent implements AfterViewInit {
   }
 
   onHistoryExportChange(option: any, goalHistory: []) {
-    // console.log('goalHistory', goalHistory);
     if (option?.value === 'excel') {
       this.exportHistoryExcelData(goalHistory);
     } else if (option?.value === 'pdf') {
@@ -1951,7 +2011,7 @@ export class GoalsComponent implements AfterViewInit {
   }
 
   onFilterEvent(event: any) {
-    console.log('Filter event:', event);
+    // console.log('Filter event:', event);
   }
 
   onPageChange(event: any): void {
@@ -1967,5 +2027,38 @@ export class GoalsComponent implements AfterViewInit {
         this.loadedGoalHistoryIds.add(goalid);
       }
     });
+  }
+
+  addNewgoalDia(): void {
+    this.showAddGoalDialog = true;
+
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      if (this.whoNewSelectRef?.nativeElement) {
+        const wrapperEl = this.whoNewSelectRef.nativeElement;
+        const triggerEl: HTMLElement =
+          wrapperEl.querySelector('.p-select-label');
+
+        if (triggerEl) {
+          triggerEl.focus();
+          triggerEl.click();
+          const inputEl: HTMLInputElement = wrapperEl.querySelector('input');
+
+          if (inputEl) {
+            inputEl.addEventListener(
+              'keydown',
+              (event: KeyboardEvent) => {
+                if (event.key === 'Tab') {
+                  triggerEl.click();
+                }
+              },
+              { once: true }
+            );
+          }
+        } else {
+          console.warn('WHO trigger element not found.');
+        }
+      }
+    }, 100);
   }
 }

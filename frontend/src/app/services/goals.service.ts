@@ -23,7 +23,7 @@ export class GoalsService {
     return this.http.get(`${this.baseURL}/goals/${id}`);
   }
   getGoalHistory(id: number) {
-    return this.http.get<any[]>(`${this.baseURL}/${id}/history-diff`);
+    return this.http.get<any[]>(`${this.baseURL}/goalshistory/${id}`);
   }
   createGoal(goal: any) {
     return this.http.post(`${this.baseURL}/goals`, goal);
@@ -139,15 +139,8 @@ export class GoalsService {
     return this.http.get(`${this.baseURL}/action`);
   }
 
-  getGoalsMetrics(filters: {
-    vp?: string;
-    proj?: string;
-    priority?: number;
-    created_from?: string;
-    created_to?: string;
-  }) {
-    const params = new HttpParams({ fromObject: filters });
-    return this.http.get<any>(`${this.baseURL}/goals/metrics`, { params });
+  getGoalsMetrics() {
+    return this.http.get<any>(`${this.baseURL}/goals/metrics`);
   }
   createB(b: any) {
     return this.http.post(`${this.baseURL}/b`, b);

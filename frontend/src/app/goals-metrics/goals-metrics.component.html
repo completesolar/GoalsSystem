@@ -1,95 +1,124 @@
-<div class="pagetitle">Dashboard</div>
-
-<!-- Project-wise & Completed vs Delinquent Charts (Top Row) -->
-<div class="flex gap-3 p-3">
-  <!-- Project-wise Bar Chart (Scrollable) -->
-  <div class="bg-white p-3 border-round-md" style="flex: 1 1 50%; max-height: 400px; overflow-y: auto;">
-  <apx-chart
-    *ngIf="yearChartOptions?.series?.length && yearChartOptions?.chart"
-    [series]="yearChartOptions.series"
-    [chart]="yearChartOptions.chart"
-    [xaxis]="yearChartOptions.xaxis"
-    [title]="yearChartOptions.title"
-    [legend]="yearChartOptions.legend"
-    [plotOptions]="yearChartOptions.plotOptions"
-    [dataLabels]="yearChartOptions.dataLabels"
-    [colors]="yearChartOptions.colors">
-  </apx-chart>
-  </div>
-
-  <!-- Completed vs Delinquent Pie -->
-  <div class="bg-white p-3 border-round-md" style="flex: 1 1 50%; max-height: 400px; display: flex; align-items: center; justify-content: center;">
-    <div style="width: 100%; display: flex; align-items: center; justify-content: center;">
-      <apx-chart
-        *ngIf="statusPieOptions?.series?.length && statusPieOptions?.chart"
-        [series]="statusPieOptions.series"
-        [labels]="statusPieOptions.labels"
-        [chart]="statusPieOptions.chart"
-        [title]="statusPieOptions.title"
-        [legend]="{ position: 'bottom' }"
-        [colors]="statusPieOptions.colors"
-        [plotOptions]="{
-          pie: {
-            donut: {
-              labels: {
-                show: true,
-                name: { show: true },
-                value: { show: true },
-                total: { show: true }
-              }
-            }
-          }
-        }"
-        [dataLabels]="statusPieOptions.dataLabels"
-        [stroke]="{ show: false }" >
-      </apx-chart>
-    </div>
-  </div>
+<!-- Loader Container -->
+<div *ngIf="isLoading" class="loader-container">
+  <div class="loader">Loading...</div>
 </div>
 
-<!-- Year-wise & Status-wise Charts (Bottom Row) -->
-<div class="flex gap-3 p-3">
-  <!-- Year-wise Chart Placeholder -->
-  <div class="bg-white p-3 border-round-md" style="flex: 1 1 50%; max-height: 400px; overflow-y: auto;">
-    <apx-chart
-      *ngIf="yearWiseChartOptions?.series?.length"
-      [series]="yearWiseChartOptions.series"
-      [chart]="yearWiseChartOptions.chart"
-      [xaxis]="yearWiseChartOptions.xaxis"
-      [title]="yearWiseChartOptions.title"
-      [dataLabels]="yearWiseChartOptions.dataLabels"
-      [plotOptions]="yearWiseChartOptions.plotOptions"
-      [legend]="yearWiseChartOptions.legend"
-      [colors]="yearWiseChartOptions.colors">
-    </apx-chart>
-  </div>
+<!-- The rest of your content (charts) will be displayed when isLoading is false -->
+<div *ngIf="!isLoading">
+  <div class="pagetitle">Dashboard</div>
 
-  <!-- Status-wise Chart Placeholder -->
-  <div class="bg-white p-3 border-round-md" style="flex: 1 1 50%; max-height: 400px; display: flex; align-items: center; justify-content: center;">
-    <div style="width: 100%; display: flex; align-items: center; justify-content: center;">
-      <apx-chart
-        *ngIf="statusWiseChartOptions?.series?.length"
-        [series]="statusWiseChartOptions.series"
-        [labels]="statusWiseChartOptions.labels"
-        [chart]="statusWiseChartOptions.chart"
-        [title]="statusWiseChartOptions.title"
-        [colors]="statusWiseChartOptions.colors"
-        [legend]="{ position: 'bottom' }"
-        [plotOptions]="{
-          pie: {
-            donut: {
-              labels: {
-                show: true,
-                name: { show: true },
-                value: { show: true },
-                total: { show: true }
+  <!-- Project-wise & Completed vs Delinquent Charts (Top Row) -->
+  <div class="flex gap-3 p-3" style="flex-wrap: wrap;">
+    <!-- Project-wise Bar Chart (Scrollable) -->
+    <div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; overflow-x: auto; overflow-y: hidden;">
+      <div [style.minWidth.px]="projectStatusChartOptions.chart.width">
+        <apx-chart
+          *ngIf="projectStatusChartOptions?.series?.length"
+          [series]="projectStatusChartOptions.series"
+          [chart]="projectStatusChartOptions.chart"
+          [xaxis]="projectStatusChartOptions.xaxis"
+          [title]="projectStatusChartOptions.title"
+          [legend]="projectStatusChartOptions.legend"
+          [plotOptions]="projectStatusChartOptions.plotOptions"
+          [dataLabels]="projectStatusChartOptions.dataLabels"
+          [colors]="projectStatusChartOptions.colors">
+        </apx-chart>
+      </div>
+    </div>
+
+    <!-- Completed vs Delinquent Pie (Commented Out) -->
+    <!--
+    <div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; max-height: 400px; display: flex; align-items: center; justify-content: center;">
+      <div style="width: 100%; display: flex; align-items: center; justify-content: center;">
+        <apx-chart
+          *ngIf="statusPieOptions?.series?.length && statusPieOptions?.chart"
+          [series]="statusPieOptions.series"
+          [labels]="statusPieOptions.labels"
+          [chart]="statusPieOptions.chart"
+          [title]="statusPieOptions.title"
+          [legend]="{ position: 'bottom' }"
+          [colors]="statusPieOptions.colors"
+          [plotOptions]="{
+            pie: {
+              donut: {
+                labels: {
+                  show: true,
+                  name: { show: true },
+                  value: { show: true },
+                  total: { show: true }
+                }
               }
             }
-          }
-        }"
-        [dataLabels]="statusWiseChartOptions.dataLabels"
-        [stroke]="{ show: false }" 
-        >
+          }"
+          [dataLabels]="statusPieOptions.dataLabels"
+          [stroke]="{ show: false }" >
+        </apx-chart>
+      </div>
+    </div>
+    -->
+
+  </div>
+
+  <!-- Year-wise & Status-wise Charts (Bottom Row) -->
+  <div class="flex gap-3 p-3" style="flex-wrap: wrap;">
+    <!-- Year-wise Chart Placeholder -->
+    <div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; max-height: 400px; overflow-y: auto;">
+      <apx-chart
+        *ngIf="yearWiseChartOptions?.series?.length"
+        [series]="yearWiseChartOptions.series"
+        [chart]="yearWiseChartOptions.chart"
+        [xaxis]="yearWiseChartOptions.xaxis"
+        [title]="yearWiseChartOptions.title"
+        [dataLabels]="yearWiseChartOptions.dataLabels"
+        [plotOptions]="yearWiseChartOptions.plotOptions"
+        [legend]="yearWiseChartOptions.legend"
+        [colors]="yearWiseChartOptions.colors">
+      </apx-chart>
+    </div>
+
+    <!-- Status-wise Chart Placeholder -->
+    <div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; max-height: 400px; display: flex; align-items: center; justify-content: center;">
+      <div style="width: 100%; display: flex; align-items: center; justify-content: center;">
+        <apx-chart
+          *ngIf="statusWiseChartOptions?.series?.length"
+          [series]="statusWiseChartOptions.series"
+          [labels]="statusWiseChartOptions.labels"
+          [chart]="statusWiseChartOptions.chart"
+          [title]="statusWiseChartOptions.title"
+          [colors]="statusWiseChartOptions.colors"
+          [legend]="{ position: 'bottom' }"
+          [plotOptions]="{
+            pie: {
+              donut: {
+                labels: {
+                  show: true,
+                  name: { show: true },
+                  value: { show: true },
+                  total: { show: true }
+                }
+              }
+            }
+          }"
+          [dataLabels]="statusWiseChartOptions.dataLabels"
+          [stroke]="{ show: false }">
+        </apx-chart>
+      </div>
+    </div>
+  </div>
+
+  <!-- Projects by VP Stacked Bar Chart -->
+  <div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; overflow-x: auto; overflow-y: hidden;">
+    <div [style.minWidth.px]="projectsByVPChartOptions.chart.width">
+      <apx-chart
+        *ngIf="projectsByVPChartOptions?.series?.length"
+        [series]="projectsByVPChartOptions.series"
+        [chart]="projectsByVPChartOptions.chart"
+        [xaxis]="projectsByVPChartOptions.xaxis"
+        [title]="projectsByVPChartOptions.title"
+        [legend]="projectsByVPChartOptions.legend"
+        [plotOptions]="projectsByVPChartOptions.plotOptions"
+        [dataLabels]="projectsByVPChartOptions.dataLabels"
+        [colors]="projectsByVPChartOptions.colors">
       </apx-chart>
     </div>
   </div>

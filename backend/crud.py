@@ -1,6 +1,8 @@
 import difflib
+from sqlite3 import IntegrityError
 from typing import Dict, List
 from zoneinfo import ZoneInfo
+from fastapi import HTTPException
 import pytz
 from sqlalchemy.orm import Session
 from dateutil import tz
@@ -500,23 +502,15 @@ def update_goal(db: Session, goal_id: int, goal_update: GoalsUpdate):
     #     createddate=currentdate,
     #     createdby=goal_update.updateBy
 
-def get_goals_metrics(db: Session, vp=None, proj=None, priority=None, created_from=None, created_to=None):
+def get_goals_metrics(db: Session):
+    # Base query without any filters
     base_query = db.query(Goals)
-
-    if vp:
-        base_query = base_query.filter(Goals.vp == vp)
-    if proj:
-        base_query = base_query.filter(Goals.proj == proj)
-    if priority:
-        base_query = base_query.filter(Goals.p == priority)
-    if created_from:
-        base_query = base_query.filter(Goals.createddatetime >= created_from)
-    if created_to:
-        base_query = base_query.filter(Goals.createddatetime <= created_to)
 
     # 1. Completed and Delinquent Counts
     completed_delinquent_data = {"Completed": 0, "Delinquent": 0}
-    for row in base_query.with_entities(Goals.s, func.count().label("count")).filter(Goals.s.in_(['C', 'D'])).group_by(Goals.s).all():
+    for row in base_query.with_entities(Goals.s, func.count().label("count")).filter(
+        Goals.s.in_(['C', 'D'])
+    ).group_by(Goals.s).all():
         if row.s == 'C':
             completed_delinquent_data["Completed"] = row.count
         elif row.s == 'D':
@@ -525,31 +519,33 @@ def get_goals_metrics(db: Session, vp=None, proj=None, priority=None, created_fr
     # 2. Valid Projects
     valid_projects = set(proj_row.proj for proj_row in db.query(Proj.proj).all())
 
-    # 3. Project-wise Totals
-    raw_project_data = base_query.with_entities(
-        Goals.proj,
-        func.count().label("total"),
-        func.sum(case((Goals.s == 'C', 1), else_=0)).label("completed"),
-        func.sum(case((Goals.s == 'D', 1), else_=0)).label("delinquent")
-    ).group_by(Goals.proj).all()
+    # 3. Project-wise by all statuses
+    status_list = ['C', 'CD', 'K', 'N', 'ND', 'R']
 
-    project_data = []
-    unassigned = {"project": "Unassigned", "total": 0, "completed": 0, "delinquent": 0}
-    for row in raw_project_data:
-        proj_value = row.proj or ""
-        if proj_value in valid_projects:
-            project_data.append({
-                "project": proj_value,
-                "total": row.total,
-                "completed": row.completed,
-                "delinquent": row.delinquent
-            })
-        else:
-            unassigned["total"] += row.total
-            unassigned["completed"] += row.completed
-            unassigned["delinquent"] += row.delinquent
-    if unassigned["total"] > 0:
-        project_data.append(unassigned)
+    raw_project_status_data = base_query.with_entities(
+        Goals.proj,
+        Goals.s,
+        func.count().label("count")
+    ).group_by(Goals.proj, Goals.s).all()
+
+    project_status_map = {}
+    unassigned_key = "Unassigned"
+
+    for row in raw_project_status_data:
+        proj = (row.proj or unassigned_key).strip().upper()
+        status = row.s
+        if proj not in project_status_map:
+            project_status_map[proj] = {}
+        project_status_map[proj][status] = row.count
+
+    all_projects = sorted(project_status_map.keys())
+
+    project_status_series = []
+    for status in status_list:
+        project_status_series.append({
+            "name": status,
+            "data": [project_status_map.get(p, {}).get(status, 0) for p in all_projects]
+        })
 
     # 4. Year-wise Goals
     yearwise_data = base_query.with_entities(
@@ -563,11 +559,46 @@ def get_goals_metrics(db: Session, vp=None, proj=None, priority=None, created_fr
         func.count().label('count')
     ).group_by(Goals.s).all()
 
+    # 6. VP-wise Goals by Project
+    raw_vp_proj_data = base_query.with_entities(
+        Goals.vp,
+        Goals.proj,
+        func.count().label("count")
+    ).group_by(Goals.vp, Goals.proj).all()
+
+    vp_proj_map = {}
+    unassigned_vp = "Unassigned VP"
+    unassigned_proj = "Unassigned"
+
+    for row in raw_vp_proj_data:
+        vp = (row.vp or unassigned_vp).strip()
+        proj = (row.proj or unassigned_proj).strip().upper()
+        if proj not in vp_proj_map:
+            vp_proj_map[proj] = {}
+        vp_proj_map[proj][vp] = row.count
+
+    all_vps = sorted({vp for proj_data in vp_proj_map.values() for vp in proj_data})
+    all_projects = sorted(vp_proj_map.keys())
+
+    vp_proj_series = []
+    for proj in all_projects:
+        vp_proj_series.append({
+            "name": proj,
+            "data": [vp_proj_map[proj].get(vp, 0) for vp in all_vps]
+        })
+
     return {
         "completedAndDelinquent": completed_delinquent_data,
-        "projectWise": project_data,
+        "projectWiseByStatus": {
+            "categories": all_projects,
+            "series": project_status_series
+        },
+        "projectsByVP": {
+            "categories": all_vps,
+            "series": vp_proj_series
+        },
         "yearWise": [{"year": row.fiscalyear, "count": row.count} for row in yearwise_data],
-        "statusWise": [{"status": row.s or "Unassigned", "count": row.count} for row in statuswise_data]
+        "statusWise": [{"status": (row.s or "Unassigned").strip(), "count": row.count} for row in statuswise_data]
     }
 
 
@@ -740,19 +771,89 @@ def get_roleMaster_by_id(db: Session, id: int):
     return db.query(RoleMaster).filter(RoleMaster.id == id).first()
 
 
-def create_roleMaster(db: Session, roleMaster_data: RoleMasterCreate):
-    db_roleMaster = RoleMaster(**roleMaster_data.dict())
-    db.add(db_roleMaster)
-    db.commit()
-    db.refresh(db_roleMaster)
-    return db_roleMaster
+# def create_roleMaster(db: Session, roleMaster_data: RoleMasterCreate):
+#     print("roleMaster_data",roleMaster_data)
+#     db_roleMaster = RoleMaster(**roleMaster_data.dict())
+#     db.add(db_roleMaster)
+#     db.commit()
+#     db.refresh(db_roleMaster)
+#     return db_roleMaster
 
+def create_roleMaster(db: Session, roleMaster_data: RoleMasterCreate):
+    try:
+        created_records: List[RoleMasterResponse] = [] 
+        print("roleMaster_data",roleMaster_data)
+        for user, user_id, email in zip(roleMaster_data.user, roleMaster_data.user_id, roleMaster_data.user_email):
+            existing_role = db.query(RoleMaster).filter(RoleMaster.user == [user]).first()
+            if existing_role:
+                print(f"User '{user}' already exists!") 
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"{user} already exists"
+                )
+            
+            db_roleMaster = RoleMaster(
+                role=roleMaster_data.role,
+                user=[user],
+                user_id=[user_id], 
+                role_id=roleMaster_data.role_id,
+                remarks=roleMaster_data.remarks,
+                user_email=[email]
+            )
+            
+            db.add(db_roleMaster)
+            db.commit() 
+            db.refresh(db_roleMaster)  
+            created_records.append(RoleMasterResponse(
+                id=db_roleMaster.id,
+                role=db_roleMaster.role,
+                user=[user], 
+                user_id=[user_id],  
+                role_id=db_roleMaster.role_id,
+                remarks=db_roleMaster.remarks,
+                user_email=[email]
+
+            ))
+
+        return created_records 
+
+    except IntegrityError as e:
+        db.rollback() 
+        print(f"Integrity error occurred: {e}")
+        raise HTTPException(status_code=400,detail=f"{user} already exists")
+    
+    except Exception as e:
+        db.rollback()  
+        print(f"Error occurred while creating RoleMaster: {e}")
+        raise HTTPException(status_code=400, detail=f"{user} already exists")
+    
 def update_roleMaster(db: Session, id: int, role_data: RoleMasterUpdate):
-    db_roleMaster = db.query(RoleMaster).filter(RoleMaster.id == id).first()
-    if not db_roleMaster:
-        return None
-    for key, value in role_data.dict(exclude_unset=True).items():
-        setattr(db_roleMaster, key, value)
-    db.commit()
-    db.refresh(db_roleMaster)
-    return db_roleMaster
+    try:
+        db_roleMaster = db.query(RoleMaster).filter(RoleMaster.id == id).first()
+        if not db_roleMaster:
+            raise HTTPException(status_code=404, detail=f"RoleMaster with ID {id} not found")
+
+        for key, value in role_data.dict(exclude_unset=True).items():
+            setattr(db_roleMaster, key, value)
+
+        db.commit()
+        db.refresh(db_roleMaster)
+        return RoleMasterResponse(
+            id=db_roleMaster.id,
+            role=db_roleMaster.role,
+            user=db_roleMaster.user,
+            user_id=db_roleMaster.user_id,
+            role_id=db_roleMaster.role_id,
+            remarks=db_roleMaster.remarks,
+            user_email=db_roleMaster.user_email
+
+        )
+    except IntegrityError as e:
+        db.rollback()
+        print(f"Integrity error occurred: {e}")
+        raise HTTPException(status_code=400, detail="Integrity error occurred while updating RoleMaster")
+    
+    except Exception as e:
+        db.rollback()
+        print(f"Error occurred while updating RoleMaster: {e}")
+        raise HTTPException(status_code=400, detail="An error occurred while updating RoleMaster")

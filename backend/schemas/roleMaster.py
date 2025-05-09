@@ -1,12 +1,13 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import List, Optional
 
 class RoleMasterBase(BaseModel):
     role: Optional[str] = None
-    user: Optional[str] = None
-    user_id: Optional[int] = None
+    user: Optional[List[str]] = None       
+    user_id: Optional[List[int]] = None    
     role_id: Optional[int] = None
     remarks: Optional[str] = None
+    user_email: Optional[List[str]] = None
 
 class RoleMasterCreate(RoleMasterBase):
     pass
@@ -14,8 +15,15 @@ class RoleMasterCreate(RoleMasterBase):
 class RoleMasterUpdate(RoleMasterBase):
     pass
 
-class RoleMasterResponse(RoleMasterBase):
+# Output model (for API responses)
+class RoleMasterResponse(BaseModel):
     id: int
+    role: Optional[str] = None
+    user: Optional[List[str]] = None 
+    user_id: Optional[List[int]] = None 
+    role_id: Optional[int] = None
+    remarks: Optional[str] = None
+    user_email: Optional[List[str]] = None
 
     class Config:
         from_attributes = True
