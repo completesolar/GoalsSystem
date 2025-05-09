@@ -740,12 +740,47 @@ def get_roleMaster_by_id(db: Session, id: int):
     return db.query(RoleMaster).filter(RoleMaster.id == id).first()
 
 
+# def create_roleMaster(db: Session, roleMaster_data: RoleMasterCreate):
+#     print("roleMaster_data",roleMaster_data)
+#     db_roleMaster = RoleMaster(**roleMaster_data.dict())
+#     db.add(db_roleMaster)
+#     db.commit()
+#     db.refresh(db_roleMaster)
+#     return db_roleMaster
 def create_roleMaster(db: Session, roleMaster_data: RoleMasterCreate):
-    db_roleMaster = RoleMaster(**roleMaster_data.dict())
-    db.add(db_roleMaster)
-    db.commit()
-    db.refresh(db_roleMaster)
-    return db_roleMaster
+    created_entries = []  
+    for user_id in roleMaster_data.user_id or []:
+        user_details = db.query(Who).filter(Who.id == user_id).first()
+        print("user_details", user_details)
+        print("user_details", user_details.employee_name if user_details else None)
+        print("roleMaster_data", roleMaster_data)
+        username = user_details.employee_name if user_details else None
+        print("roleMaster_data.role", roleMaster_data.role)
+        print("username", username)
+        print("user_id", user_id)
+        print("role_id", roleMaster_data.role_id)
+        print("remarks", roleMaster_data.remarks)
+
+        db_roleMaster = RoleMaster(
+
+            role=roleMaster_data.role,
+            user=username,  
+            user_id=user_id,
+            role_id=roleMaster_data.role_id,
+            remarks=roleMaster_data.remarks
+        )
+
+        db.add(db_roleMaster) 
+
+        created_entries.append(db_roleMaster)
+
+    db.commit()  
+
+    for entry in created_entries:
+
+        db.refresh(entry) 
+
+    return created_entries
 
 def update_roleMaster(db: Session, id: int, role_data: RoleMasterUpdate):
     db_roleMaster = db.query(RoleMaster).filter(RoleMaster.id == id).first()

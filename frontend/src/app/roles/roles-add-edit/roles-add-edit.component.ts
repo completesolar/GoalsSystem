@@ -11,6 +11,9 @@ import { RolesService } from '../../services/roles.service';
 import { TreeSelectModule } from 'primeng/treeselect';
 import { style } from '@angular/animations';
 import { InputTextModule } from 'primeng/inputtext';
+import { DialogModule } from 'primeng/dialog';
+import { TreeModule } from 'primeng/tree';
+
 @Component({
   selector: 'app-roles-add-edit',
   imports: [
@@ -22,7 +25,9 @@ import { InputTextModule } from 'primeng/inputtext';
     MultiSelectModule,
     SelectModule,
     InputTextModule,
-    TreeSelectModule
+    TreeSelectModule,
+    DialogModule,
+    TreeModule
   ],
   standalone: true,
   providers: [MessageService],
@@ -43,11 +48,9 @@ export class RolesAddEditComponent implements OnInit {
   selectedFilters: { [key: string]: any[] } = {};
   activeFilters: { [key: string]: boolean } = {};
   selectedNodes: any[] = [];
+  accessDialogVisible: boolean = false;
+
   accessOptions = [
-    {
-      key: 'goals',
-      label: 'Goals',
-    },
     {
       key: 'dashboard',
       label: 'Dashboard',
@@ -97,6 +100,8 @@ export class RolesAddEditComponent implements OnInit {
 
   ngOnInit(): void {
     this.getRolesList();
+    this.expandAllNodes(this.accessOptions);
+
   }
 
   getRolesList() {
@@ -347,6 +352,34 @@ export class RolesAddEditComponent implements OnInit {
     traverse(options);
     return selectedNodes;
   }
+  openAccessDialog(item: any): void {
+    this.editingItem = item;
+    this.accessDialogVisible = true;
   
+    // Expand all nodes
+    this.expandAllNodes(this.accessOptions);
+  }
   
+  expandAllNodes(nodes: any[]): void {
+    if (!nodes) return;
+    for (let node of nodes) {
+      node.expanded = true;
+      if (node.children) {
+        this.expandAllNodes(node.children);
+      }
+    }
+  }
+  
+  selectAllAccess(): void {
+    this.selectedNodes = [];
+    const collectKeys = (nodes: any[]) => {
+      nodes.forEach(node => {
+        this.selectedNodes.push(node.key);
+        if (node.children) collectKeys(node.children);
+      });
+    };
+    collectKeys(this.accessOptions);
+  }
+  
+
 }

@@ -80,8 +80,8 @@ interface Year {
 export class GoalsComponent implements AfterViewInit {
   @ViewChild('dataTable') dataTable: Table | undefined;
   @ViewChildren('whoSelectWrapper') whoSelectWrappers!: QueryList<ElementRef>;
-
-  // @ViewChild('multiSelect') multiSelect: MultiSelect | undefined;
+  @ViewChild('whoNewSelect', { read: ElementRef }) whoNewSelectRef!: ElementRef;
+  
   goal: any = [];
   goalHistory: any = [];
   today: Date = new Date();
@@ -101,14 +101,6 @@ export class GoalsComponent implements AfterViewInit {
   private readonly _destroying$ = new Subject<void>();
   selectedSettings: string | undefined;
   isLegendVisible = false;
-  // weekOptions = weekConstant.map((value) => ({
-  //   label: value.toString(),
-  //   value,
-  // }));
-  // weekOptionsseb = weekConstant.map((value) => ({
-  //   label: value.toString(),
-  //   value: value.toString(),
-  // }));
   statusOptions: { label: string; value: string }[] = [];
   priorityOptions: { label: number; value: number }[] = [];
   priorityOptionsE: { label: number; value: number }[] = [];
@@ -1968,4 +1960,38 @@ export class GoalsComponent implements AfterViewInit {
       }
     });
   }
+
+
+  addNewgoalDia(): void {
+    this.showAddGoalDialog = true;
+  
+    this.cdr.detectChanges();  
+    setTimeout(() => {
+      if (this.whoNewSelectRef?.nativeElement) {
+        const wrapperEl = this.whoNewSelectRef.nativeElement;
+        const triggerEl: HTMLElement = wrapperEl.querySelector('.p-select-label');
+  
+        if (triggerEl) {
+          triggerEl.focus();
+          triggerEl.click();
+          const inputEl: HTMLInputElement = wrapperEl.querySelector('input');
+  
+          if (inputEl) {
+            inputEl.addEventListener(
+              'keydown',
+              (event: KeyboardEvent) => {
+                if (event.key === 'Tab') {
+                  triggerEl.click(); 
+                }
+              },
+              { once: true }
+            );
+          }
+        } else {
+          console.warn('WHO trigger element not found.');
+        }
+      }
+    }, 100);
+  }
+  
 }
