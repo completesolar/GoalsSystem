@@ -111,20 +111,10 @@ def goal_history_diff(goalid: int, db: Session = Depends(get_db)):
 
 @router.get("/api/goals/metrics")
 def read_goals_metrics(
-    vp: Optional[str] = None,
-    proj: Optional[str] = None,
-    priority: Optional[int] = None,
-    created_from: Optional[str] = None,
-    created_to: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
     return get_goals_metrics(
-        db=db,
-        vp=vp,
-        proj=proj,
-        priority=priority,
-        created_from=created_from,
-        created_to=created_to
+    db=db
     )
 
 @router.get("/api/goals/{goalid}", response_model=GoalsResponse)
