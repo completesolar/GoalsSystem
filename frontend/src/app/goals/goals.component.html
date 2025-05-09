@@ -29,7 +29,7 @@
 
         <p-button severity="success" size="small" label="Clear"
           [style]="{ height: '24px', fontSize: '12px', width:'70px'}" icon="pi pi-plus" label="Add"
-          (click)="showAddGoalDialog = true"></p-button>
+          (click)="addNewgoalDia()"></p-button>
 
       </div>
       <span class="white-space-nowrap export-text">Export to</span>
@@ -217,27 +217,29 @@
                 tooltipPosition="bottom" placeholder="SPEC/MEMO" [tabindex]="rowIndex * 100 + 11" maxlength="17"
                 id="spec-select" />
             </div>
-
-            <!-- <ng-template #viewMode>
-              <div class="saved" *ngIf="getGoalHistoryFor(row.goalid)" style="white-space: normal;">
-                <b>
-                  <ng-container *ngFor="let chunk of getGoalHistoryFor(row.goalid)?.display?.action">
-                    <span [style.color]="chunk.color">{{ chunk.text }}</span>
-                  </ng-container>
-                </b>
-
-                  <ng-container *ngFor="let chunk of getGoalHistoryFor(row.goalid)?.display?.description">
-                    <span [style.color]="chunk.color">{{ chunk.text }}</span>
-                  </ng-container>
-                  <b>
-                    <ng-container *ngFor="let chunk of getGoalHistoryFor(row.goalid)?.display?.memo">
-                    <span [style.color]="chunk.color">{{ chunk.text }}</span>
-                  </ng-container>
-                  </b>
-              </div>
-            </ng-template> -->
+      
             <ng-template #viewMode>
-              <div class="saved" [innerHTML]="row.description_diff?.combined_diff | safeHtml"></div>
+              <div class="saved">
+                <b>{{ row.action }}</b>
+                <span
+                  *ngIf="row.description.length > 55"
+                  class="description-link"
+                  (click)="showDescription($event, row.description)"
+                  [pTooltip]="
+                    row.action + ' ' + row.description + ' ' + row.memo
+                  "
+                  tooltipPosition="bottom"
+                >
+                  {{ row.description | slice : 0 : 55 }}...
+                </span>
+
+                <span *ngIf="row.description.length <= 55">
+                  {{ row.description }}
+                </span>
+                <b>
+                  {{ row.memo }}
+                </b>
+              </div>
             </ng-template>
             <p-confirmPopup #descriptionPopup key="descPopup"></p-confirmPopup>
           </td>
@@ -347,21 +349,21 @@
             <div class="mb-2 font-bold text-center">P</div>
             <p-select class="p-selectitem" appendTo="body" [options]="priorityOptions" [(ngModel)]="newRow.p"
               placeholder="P" [pTooltip]="'Priority'" tooltipPosition="bottom" optionLabel="label" optionValue="value"
-              filter [style]="{ width: '100%' }"></p-select>
+              filter [style]="{ width: '100%' }" tabindex="2"></p-select>
           </div>
 
           <div style="width: 85px">
             <div class="mb-2 font-bold text-center">PROJ</div>
             <p-select class="projselect" appendTo="body" [options]="projOptions" [(ngModel)]="newRow.proj"
               placeholder="PROJ" [pTooltip]="'Project'" tooltipPosition="bottom" optionLabel="label" optionValue="value"
-              filter [style]="{ width: '100%' }"></p-select>
+              filter [style]="{ width: '100%' }" tabindex="3"></p-select>
           </div>
 
           <div style="width: 76px">
             <div class="mb-2 font-bold text-center">VP</div>
             <p-select class="vpselect" appendTo="body" [options]="vpOptions" [(ngModel)]="newRow.vp" placeholder="VP"
               optionLabel="label" optionValue="value" [pTooltip]="'Boss of Goal Owner'" tooltipPosition="bottom" filter
-              [style]="{ width: '100%' }">
+              [style]="{ width: '100%' }" tabindex="4">
               <ng-template let-option pTemplate="item">
                 {{ option.label }}
               </ng-template>
@@ -375,27 +377,27 @@
             <div class="mb-2 font-bold text-center">B</div>
             <p-select #bSelect class="bselect" appendTo="body" [options]="priorityOptionsB" [(ngModel)]="newRow.b"
               placeholder="B" [pTooltip]="'WW goal was given'" tooltipPosition="bottom" optionLabel="label"
-              optionValue="value" filter [style]="{ width: '100%' }" [autofocusFilter]="true"></p-select>
+              optionValue="value" filter [style]="{ width: '100%' }"tabindex="5"></p-select>
           </div>
 
           <div style="width: 62px">
             <div class="mb-2 font-bold text-center">E</div>
             <p-select #eSelect class="eselect" appendTo="body" [options]="priorityOptionsE" [(ngModel)]="newRow.e"
               placeholder="E" [pTooltip]="'WW goal is due'" tooltipPosition="bottom" optionLabel="label"
-              optionValue="value" filter [style]="{ width: '100%' }"></p-select>
+              optionValue="value" filter [style]="{ width: '100%' }" tabindex="6"></p-select>
           </div>
           <div style="width: 62px">
             <div class="mb-2 font-bold text-center">D</div>
             <p-select #dselect class="dselect" appendTo="body" [options]="priorityOptionsD" [(ngModel)]="newRow.d"
               placeholder="D" [pTooltip]="'Delinquent'" tooltipPosition="bottom" optionLabel="label" optionValue="value"
-              filter [style]="{ width: '100%' }"></p-select>
+              filter [style]="{ width: '100%' }" tabindex="7"></p-select>
           </div>
 
           <div style="width: 74px">
             <div class="mb-2 font-bold text-center">S</div>
             <p-select class="select" appendTo="body" [options]="statusOptions" [(ngModel)]="newRow.s" placeholder="S"
               [pTooltip]="'Status of the goal'" tooltipPosition="bottom" optionLabel="label" optionValue="value" filter
-              appendTo="body" [style]="{ width: '100%' }">
+              appendTo="body" [style]="{ width: '100%' }" tabindex="8">
               <ng-template let-selectedOption pTemplate="selectedItem">
                 {{ selectedOption?.value }}
               </ng-template>
@@ -407,35 +409,35 @@
               <div style="width: 133px">
                 <p-select appendTo="body" class="actionselect" [options]="actionOptions" [(ngModel)]="newRow.action"
                   placeholder="Action" optionLabel="label" [pTooltip]="'Select Action'" tooltipPosition="bottom"
-                  optionValue="value" [style]="{ width: '100%' }"></p-select>
+                  optionValue="value" [style]="{ width: '100%' }" tabindex="9"></p-select>
               </div>
 
               <div style="width: 250px">
                 <input pInputText [(ngModel)]="newRow.description" maxlength="70" placeholder="Goal Description"
-                  [pTooltip]="'Select Description'" tooltipPosition="bottom" class="goal-select" />
+                  [pTooltip]="'Select Description'" tooltipPosition="bottom" class="goal-select" tabindex="10" />
               </div>
 
               <div style="width: 150px">
                 <input pInputText [(ngModel)]="newRow.memo" maxlength="17" placeholder="SPEC/MEMO"
-                  [pTooltip]="'Select SPEC/MEMO'" tooltipPosition="bottom" class="spec-select" />
+                  [pTooltip]="'Select SPEC/MEMO'" tooltipPosition="bottom" class="spec-select" tabindex="11" />
               </div>
             </div>
           </div>
 
           <div style="width: 60px">
             <div class="mb-2 font-bold text-center">Year</div>
-            <input class="yearinput" pInputText [(ngModel)]="newRow.fiscalyear" placeholder="year" />
+            <input class="yearinput" pInputText [(ngModel)]="newRow.fiscalyear" placeholder="year" tabindex="12" />
           </div>
 
           <div style="width: 60px; display: flex; flex-direction: column; align-items: center;">
             <div class="mb-2 font-bold text-center">Confidential</div>
             <p-checkbox [(ngModel)]="newRow.isconfidential" binary="true" inputId="isconfidential-new"
-              [pTooltip]="'Mark as Confidential'" tooltipPosition="bottom" [style]="{ 'margin-top': '10px' }">
+              [pTooltip]="'Mark as Confidential'" tooltipPosition="bottom" [style]="{ 'margin-top': '10px' }" tabindex="13">
             </p-checkbox>
           </div>
 
           <p-button icon="pi pi-plus" (click)="addGoal()" severity="success" size="small" label="Add"
-            [style]="{ height: '24px', fontSize: '12px', width:'70px' }"></p-button>
+            [style]="{ height: '24px', fontSize: '12px', width:'70px' }" tabindex="14"></p-button>
 
         </div>
 

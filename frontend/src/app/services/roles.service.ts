@@ -26,7 +26,19 @@ export class RolesService {
   updateRole(item: any) {
     return this.http.put(`${this.baseURL}/role/${item.id}`, item);
   }
+  getRoleMaster() {
+    return this.http.get(`${this.baseURL}/roleMaster`);
+  }
 
+  createRoleMaster(item: any) {
+    return this.http
+      .post(`${this.baseURL}/roleMaster`, item)
+      .pipe(catchError(this.handleError));
+  }
+
+  updateRoleMaster(item: any) {
+    return this.http.put(`${this.baseURL}/roleMaster/${item.id}`, item);
+  }
   private handleError(error: HttpErrorResponse) {
     return throwError(() => new Error(error.message || 'Server error'));
   }

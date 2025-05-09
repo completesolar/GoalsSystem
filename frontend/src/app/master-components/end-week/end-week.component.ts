@@ -8,6 +8,7 @@ import { ToastModule } from 'primeng/toast';
 import { GoalsService } from '../../services/goals.service';
 import { MessageService } from 'primeng/api';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'app-end-week',
@@ -20,6 +21,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
     ReactiveFormsModule,
     FormsModule,
     MultiSelectModule,
+    InputTextModule
   ],
   providers: [MessageService],
   templateUrl: './end-week.component.html',
