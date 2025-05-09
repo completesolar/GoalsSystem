@@ -217,19 +217,14 @@
                 tooltipPosition="bottom" placeholder="SPEC/MEMO" [tabindex]="rowIndex * 100 + 11" maxlength="17"
                 id="spec-select" />
             </div>
-      
+
             <ng-template #viewMode>
               <div class="saved">
                 <b>{{ row.action }}</b>
-                <span
-                  *ngIf="row.description.length > 55"
-                  class="description-link"
-                  (click)="showDescription($event, row.description)"
-                  [pTooltip]="
+                <span *ngIf="row.description.length > 55" class="description-link"
+                  (click)="showDescription($event, row.description)" [pTooltip]="
                     row.action + ' ' + row.description + ' ' + row.memo
-                  "
-                  tooltipPosition="bottom"
-                >
+                  " tooltipPosition="bottom">
                   {{ row.description | slice : 0 : 55 }}...
                 </span>
 
@@ -306,9 +301,26 @@
             <td>{{ row.s }}</td>
 
             <td>
-              <div [innerHTML]="row.combined_diff| safeHtml "></div>
-            </td>
+              <div class="flex flex-wrap items-center gap-2">
+                <b class="flex">
+                  <ng-container *ngFor="let part of row.display.action">
+                    <span [style.color]="part.color">{{ part.text }}</span>
+                  </ng-container>
+                </b>
 
+                <span class="flex">
+                  <ng-container *ngFor="let part of row.display.description">
+                    <span [style.color]="part.color">{{ part.text }}</span>
+                  </ng-container>
+                </span>
+
+                <b class="flex">
+                  <ng-container *ngFor="let part of row.display.memo">
+                    <span [style.color]="part.color">{{ part.text }}</span>
+                  </ng-container>
+                </b>
+              </div>
+            </td>
             <td>{{ row.createddateMST }}</td>
           </tr>
         </ng-template>
@@ -377,7 +389,7 @@
             <div class="mb-2 font-bold text-center">B</div>
             <p-select #bSelect class="bselect" appendTo="body" [options]="priorityOptionsB" [(ngModel)]="newRow.b"
               placeholder="B" [pTooltip]="'WW goal was given'" tooltipPosition="bottom" optionLabel="label"
-              optionValue="value" filter [style]="{ width: '100%' }"tabindex="5"></p-select>
+              optionValue="value" filter [style]="{ width: '100%' }" tabindex="5"></p-select>
           </div>
 
           <div style="width: 62px">
@@ -432,7 +444,8 @@
           <div style="width: 60px; display: flex; flex-direction: column; align-items: center;">
             <div class="mb-2 font-bold text-center">Confidential</div>
             <p-checkbox [(ngModel)]="newRow.isconfidential" binary="true" inputId="isconfidential-new"
-              [pTooltip]="'Mark as Confidential'" tooltipPosition="bottom" [style]="{ 'margin-top': '10px' }" tabindex="13">
+              [pTooltip]="'Mark as Confidential'" tooltipPosition="bottom" [style]="{ 'margin-top': '10px' }"
+              tabindex="13">
             </p-checkbox>
           </div>
 

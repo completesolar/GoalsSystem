@@ -2,7 +2,7 @@
   <div class="mb-2 logo-section flex p-2 items-center justify-content-between">
 
     <div class="px-2 title-section flex items-center justify-between  w-full">
-      <div class="main-title font-semibold " style="font-size: 16px;font-weight: 600;">Roles</div>
+      <div class="main-title font-semibold " style="font-size: 16px;font-weight: 600;">Manage Roles</div>
     </div>
   </div>
 
@@ -12,7 +12,7 @@
         <div class="text-center">
           <div class="font-bold">Roles</div>
           <p-select [options]="rolesOptions" [(ngModel)]="roleData.role" optionLabel="label"
-            placeholder="Select a status"></p-select>
+            placeholder="Select a role"></p-select>
         </div>
         <div class="text-center">
           <div class="font-bold">Users</div>
@@ -36,7 +36,7 @@
   </div>
 
   <div class="table-container pr-3 pl-3">
-    <p-table #dataTable [value]="rolesList" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
+    <p-table #dataTable [value]="RoleMasterList" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
       [rowsPerPageOptions]="[10, 20, 50]" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} goals"
       [paginatorPosition]="'bottom'" [sortMode]="'multiple'" scrollable="false"
       [style]="{ width: '100%', height: 'auto', tableLayout: 'fixed' }" tableStyleClass="custom-goal-table fixed-table">
@@ -76,33 +76,30 @@
       </ng-template>
 
       <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
-        <tr *ngIf="rolesList.length" [ngClass]="{ 'editable-row': editingItem?.id === item.id }">
+        <tr *ngIf="RoleMasterList.length" [ngClass]="{ 'editable-row': editingItem?.id === item.id }">
           <td>{{ item.sno }}</td>
           <td>{{ item.id }}</td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewb">
-              <input type="text" pInputText [(ngModel)]="editingItem.role" style="width: 100px" />
+              <p-select appendTo="body" [options]="rolesOptions" [(ngModel)]="editingItem.role" optionLabel="label"
+                optionValue="value" placeholder="Select a role" [style.width]="'155px'">
+              </p-select>
             </ng-container>
             <ng-template #viewb>{{ item.role }}</ng-template>
           </td>
           <td>
-            <ng-container *ngIf="editingItem?.id === item.id; else viewb">
-              <input type="text" pInputText [(ngModel)]="editingItem.role" style="width: 100px" />
+            <ng-container *ngIf="editingItem?.id === item.id; else viewUser">
+              <p-select appendTo="body" [options]="usersOptions" [(ngModel)]="editingItem.user[0]" optionLabel="label"
+                optionValue="label" placeholder="Select a user" class="custom-select" [style.width]="'155px'">
+              </p-select>
             </ng-container>
-            <ng-template #viewb>{{ item.role }}</ng-template>
+            <ng-template #viewUser>{{ item.user[0] }}</ng-template>
           </td>
           <td>
-            <ng-container *ngIf="editingItem?.id === item.id; else viewStatus">
-              <p-select [options]="statusOptions" [(ngModel)]="editingItem.status" optionLabel="label"
-                optionValue="value"></p-select>
-            </ng-container>
-            <ng-template #viewStatus>{{ item.status === 1 ? 'Active' : 'Inactive' }}</ng-template>
-          </td>
-          <td>
-            <ng-container *ngIf="editingItem?.id === item.id; else viewRemarks">
+            <ng-container *ngIf="editingItem?.id === item.id; else viewRenarks">
               <input type="text" pInputText [(ngModel)]="editingItem.remarks" style="width: 100px" />
             </ng-container>
-            <ng-template #viewRemarks>{{ item.remarks }}</ng-template>
+            <ng-template #viewRenarks>{{ item.remarks }}</ng-template>
           </td>
           <td class="icon-actions-column">
             <i [ngClass]="editingItem?.id === item.id ? 'pi pi-save actions' : 'pi pi-pencil actions'"

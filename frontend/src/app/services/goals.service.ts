@@ -23,7 +23,7 @@ export class GoalsService {
     return this.http.get(`${this.baseURL}/goals/${id}`);
   }
   getGoalHistory(id: number) {
-    return this.http.get<any[]>(`${this.baseURL}/${id}/history-diff`);
+    return this.http.get<any[]>(`${this.baseURL}/goalshistory/${id}`);
   }
   createGoal(goal: any) {
     return this.http.post(`${this.baseURL}/goals`, goal);

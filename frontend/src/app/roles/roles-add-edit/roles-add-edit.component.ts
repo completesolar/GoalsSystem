@@ -9,7 +9,6 @@ import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { RolesService } from '../../services/roles.service';
 import { TreeSelectModule } from 'primeng/treeselect';
-import { style } from '@angular/animations';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
 import { TreeModule } from 'primeng/tree';
@@ -27,7 +26,7 @@ import { TreeModule } from 'primeng/tree';
     InputTextModule,
     TreeSelectModule,
     DialogModule,
-    TreeModule
+    TreeModule,
   ],
   standalone: true,
   providers: [MessageService],
@@ -38,7 +37,7 @@ export class RolesAddEditComponent implements OnInit {
   roleData = {
     roleName: null as string | null,
     status: null as any,
-    actions:[],
+    actions: [],
     remarks: '',
   };
   rolesList: any[] = [];
@@ -54,31 +53,23 @@ export class RolesAddEditComponent implements OnInit {
     {
       key: 'dashboard',
       label: 'Dashboard',
-      
     },
     {
-      key: 'master',
-      label: 'Master',
+      key: 'settings',
+      label: 'Settings',
       children: [
         { key: 'priority', label: 'Priority' },
         { key: 'status', label: 'Status' },
         { key: 'project', label: 'Project' },
         { key: 'beginning_week', label: 'Beginning week' },
         { key: 'end_week', label: 'End week' },
-        { key: 'delinquent', label: 'Delinquent' }
-      ]
-    },
-    {
-      key: 'roles',
-      label: 'Roles',
-      children: [
+        { key: 'delinquent', label: 'Delinquent' },
         { key: 'add_roles', label: 'Add roles' },
-        { key: 'manage_role', label: 'Manage role' }
-      ]
-    }
+        { key: 'manage_role', label: 'Manage role' },
+      ],
+    },
   ];
-  
-  
+
   columns = [
     { field: 'sno', header: 'S.No', tooltip: '' },
     { field: 'id', header: 'Role ID', tooltip: '' },
@@ -93,6 +84,8 @@ export class RolesAddEditComponent implements OnInit {
     { label: 'Inactive', value: 0 },
   ];
 
+  dropDownValue: any;
+
   constructor(
     public roleService: RolesService,
     public messageService: MessageService
@@ -101,19 +94,16 @@ export class RolesAddEditComponent implements OnInit {
   ngOnInit(): void {
     this.getRolesList();
     this.expandAllNodes(this.accessOptions);
-
   }
 
   getRolesList() {
     this.roleService.getRole().subscribe({
       next: (response: any) => {
-        // console.log('Response', response);
         this.rolesList = response;
         this.allRoleList = response;
         this.rolesList.forEach((item: any, index: number) => {
           item.sno = index + 1;
         });
-        // console.log('this.rolesList', this.rolesList);
       },
       error: (err) => {
         console.error('Get failed', err);
@@ -127,26 +117,15 @@ export class RolesAddEditComponent implements OnInit {
       this.isValid = false;
       return;
     }
-  
-    const extractLeafKeys = (nodes: any[]): string[] => {
-      let keys: string[] = [];
-      for (const node of nodes) {
-        if (!node.children || node.children.length === 0) {
-          keys.push(node.key);
-        } else if (node.children) {
-          keys = keys.concat(extractLeafKeys(node.children));
-        }
-      }
-      return keys;
-    };
-  
+
     let data = {
       role: this.roleData?.roleName,
-      status: this.roleData.status?.value === null ? 1 : this.roleData.status?.value,
+      status:
+        this.roleData.status?.value === null ? 1 : this.roleData.status?.value,
       remarks: this.roleData.remarks || '',
-      access: extractLeafKeys(this.selectedNodes || []),
+      access: [],
     };
-  
+
     this.roleService.createRole(data).subscribe({
       next: (response: any) => {
         if (response && response.id) {
@@ -176,38 +155,27 @@ export class RolesAddEditComponent implements OnInit {
       },
     });
   }
-  
-  
 
   // Update Role
   async updateRole(item: any) {
-    // const isChanged = await this.isObjectChanged(item, this.editingItem);
-    // if (isChanged === false) {
-    //   this.messageService.add({
-    //     severity: 'info',
-    //     summary: 'No Changes Detected',
-    //   });
-    //   this.editingItem = null;
-    //   return;
-    // }
-  
-    // Clone the item to avoid mutating the original object
     const payload = { ...this.editingItem };
-  
-    // Only keep `key` values in access
-    if (payload.access && Array.isArray(payload.access)) {
-      payload.access = payload.access.map((a: { key: any; }) => a.key);
+    if (
+      payload.access &&
+      Array.isArray(payload.access) &&
+      payload.access.every((a: any) => a.hasOwnProperty('key'))
+    ) {
+      payload.access = payload.access.map((a: { key: any }) => a.key);
     }
-  
     this.roleService.updateRole(payload).subscribe({
       next: (response: any) => {
         if (response && response.id) {
+          this.selectedNodes = [];
           this.getRolesList();
           this.editingItem = null;
           this.messageService.add({
             severity: 'success',
             summary: 'Role',
-            detail: 'updated successfully!.',
+            detail: 'Updated successfully!',
           });
         }
       },
@@ -216,21 +184,18 @@ export class RolesAddEditComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Role',
-          detail: `${this.editingItem.role} already exist.`,
+          detail: `${this.editingItem.role} already exists.`,
         });
       },
     });
   }
-  
 
   onEdit(item: any) {
-    // console.log("Item",item);
-    
-    this.editingItem = { ...item };
-    this.editingItem.access = this.getSelectedNodesFromKeys(item.access, this.accessOptions);
-    // console.log("editingItem",this.editingItem);
-    
-
+    this.editingItem = JSON.parse(JSON.stringify(item));
+    this.editingItem.access = this.getSelectedNodesFromKeys(
+      item.access,
+      this.accessOptions
+    );
   }
 
   isObjectChanged(objA: any, objB: any): boolean {
@@ -318,11 +283,10 @@ export class RolesAddEditComponent implements OnInit {
   }
 
   getLabelsFromKeys(keys: string[], options: any[]): string[] {
-    let labels: string[] = [];
-  
+    const labels: string[] = [];
     const traverse = (nodes: any[]) => {
       for (const node of nodes) {
-        if (keys.includes(node.key)) {
+        if (keys?.includes(node.key)) {
           labels.push(node.label);
         }
         if (node.children) {
@@ -330,14 +294,13 @@ export class RolesAddEditComponent implements OnInit {
         }
       }
     };
-  
     traverse(options);
     return labels;
   }
-  
+
   getSelectedNodesFromKeys(keys: string[], options: any[]): any[] {
     const selectedNodes: any[] = [];
-  
+
     const traverse = (nodes: any[]) => {
       for (const node of nodes) {
         if (keys.includes(node.key)) {
@@ -348,18 +311,22 @@ export class RolesAddEditComponent implements OnInit {
         }
       }
     };
-  
+
     traverse(options);
     return selectedNodes;
   }
   openAccessDialog(item: any): void {
-    this.editingItem = item;
+    this.editingItem = JSON.parse(JSON.stringify(item));
+    this.editingItem.access = this.getSelectedNodesFromKeys(
+      item.access,
+      this.accessOptions
+    );
+    this.selectedNodes = this.editingItem.access;
+
     this.accessDialogVisible = true;
-  
-    // Expand all nodes
     this.expandAllNodes(this.accessOptions);
   }
-  
+
   expandAllNodes(nodes: any[]): void {
     if (!nodes) return;
     for (let node of nodes) {
@@ -369,17 +336,37 @@ export class RolesAddEditComponent implements OnInit {
       }
     }
   }
-  
+
   selectAllAccess(): void {
     this.selectedNodes = [];
     const collectKeys = (nodes: any[]) => {
-      nodes.forEach(node => {
+      nodes.forEach((node) => {
         this.selectedNodes.push(node.key);
         if (node.children) collectKeys(node.children);
       });
     };
     collectKeys(this.accessOptions);
   }
-  
 
+  saveAccessSelection(): void {
+    const extractLeafKeys = (nodes: any[]): string[] => {
+      let keys: string[] = [];
+      for (const node of nodes) {
+        if (!node.children || node.children.length === 0) {
+          keys.push(node.key);
+        } else {
+          keys = keys.concat(extractLeafKeys(node.children));
+        }
+      }
+      return keys;
+    };
+
+    this.editingItem.access = extractLeafKeys(this.selectedNodes);
+    this.accessDialogVisible = false;
+  }
+
+  cancelEdit(): void {
+    this.editingItem = null;
+    this.selectedNodes = [];
+  }
 }

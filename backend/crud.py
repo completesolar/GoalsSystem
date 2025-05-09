@@ -1,4 +1,5 @@
 import difflib
+from sqlite3 import IntegrityError
 from typing import Dict, List
 from zoneinfo import ZoneInfo
 from fastapi import HTTPException
@@ -752,39 +753,78 @@ def get_roleMaster_by_id(db: Session, id: int):
 def create_roleMaster(db: Session, roleMaster_data: RoleMasterCreate):
     try:
         created_records: List[RoleMasterResponse] = [] 
-        for user, user_id in zip(roleMaster_data.user, roleMaster_data.user_id):
+        print("roleMaster_data",roleMaster_data)
+        for user, user_id, email in zip(roleMaster_data.user, roleMaster_data.user_id, roleMaster_data.user_email):
+            existing_role = db.query(RoleMaster).filter(RoleMaster.user == [user]).first()
+            if existing_role:
+                print(f"User '{user}' already exists!") 
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"{user} already exists"
+                )
+            
             db_roleMaster = RoleMaster(
                 role=roleMaster_data.role,
                 user=[user],
                 user_id=[user_id], 
                 role_id=roleMaster_data.role_id,
-                remarks=roleMaster_data.remarks
+                remarks=roleMaster_data.remarks,
+                user_email=[email]
             )
+            
             db.add(db_roleMaster)
             db.commit() 
             db.refresh(db_roleMaster)  
             created_records.append(RoleMasterResponse(
                 id=db_roleMaster.id,
                 role=db_roleMaster.role,
-                user=[], 
-                user_id=[],
+                user=[user], 
+                user_id=[user_id],  
                 role_id=db_roleMaster.role_id,
-                remarks=db_roleMaster.remarks
+                remarks=db_roleMaster.remarks,
+                user_email=[email]
+
             ))
 
         return created_records 
 
+    except IntegrityError as e:
+        db.rollback() 
+        print(f"Integrity error occurred: {e}")
+        raise HTTPException(status_code=400,detail=f"{user} already exists")
+    
     except Exception as e:
         db.rollback()  
         print(f"Error occurred while creating RoleMaster: {e}")
-        raise HTTPException(status_code=500, detail="An error occurred while creating RoleMaster")
-
+        raise HTTPException(status_code=400, detail=f"{user} already exists")
+    
 def update_roleMaster(db: Session, id: int, role_data: RoleMasterUpdate):
-    db_roleMaster = db.query(RoleMaster).filter(RoleMaster.id == id).first()
-    if not db_roleMaster:
-        return None
-    for key, value in role_data.dict(exclude_unset=True).items():
-        setattr(db_roleMaster, key, value)
-    db.commit()
-    db.refresh(db_roleMaster)
-    return db_roleMaster
+    try:
+        db_roleMaster = db.query(RoleMaster).filter(RoleMaster.id == id).first()
+        if not db_roleMaster:
+            raise HTTPException(status_code=404, detail=f"RoleMaster with ID {id} not found")
+
+        for key, value in role_data.dict(exclude_unset=True).items():
+            setattr(db_roleMaster, key, value)
+
+        db.commit()
+        db.refresh(db_roleMaster)
+        return RoleMasterResponse(
+            id=db_roleMaster.id,
+            role=db_roleMaster.role,
+            user=db_roleMaster.user,
+            user_id=db_roleMaster.user_id,
+            role_id=db_roleMaster.role_id,
+            remarks=db_roleMaster.remarks,
+            user_email=db_roleMaster.user_email
+
+        )
+    except IntegrityError as e:
+        db.rollback()
+        print(f"Integrity error occurred: {e}")
+        raise HTTPException(status_code=400, detail="Integrity error occurred while updating RoleMaster")
+    
+    except Exception as e:
+        db.rollback()
+        print(f"Error occurred while updating RoleMaster: {e}")
+        raise HTTPException(status_code=400, detail="An error occurred while updating RoleMaster")

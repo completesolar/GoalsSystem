@@ -102,12 +102,13 @@ def create_goals(goal: Goals, db: Session = Depends(get_db)):
 
 @router.get("/api/goals", response_model=list[GoalsResponse])
 def read_goals(db: Session = Depends(get_db)):
-    goals = get_all_goals(db)
-    return bind_diffs_to_goals(db, goals)
+    # goals = get_all_goals(db)
+    return get_all_goals(db)
 
-@router.get("/api/{goalid}/history-diff")
-def goal_history_diff(goalid: int, db: Session = Depends(get_db)):
-    return get_all_goal_diffs_by_goalid(db, goalid)
+@router.get("/api/goalshistory/{goalid}", response_model=list[goalhistoryResponse])
+async def get_goalshistory(goalid: int, db: Session = Depends(get_db)):
+    records = get_goalshistory_by_id(db, goalid=goalid)
+    return [goalhistoryResponse.model_validate(record).model_dump() for record in records]
 
 @router.get("/api/goals/metrics")
 def read_goals_metrics(
@@ -398,17 +399,11 @@ def read_role(id: int, db: Session = Depends(get_db)):
 
 @router.post("/api/roleMaster", response_model=List[RoleMasterResponse])
 def create_roleMaster_endpoint(role: RoleMasterCreate, db: Session = Depends(get_db)):
-    try:
         return create_roleMaster(db=db, roleMaster_data=role)
-    except IntegrityError as e:
-        db.rollback() 
-        if 'duplicate key value violates unique constraint' in str(e):
-            raise HTTPException(status_code=400, detail="Duplicate data: this entry already exists.")
-        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
     
 @router.put("/api/roleMaster/{id}", response_model=RoleMasterResponse)
 def update_role_endpoint(id: int, role: RoleMasterUpdate, db: Session = Depends(get_db)):
-    db_roleMaster = update_roleMaster(db=db, id=id, roleMaster_data=role)
+    db_roleMaster = update_roleMaster(db=db, id=id, role_data=role)
     if not db_roleMaster:
         raise HTTPException(status_code=404, detail="Item not found")
     return db_roleMaster

@@ -21,7 +21,7 @@ import { InputTextModule } from 'primeng/inputtext';
     TableModule,
     MultiSelectModule,
     SelectModule,
-    InputTextModule
+    InputTextModule,
   ],
   providers: [MessageService],
   standalone: true,
@@ -35,8 +35,8 @@ export class ManageRolesComponent {
     status: null as any,
     remarks: '',
   };
-  rolesList: any[] = [];
-  allRoleList: any = [];
+  RoleMasterList: any[] = [];
+  allRoleMasterList: any = [];
   editingItem: any = {};
   isValid = true;
   selectedFilters: { [key: string]: any[] } = {};
@@ -44,9 +44,10 @@ export class ManageRolesComponent {
 
   columns = [
     { field: 'sno', header: 'S.No', tooltip: '' },
-    { field: 'id', header: 'Role ID', tooltip: '' },
+    { field: 'id', header: 'ID', tooltip: '' },
     { field: 'role', header: 'Role', tooltip: '' },
-    { field: 'status', header: 'Status', tooltip: '' },
+    { field: 'user', header: 'User', tooltip: '' },
+    // { field: 'status', header: 'Status', tooltip: '' },
     { field: 'remarks', header: 'Remarks', tooltip: '' },
     { field: 'action', header: 'ACTION', tooltip: '' },
   ];
@@ -54,8 +55,8 @@ export class ManageRolesComponent {
     { label: 'Active', value: 1 },
     { label: 'Inactive', value: 0 },
   ];
-  rolesOptions: { label: string; value: string;id:number }[] = [];
-  usersOptions: { label: string; value: string }[] = [];
+  rolesOptions: { label: string; value: string; id: number }[] = [];
+  usersOptions: { label: string; value: string; email: string }[] = [];
   loading: boolean = false;
 
   constructor(
@@ -65,21 +66,27 @@ export class ManageRolesComponent {
   ) {}
 
   ngOnInit(): void {
+    this.getRoleManageList();
     this.getWhoList();
     this.getRoleList();
   }
 
   getWhoList() {
     this.goalservice.getWhoOptions().subscribe((response: any) => {
-      console.log('Response', response);
-      this.usersOptions = response.map((item: any) => {
-        return {
-          label: item.initials + ' (' + item.employee_name + ')',
-          value: item.id,
-        };
-      });
+      this.usersOptions = response
+        .map((item: any) => {
+          return {
+            label: item.initials + ' (' + item.employee_name + ')',
+            value: item.id,
+            email: item.primary_email,
+          };
+        })
+        .sort((a: any, b: any) => {
+          return a.label.localeCompare(b.label);
+        });
     });
   }
+
   getRoleList() {
     this.roleService.getRole().subscribe((response: any) => {
       this.rolesOptions = response.map((item: any) => {
@@ -91,11 +98,32 @@ export class ManageRolesComponent {
       });
     });
   }
-
+  getRoleManageList() {
+    this.roleService.getRoleMaster().subscribe((response: any) => {
+      this.RoleMasterList = response;
+      this.RoleMasterList.map((item: any, index: number) => {
+        item.sno = index + 1;
+        // item.user_id = item.user_id[0];
+        // item.user = item.user[0];
+      });
+      console.log('RoleMasterList', this.RoleMasterList);
+    });
+  }
 
   // Add new Role
   saveManageRole() {
-    console.log('roleData', this.roleData);
+    this.roleData.users.forEach((user: any) => {
+      const item = this.RoleMasterList.find(
+        (x: any) => x.user_id === user.value
+      );
+      if (item) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Manage Role',
+          detail: `${user.label} already exists.`,
+        });
+      }
+    });
 
     if (this.roleData.role === null || this.roleData.users === null) {
       this.isValid = false;
@@ -107,12 +135,13 @@ export class ManageRolesComponent {
       user: this.roleData?.users?.map((user: any) => user.label),
       user_id: this.roleData?.users?.map((user: any) => user.value),
       remarks: this.roleData?.remarks || '',
+      user_email: this.roleData?.users?.map((user: any) => user.email),
     };
-    console.log('Data', data);
 
     this.roleService.createRoleMaster(data).subscribe({
       next: (response: any) => {
-        if (response && response.id) {
+        if (response.length > 0) {
+          this.getRoleManageList();
           this.roleData = {
             role: null as string | null,
             status: null as any,
@@ -122,17 +151,20 @@ export class ManageRolesComponent {
           this.isValid = true;
           this.messageService.add({
             severity: 'success',
-            summary: 'Role',
+            summary: 'Manage Role',
             detail: 'Added successfully!.',
           });
         }
       },
       error: (err) => {
         console.error('Create failed', err);
+        const errorMessage =
+          err?.error?.detail || 'An unexpected error occurred';
+
         this.messageService.add({
           severity: 'error',
-          summary: 'Role',
-          detail: `${this.roleData.role} already exist.`,
+          summary: 'Manage Role',
+          detail: errorMessage,
         });
       },
     });
@@ -140,16 +172,40 @@ export class ManageRolesComponent {
 
   // Update Role
   async updateRole(item: any) {
-    const isChanged = await this.isObjectChanged(item, this.editingItem);
-    if (isChanged === false) {
-      this.messageService.add({
-        severity: 'info',
-        summary: 'No Changes Detected',
-      });
-      this.editingItem = null;
-      return;
-    }
-    this.roleService.updateRole(this.editingItem).subscribe({
+    console.log('Item to update:', item);
+    console.log('Editing item:', this.editingItem);
+    console.log('usersOptions', this.usersOptions);
+    console.log('RoleMasterList', this.RoleMasterList);
+
+    // const items = this.RoleMasterList.find(
+    //   (x: any) => x.user_id[0] === item.user_id[0]
+    // );
+    // console.log('items', items);
+
+    // if (items && items.user_id[0] !== this.editingItem.user_id[0]) {
+    //   this.messageService.add({
+    //     severity: 'error',
+    //     summary: 'Manage Role',
+    //     detail: `user already exists.`,
+    //   });
+    // }
+
+    let user_ID = this.usersOptions.find(
+      (user: any) => user.label === this.editingItem.user[0]
+    );
+    console.log('user_ID', user_ID);
+    let data = {
+      id: this.editingItem.id,
+      role: this.editingItem.role.value,
+      role_id: this.editingItem.role.id,
+      user: [this.editingItem.user[0]],
+      user_id: [user_ID?.value || 0],
+      user_email: [user_ID?.email || ''],
+      remarks: this.editingItem.remarks,
+    };
+    console.log('Data to update:', data);
+
+    this.roleService.updateRoleMaster(data).subscribe({
       next: (response: any) => {
         if (response && response.id) {
           this.editingItem = null;
@@ -172,6 +228,8 @@ export class ManageRolesComponent {
   }
 
   onEdit(item: any) {
+    console.log('Editing item:', item);
+    console.log('rolesOptions:', this.rolesOptions);
     this.editingItem = { ...item };
   }
 
@@ -182,7 +240,7 @@ export class ManageRolesComponent {
   }
 
   applyFilters(): void {
-    this.rolesList = [...this.allRoleList].filter((row: any) => {
+    this.RoleMasterList = [...this.allRoleMasterList].filter((row: any) => {
       return Object.entries(this.selectedFilters).every(
         ([filterField, selectedValues]: [string, any[]]) => {
           if (!selectedValues || selectedValues.length === 0) return true;
@@ -229,7 +287,7 @@ export class ManageRolesComponent {
       ];
     } else {
       const uniqueValues = [
-        ...new Set(this.allRoleList.map((item: any) => item[field])),
+        ...new Set(this.allRoleMasterList.map((item: any) => item[field])),
       ];
       options = uniqueValues.map((val) => ({
         label: val,
@@ -256,6 +314,6 @@ export class ManageRolesComponent {
   resetFilter() {
     this.selectedFilters = {};
     this.activeFilters = {};
-    this.rolesList = [...this.allRoleList];
+    this.RoleMasterList = [...this.allRoleMasterList];
   }
 }
