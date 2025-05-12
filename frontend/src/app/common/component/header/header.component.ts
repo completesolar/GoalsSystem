@@ -7,6 +7,8 @@ import { SelectModule } from 'primeng/select';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MenuModule } from 'primeng/menu';
+import { RolesService } from '../../../services/roles.service';
+import { GoalsService } from '../../../services/goals.service';
 
 @Component({
   selector: 'app-header',
@@ -29,6 +31,8 @@ export class HeaderComponent {
   constructor(
     @Inject(PLATFORM_ID) private platform: Object,
     private msalService: MsalService,
+    private roleService: RolesService,
+    public goalService: GoalsService,
     private router: Router
   ) {}
 
@@ -43,11 +47,11 @@ export class HeaderComponent {
     },
     {
       label: 'Beginning Week',
-      routerLink: ['/b_week'],
+      routerLink: ['/beginning_week'],
     },
     {
       label: 'End Week',
-      routerLink: ['/e_week'],
+      routerLink: ['/end_week'],
     },
     {
       label: 'Delinquent',
@@ -59,25 +63,54 @@ export class HeaderComponent {
     },
     {
       label: 'Roles',
-      routerLink: ['/roles'],
+      routerLink: ['/add_roles'],
     },
     {
       label: 'Manage Roles',
-      routerLink: ['/manage-roles'],
+      routerLink: ['/manage_role'],
     }
   ];
 
   ngOnInit() {
     this.today = new Date();
     this.updateButtonLabel();
-
     this.router.events.subscribe(() => {
       this.updateButtonLabel();
     });
+  
+    this.getPermission();
+  
+    // 🔁 Subscribe to access updates
+    this.goalService.accessChanged$.subscribe((shouldRefresh) => {
+      if (shouldRefresh) {
+        this.getPermission(); // re-fetch updated access
+      }
+    });
+  }
+  
+
+  getPermission(){
+    let email = localStorage.getItem('email');
+    if (email) {
+      this.roleService.getRoleMasterByEmail(email).subscribe((res) => {
+        this.goalService.userData = res;
+        const accessList = this.goalService.userData?.access || [];
+        this.settingsMenu = this.settingsMenu.filter(item =>
+          accessList.includes(this.extractRoute(item.routerLink))
+        );
+      });
+    }
+  }
+
+  extractRoute(routerLink: any): string {
+    if (Array.isArray(routerLink)) {
+      return routerLink[0]?.replace('/', '') ?? '';
+    }
+    return typeof routerLink === 'string' ? routerLink.replace('/', '') : '';
   }
 
   goToDashboard(): void {
-    this.router.navigate(['/goals-metrics']);
+    this.router.navigate(['/dashboard']);
   }
 
   goToGoals(): void {
@@ -86,14 +119,14 @@ export class HeaderComponent {
 
   updateButtonLabel(): void {
     const currentUrl = this.router.url;
-    this.buttonLabel = currentUrl.includes('goals-metrics')
+    this.buttonLabel = currentUrl.includes('dashboard')
       ? 'Goals'
       : 'Dashboard';
   }
 
   goToMetrics(): void {
-    const isInMetrics = this.router.url.includes('goals-metrics');
-    const targetRoute = isInMetrics ? '/goals' : '/goals-metrics';
+    const isInMetrics = this.router.url.includes('dashboard');
+    const targetRoute = isInMetrics ? '/goals' : '/dashboard';
     this.router.navigate([targetRoute]);
   }
 

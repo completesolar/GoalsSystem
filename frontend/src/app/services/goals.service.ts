@@ -6,7 +6,7 @@ import {
 } from '@angular/common/http';
 import { environment } from '../../environments/enivornments';
 import { Goals } from '../models/goals';
-import { Observable, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 @Injectable({
@@ -15,6 +15,13 @@ import { catchError, map } from 'rxjs/operators';
 export class GoalsService {
   private baseURL = `${environment.baseURL}`;
   private initialKey = 'initial';
+  public userData:any;
+
+  private accessChangedSource = new BehaviorSubject<boolean>(false);
+  accessChanged$ = this.accessChangedSource.asObservable();
+  notifyAccessChanged() {
+    this.accessChangedSource.next(true);
+  }
 
   constructor(private http: HttpClient) {}
 

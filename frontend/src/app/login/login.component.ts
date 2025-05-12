@@ -118,9 +118,11 @@ export class LoginComponent implements OnInit, OnDestroy {
       console.warn('Email is undefined or empty');
       return;
     }
+    localStorage.setItem('email',email);
     this.goalsService.loginCheck(email).subscribe({
       next: (res) => {
         const response=res as any
+        this.goalsService.userData = response;
         localStorage.setItem("initial", response.initial);
       },
       error: (err) => {
