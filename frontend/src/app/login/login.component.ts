@@ -28,7 +28,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   isIframe = false;
   loginDisplay = false;
   private readonly _destroying$ = new Subject<void>();
-  user: any = null; // Variable to store user details
+  user: any = null;
   userEmail: string | undefined;
 
   constructor(
@@ -56,7 +56,6 @@ export class LoginComponent implements OnInit, OnDestroy {
             )
             .subscribe(() => {
               this.setLoginDisplay();
-              this.getUserDetails();
             });
 
           this.authService.instance
@@ -79,8 +78,6 @@ export class LoginComponent implements OnInit, OnDestroy {
     if (accounts && accounts.length > 0) {
       this.user = accounts[0];
       this.userEmail = this.user.username;
-      // console.log('Logged-in user details:', this.user);
-      // console.log('userEmail', this.userEmail);
     } else {
       console.log('No user is logged in');
     }
@@ -89,32 +86,49 @@ export class LoginComponent implements OnInit, OnDestroy {
   login() {
     if (isPlatformBrowser(this.platformId)) {
       if (this.msalGuardConfig.authRequest) {
-        this.authService
-          .loginPopup({
-            ...this.msalGuardConfig.authRequest,
-          } as RedirectRequest)
-          .subscribe({
-            next: () => {
-              this.router.navigate(['goals']);
-              this.getUserDetails();
-            },
-            error: (err) => {
-              console.error('Login Popup Error: ', err);
-            },
-          });
+        this.authService.loginPopup({
+          ...this.msalGuardConfig.authRequest,
+        } as RedirectRequest).subscribe({
+          next: () => {
+            this.getUserDetails();
+            this.router.navigate(['goals']);
+            this.loginCred(this.user?.username); 
+          },
+          error: (err) => {
+            console.error('Login Popup Error:', err);
+          },
+        });
       } else {
         this.authService.loginRedirect().subscribe({
           next: () => {
-            this.router.navigate(['goals']);
             this.getUserDetails();
+            this.router.navigate(['goals']);
+            this.loginCred(this.user?.username);
           },
           error: (err) => {
-            console.error('Login Redirect Error: ', err);
+            console.error('Login Redirect Error:', err);
           },
         });
       }
     }
   }
+  
+  loginCred(email: string) {
+    if (!email) {
+      console.warn('Email is undefined or empty');
+      return;
+    }
+    this.goalsService.loginCheck(email).subscribe({
+      next: (res) => {
+        const response=res as any
+        localStorage.setItem("initial", response.initial);
+      },
+      error: (err) => {
+        console.error('Error in login check for:', email, err);
+      },
+    });
+  }
+  
 
   logout() {
     if (isPlatformBrowser(this.platformId)) {

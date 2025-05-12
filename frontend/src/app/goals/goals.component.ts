@@ -233,6 +233,7 @@ export class GoalsComponent implements AfterViewInit {
           return this.msalService.instance.handleRedirectPromise();
         })
         .then(() => {
+          const whoInitial = this.goalsService.getInitial();                  
           this.loadGoals();
           this.loadWhoOptions();
           this.loadInitialData();
@@ -244,7 +245,6 @@ export class GoalsComponent implements AfterViewInit {
   }
 
   loadInitialData() {
-    this.loadGoals();
     this.loadWhoOptions();
     this.getStatus();
     this.getProj();
@@ -342,7 +342,8 @@ export class GoalsComponent implements AfterViewInit {
   }
 
   loadGoals(): void {
-    this.goalsService.getGoals().subscribe((goals: any[]) => {
+    const whoInitial = this.goalsService.getInitial();
+    this.goalsService.getGoals(whoInitial).subscribe((goals: any[]) => {
       const filteredGoals = goals
         .filter((g: any) => +g.fiscalyear === this.selectedYear.code)
         .map((g) => ({

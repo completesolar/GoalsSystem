@@ -48,6 +48,7 @@ export class RolesAddEditComponent implements OnInit {
   activeFilters: { [key: string]: boolean } = {};
   selectedNodes: any[] = [];
   accessDialogVisible: boolean = false;
+  selectedRoleName: string = '';
 
   accessOptions = [
     {
@@ -322,7 +323,7 @@ export class RolesAddEditComponent implements OnInit {
       this.accessOptions
     );
     this.selectedNodes = this.editingItem.access;
-
+    this.selectedRoleName = item.role;
     this.accessDialogVisible = true;
     this.expandAllNodes(this.accessOptions);
   }

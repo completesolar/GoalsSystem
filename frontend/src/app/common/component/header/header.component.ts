@@ -33,11 +33,6 @@ export class HeaderComponent {
   ) {}
 
   settingsMenu = [
-    // {
-    //   label: 'Dashboard',
-    //   icon: 'pi pi-home',
-    //   routerLink: ['/goals-metrics'],
-    // },
     {
       label: 'Priority',
       routerLink: ['/priority'],
@@ -69,17 +64,7 @@ export class HeaderComponent {
     {
       label: 'Manage Roles',
       routerLink: ['/manage-roles'],
-    },
-    // {
-    //   label: 'Goals',
-    //   icon: 'pi pi-bullseye',
-    //   routerLink: ['/goals'],
-    // },
-    // {
-    //   label: 'Metrics',
-    //   icon: 'pi pi-chart-line',
-    //   routerLink: ['/goals-metrics']
-    // }
+    }
   ];
 
   ngOnInit() {

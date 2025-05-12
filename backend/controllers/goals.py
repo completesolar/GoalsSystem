@@ -64,7 +64,8 @@ from crud import (
     get_all_roleMaster,
     get_roleMaster_by_id,
     create_roleMaster,
-    update_roleMaster
+    update_roleMaster,
+    get_email
 )
 from typing import Annotated
 
@@ -100,10 +101,14 @@ def read_who(id: int, db: Session = Depends(get_db)):
 def create_goals(goal: Goals, db: Session = Depends(get_db)):
     return create_goal(db=db, goal=goal)
 
-@router.get("/api/goals", response_model=list[GoalsResponse])
-def read_goals(db: Session = Depends(get_db)):
-    # goals = get_all_goals(db)
-    return get_all_goals(db)
+# @router.get("/api/goals", response_model=list[GoalsResponse])
+# def read_goals(db: Session = Depends(get_db)):
+#     return get_all_goals(db)
+@router.get("/api/goals/{who_initial}", response_model=list[GoalsResponse])
+def read_goals(who_initial: str, db: Session = Depends(get_db)):
+    return get_all_goals(db, who_initial)
+
+
 
 @router.get("/api/goalshistory/{goalid}", response_model=list[goalhistoryResponse])
 async def get_goalshistory(goalid: int, db: Session = Depends(get_db)):
@@ -397,3 +402,11 @@ def update_role_endpoint(id: int, role: RoleMasterUpdate, db: Session = Depends(
     if not db_roleMaster:
         raise HTTPException(status_code=404, detail="Item not found")
     return db_roleMaster
+
+
+@router.get("/api/loginCheck/{email}")
+def read_loginCred(email: str, db: Session = Depends(get_db)):
+    result = get_email(db, email)
+    if not result:
+        raise HTTPException(status_code=404, detail="Email not found or role not assigned")
+    return result

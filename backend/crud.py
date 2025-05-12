@@ -1,6 +1,7 @@
 import difflib
 from sqlite3 import IntegrityError
-from typing import Dict, List
+import string
+from typing import Dict, List, Optional
 from zoneinfo import ZoneInfo
 from fastapi import HTTPException
 import pytz
@@ -27,7 +28,7 @@ from sqlalchemy.sql import text
 from json import dumps, loads
 from datetime import datetime, timedelta
 from copy import deepcopy
-from sqlalchemy import case, func,extract
+from sqlalchemy import any_, case, func,extract
 from schemas.role import RoleCreate,RoleResponse,RoleUpdate
 from schemas.roleMaster import RoleMasterCreate,RoleMasterUpdate,RoleMasterResponse
 
@@ -239,9 +240,21 @@ def get_goals_by_id(db: Session, goalid: int):
 def get_goalshistory_by_id(db: Session, goalid: int):
     return db.query(goalshistory).filter(goalshistory.goalid == goalid).all()
 
-def get_all_goals(db: Session, response_model=list[GoalsResponse]):
-    db_goals = db.query(Goals).order_by(Goals.goalid.desc()).all()
+# def get_all_goals(db: Session, response_model=list[GoalsResponse]):
+#     db_goals = db.query(Goals).order_by(Goals.goalid.desc()).all()
+#     return jsonable_encoder(db_goals)
+
+def get_all_goals(db: Session, who_initial: Optional[str] = None):
+    query = db.query(Goals)
+
+    if who_initial:
+        print("who_initial",who_initial)
+        query = query.filter(Goals.who == who_initial)
+        print("query",query)
+    db_goals = query.order_by(Goals.goalid.desc()).all()
+    print("db_goals",db_goals)
     return jsonable_encoder(db_goals)
+
 
 def get_all_goals_history(db: Session, response_model=list[goalhistoryResponse]):
     db_goalshistory = db.query(goalshistory).order_by(goalshistory.goalid.desc()).all()
@@ -857,3 +870,35 @@ def update_roleMaster(db: Session, id: int, role_data: RoleMasterUpdate):
         db.rollback()
         print(f"Error occurred while updating RoleMaster: {e}")
         raise HTTPException(status_code=400, detail="An error occurred while updating RoleMaster")
+    
+def get_email(db: Session, email: str):
+    print("email",email)
+    if not email:
+        return None
+    who = db.query(Who).filter(Who.primary_email == email).first()
+    print("who",who)
+
+    role_master = db.query(RoleMaster).filter(email == any_(RoleMaster.user_email)).first()
+
+    if not role_master:
+        return {
+        "user_email": email,
+        "user": "",
+        "role": "Default",
+        "access": ["Goals"],
+        "initial": who.initials
+    }
+
+    role = db.query(Role).filter(Role.role == role_master.role).first()
+    print("role",role)
+
+    if not role:
+        return None
+
+    return {
+        "user_email": role_master.user_email,
+        "user": role_master.user,
+        "role": role_master.role,
+        "access": role.access,
+        "initial": who.initials
+    }
