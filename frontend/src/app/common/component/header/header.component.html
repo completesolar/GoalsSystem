@@ -11,8 +11,15 @@
     <!-- Settings Button with Menu -->
     <p-menu [model]="settingsMenu" [popup]="true" #menu></p-menu>
     <div class="flex align-items-center gap-3">
-      <div class="cursor-pointer" [ngClass]="{ 'active-background': currentRoute === '/goals-metrics' }"  (click)="goToDashboard()">Dashboard</div>
-      <div class="cursor-pointer" [ngClass]="{ 'active-background': currentRoute === '/goals' }" (click)="goToGoals()">Goals</div>
+      <div class="cursor-pointer" 
+     *ngIf="goalService.userData?.access?.includes('dashboard')"
+     [ngClass]="{ 'active-background': currentRoute === '/goals-metrics' }" 
+     (click)="goToDashboard()">Dashboard</div>
+
+<div class="cursor-pointer" 
+     *ngIf="goalService.userData?.access?.includes('goals')" 
+     [ngClass]="{ 'active-background': currentRoute === '/goals' }" 
+     (click)="goToGoals()">Goals</div>
       <button
         (click)="menu.toggle($event)"
         class="settings-button"

@@ -42,4 +42,9 @@ export class RolesService {
   private handleError(error: HttpErrorResponse) {
     return throwError(() => new Error(error.message || 'Server error'));
   }
+    
+  getRoleMasterByEmail(email: string) {
+  return this.http.get(`${this.baseURL}/roleMasterByEmail/${encodeURIComponent(email)}`);
+}   
+  
 }

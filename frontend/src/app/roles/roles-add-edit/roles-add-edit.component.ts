@@ -12,6 +12,7 @@ import { TreeSelectModule } from 'primeng/treeselect';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
 import { TreeModule } from 'primeng/tree';
+import { HeaderComponent } from '../../common/component/header/header.component';
 
 @Component({
   selector: 'app-roles-add-edit',
@@ -29,7 +30,7 @@ import { TreeModule } from 'primeng/tree';
     TreeModule,
   ],
   standalone: true,
-  providers: [MessageService],
+  providers: [MessageService, HeaderComponent],
   templateUrl: './roles-add-edit.component.html',
   styleUrl: './roles-add-edit.component.scss',
 })
@@ -48,6 +49,7 @@ export class RolesAddEditComponent implements OnInit {
   activeFilters: { [key: string]: boolean } = {};
   selectedNodes: any[] = [];
   accessDialogVisible: boolean = false;
+  selectedRoleName: string = '';
 
   accessOptions = [
     {
@@ -88,7 +90,8 @@ export class RolesAddEditComponent implements OnInit {
 
   constructor(
     public roleService: RolesService,
-    public messageService: MessageService
+    public messageService: MessageService,
+    public headerCom: HeaderComponent
   ) {}
 
   ngOnInit(): void {
@@ -171,6 +174,7 @@ export class RolesAddEditComponent implements OnInit {
         if (response && response.id) {
           this.selectedNodes = [];
           this.getRolesList();
+          this.headerCom.getPermission();
           this.editingItem = null;
           this.messageService.add({
             severity: 'success',
@@ -322,7 +326,7 @@ export class RolesAddEditComponent implements OnInit {
       this.accessOptions
     );
     this.selectedNodes = this.editingItem.access;
-
+    this.selectedRoleName = item.role;
     this.accessDialogVisible = true;
     this.expandAllNodes(this.accessOptions);
   }

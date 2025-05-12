@@ -6,7 +6,7 @@ import {
 } from '@angular/common/http';
 import { environment } from '../../environments/enivornments';
 import { Goals } from '../models/goals';
-import { Observable, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 @Injectable({
@@ -14,10 +14,19 @@ import { catchError, map } from 'rxjs/operators';
 })
 export class GoalsService {
   private baseURL = `${environment.baseURL}`;
+  private initialKey = 'initial';
+  public userData:any;
+
+  private accessChangedSource = new BehaviorSubject<boolean>(false);
+  accessChanged$ = this.accessChangedSource.asObservable();
+  notifyAccessChanged() {
+    this.accessChangedSource.next(true);
+  }
+
   constructor(private http: HttpClient) {}
 
-  getGoals() {
-    return this.http.get<Goals[]>(`${this.baseURL}/goals`);
+  getGoals(whoInitial:any) {
+    return this.http.get<Goals[]>(`${this.baseURL}/goals/${whoInitial}`);
   }
   getGoal(id: number) {
     return this.http.get(`${this.baseURL}/goals/${id}`);
@@ -149,8 +158,25 @@ export class GoalsService {
   updateB(b: any) {
     return this.http.put(`${this.baseURL}/b/${b.id}`, b);
   }
+  
+loginCheck(email: string) {
+      return this.http.get(`${this.baseURL}/loginCheck/${encodeURIComponent(email)}`);
+  }   
 
   private handleError(error: HttpErrorResponse) {
     return throwError(() => new Error(error.message || 'Server error'));
+  }
+
+
+  setInitial(value: string): void {
+    localStorage.setItem(this.initialKey, value);
+  }
+
+  getInitial(): string | null {
+    return localStorage.getItem(this.initialKey);
+  }
+
+  clearInitial(): void {
+    localStorage.removeItem(this.initialKey);
   }
 }

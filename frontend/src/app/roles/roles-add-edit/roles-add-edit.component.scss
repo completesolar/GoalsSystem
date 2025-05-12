@@ -137,6 +137,10 @@
   color: black !important;
 }
 
+::ng-deep .access-dialog .p-dialog-title {
+  font-size: 14px !important;
+}
+
 ::ng-deep .filter-active .pi-filter-fill {
   color: #22c55e;
   font-size: 12px !important;
@@ -195,4 +199,24 @@
   .custom-goal-table td:last-child {
     width: 120px !important;
   }
+ 
+  ::ng-deep .access-dialog .p-dialog-header {
+    padding-bottom: 0.3rem !important;  /* reduce bottom margin under header */
+  }
+  
+  ::ng-deep .access-dialog .p-dialog-title {
+    font-size: 16px !important;
+    margin: 0 !important;              /* remove default margin */
+  }
+
+  ::ng-deep .p-tree {
+    padding: 0 !important;
+  }
+  
+  ::ng-deep .p-tree .p-tree-container {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  
 }
