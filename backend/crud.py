@@ -907,5 +907,8 @@ def get_roleMaster_By_Email(db: Session, email: str):
     if not email:
         return None
     role_master = db.query(RoleMaster).filter(email == any_(RoleMaster.user_email)).first()
-    print("role_master",role_master)
-    return role_master
+    role = db.query(Role).filter(Role.role == role_master.role).first()
+    return {
+        "user_email": role_master.user_email,
+        "access": role.access,
+    }
