@@ -65,7 +65,8 @@ from crud import (
     get_roleMaster_by_id,
     create_roleMaster,
     update_roleMaster,
-    get_email
+    get_email,
+    get_roleMaster_By_Email
 )
 from typing import Annotated
 
@@ -403,10 +404,17 @@ def update_role_endpoint(id: int, role: RoleMasterUpdate, db: Session = Depends(
         raise HTTPException(status_code=404, detail="Item not found")
     return db_roleMaster
 
-
 @router.get("/api/loginCheck/{email}")
 def read_loginCred(email: str, db: Session = Depends(get_db)):
     result = get_email(db, email)
+    if not result:
+        raise HTTPException(status_code=404, detail="Email not found or role not assigned")
+    return result
+
+@router.get("/api/roleMasterByEmail/{email}")
+def read_RoleMaster_By_Id(email: str, db: Session = Depends(get_db)):
+    print("email",email)
+    result = get_roleMaster_By_Email(db, email)
     if not result:
         raise HTTPException(status_code=404, detail="Email not found or role not assigned")
     return result

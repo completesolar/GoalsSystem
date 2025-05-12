@@ -248,11 +248,8 @@ def get_all_goals(db: Session, who_initial: Optional[str] = None):
     query = db.query(Goals)
 
     if who_initial:
-        print("who_initial",who_initial)
         query = query.filter(Goals.who == who_initial)
-        print("query",query)
     db_goals = query.order_by(Goals.goalid.desc()).all()
-    print("db_goals",db_goals)
     return jsonable_encoder(db_goals)
 
 
@@ -871,6 +868,8 @@ def update_roleMaster(db: Session, id: int, role_data: RoleMasterUpdate):
         print(f"Error occurred while updating RoleMaster: {e}")
         raise HTTPException(status_code=400, detail="An error occurred while updating RoleMaster")
     
+
+
 def get_email(db: Session, email: str):
     print("email",email)
     if not email:
@@ -902,3 +901,11 @@ def get_email(db: Session, email: str):
         "access": role.access,
         "initial": who.initials
     }
+
+def get_roleMaster_By_Email(db: Session, email: str):
+    print("email",email)
+    if not email:
+        return None
+    role_master = db.query(RoleMaster).filter(email == any_(RoleMaster.user_email)).first()
+    print("role_master",role_master)
+    return role_master
