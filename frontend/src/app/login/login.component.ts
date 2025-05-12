@@ -104,7 +104,7 @@ export class LoginComponent implements OnInit, OnDestroy {
             this.getUserDetails();
             this.router.navigate(['goals']);
             this.loginCred(this.user?.username);
-            localStorage.setItem('email',this.user?.username);
+            // localStorage.setItem('email',this.user?.username);
 
           },
           error: (err) => {
@@ -124,7 +124,9 @@ export class LoginComponent implements OnInit, OnDestroy {
       next: (res) => {
         const response=res as any
         this.goalsService.userData = response;
+        // console.log("response",response)
         localStorage.setItem("initial", response.initial);
+        localStorage.setItem("email", response.user_email[0]);
       },
       error: (err) => {
         console.error('Error in login check for:', email, err);
