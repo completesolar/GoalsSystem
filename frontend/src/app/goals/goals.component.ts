@@ -555,15 +555,12 @@ export class GoalsComponent implements AfterViewInit {
     this.newRow.action = `${this.newRow.action}:`;
     this.newRow.isconfidential = !!this.newRow.isconfidential;
 
-    // Set created and updated times to UTC before sending to the backend
-    const utcMoment = moment.utc(); // This will store the time in UTC
-    this.newRow.createddatetime = utcMoment.toDate(); // UTC time
-    this.newRow.updateddatetime = utcMoment.toDate(); // UTC time
+    const utcMoment = moment.utc(); 
+    this.newRow.createddatetime = utcMoment.toDate(); 
+    this.newRow.updateddatetime = utcMoment.toDate(); 
 
-    // Send the goal data to the backend to create a new goal
     this.goalsService.createGoal(this.newRow).subscribe((response: any) => {
       if (response && response.goalid) {
-        // After goal creation, convert the time to MST for display
         const mstMoment = moment
           .utc(response.createddatetime)
           .tz('America/Denver');
@@ -577,23 +574,24 @@ export class GoalsComponent implements AfterViewInit {
             combined_diff: `${response.action} ${response.description} ${response.memo}`,
           },
         };
+        const whoInitial = this.goalsService.getInitial();
 
-        // Add the new goal to the top of the allGoals array
-        this.allGoals = [newGoal, ...this.allGoals];
-        // Clear the selected filters before adding the new goal to the table
+        if(newGoal.who==whoInitial){
+          this.allGoals = [newGoal, ...this.allGoals];
+
+        }
+        this.allGoals = [...this.allGoals];
         Object.keys(this.selectedFilters).forEach((field) => {
           this.clearFilter(field);
         });
 
-        // Clear the goal description search text
         this.gdbSearchText = '';
 
-        // Reapply the filters (now with the cleared goal description filter)
         this.applyFilters();
         if (this.dataTable) {
           this.dataTable.clear();
         }
-        this.loadGoalsHistory(response.goalid); // Load the history of the newly created goal
+        this.loadGoalsHistory(response.goalid); 
         this.addNewRow();
 
         this.messageService.add({
