@@ -88,17 +88,21 @@ export class HeaderComponent {
     });
   }
   
-
-  getPermission(){
-    let email = localStorage.getItem('email');
-    if (email) {
-      this.roleService.getRoleMasterByEmail(email).subscribe((res) => {
-        this.goalService.userData = res;
-        const accessList = this.goalService.userData?.access || [];
-        this.settingsMenu = this.settingsMenu.filter(item =>
-          accessList.includes(this.extractRoute(item.routerLink))
-        );
-      });
+  getPermission() {
+    if (isPlatformBrowser(this.platform)) {
+      const email = localStorage.getItem('email');
+      if (email) {
+        this.roleService.getRoleMasterByEmail(email).subscribe((res) => {
+          // console.log("Res", res);
+          this.goalService.userData = res;
+          const accessList = this.goalService.userData?.access || [];
+          this.settingsMenu = this.settingsMenu.filter(item =>
+            accessList.includes(this.extractRoute(item.routerLink))
+          );
+        });
+      }
+    } else {
+      console.warn('Not running in the browser. Skipping localStorage access.');
     }
   }
 

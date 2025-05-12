@@ -104,6 +104,8 @@ export class LoginComponent implements OnInit, OnDestroy {
             this.getUserDetails();
             this.router.navigate(['goals']);
             this.loginCred(this.user?.username);
+            localStorage.setItem('email',this.user?.username);
+
           },
           error: (err) => {
             console.error('Login Redirect Error:', err);
@@ -118,7 +120,6 @@ export class LoginComponent implements OnInit, OnDestroy {
       console.warn('Email is undefined or empty');
       return;
     }
-    localStorage.setItem('email',email);
     this.goalsService.loginCheck(email).subscribe({
       next: (res) => {
         const response=res as any
