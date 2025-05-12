@@ -911,14 +911,12 @@ def get_roleMaster_By_Email(db: Session, email: str):
     if not email:
         return None
 
-    # Use correct string comparison
-    role_master = db.query(RoleMaster).filter(RoleMaster.user_email == email).first()
+    role_master = db.query(RoleMaster).filter(email == any_(RoleMaster.user_email)).first()
 
     if not role_master:
         print(f"No role_master found for email: {email}")
         return None
 
-    # Safely get role
     role = db.query(Role).filter(Role.role == role_master.role).first()
 
     return {
