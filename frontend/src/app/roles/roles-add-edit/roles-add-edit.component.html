@@ -121,7 +121,11 @@
     </p-table>
   </div>
 </div>
-<p-dialog header="Add/Edit Permissions" [(visible)]="accessDialogVisible" [modal]="true" [style]="{width: '400px'}">
+<p-dialog header="Add/Edit Permissions"
+          [(visible)]="accessDialogVisible"
+          [modal]="true"
+          [style]="{width: '400px'}"
+          styleClass="access-dialog">
   <p-tree [value]="accessOptions" selectionMode="checkbox" [(selection)]="selectedNodes"
     styleClass="w-full md:w-[30rem]" />
 
