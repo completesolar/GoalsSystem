@@ -871,25 +871,29 @@ def update_roleMaster(db: Session, id: int, role_data: RoleMasterUpdate):
 
 
 def get_email(db: Session, email: str):
-    print("email",email)
+    print("email", email)
     if not email:
         return None
-    who = db.query(Who).filter(Who.primary_email == email).first()
-    print("who",who)
 
-    role_master = db.query(RoleMaster).filter(email == any_(RoleMaster.user_email)).first()
+    # 1. Get WHO object
+    who = db.query(Who).filter(Who.primary_email == email).first()
+    print("who", who)
+
+    # 2. Match email inside ARRAY field
+    role_master = db.query(RoleMaster).filter(RoleMaster.user_email.any(email)).first()
 
     if not role_master:
         return {
-        "user_email": email,
-        "user": "",
-        "role": "Default",
-        "access": ["Goals"],
-        "initial": who.initials
-    }
+            "user_email": email,
+            "user": "",
+            "role": "Default",
+            "access": ["Goals"],
+            "initial": who.initials if who else ""
+        }
 
+    # 3. Get the Role object
     role = db.query(Role).filter(Role.role == role_master.role).first()
-    print("role",role)
+    print("role", role)
 
     if not role:
         return None
@@ -899,16 +903,25 @@ def get_email(db: Session, email: str):
         "user": role_master.user,
         "role": role_master.role,
         "access": role.access,
-        "initial": who.initials
+        "initial": who.initials if who else ""
     }
 
 def get_roleMaster_By_Email(db: Session, email: str):
-    print("email",email)
+    print("email", email)
     if not email:
         return None
-    role_master = db.query(RoleMaster).filter(email == any_(RoleMaster.user_email)).first()
+
+    # Use correct string comparison
+    role_master = db.query(RoleMaster).filter(RoleMaster.user_email == email).first()
+
+    if not role_master:
+        print(f"No role_master found for email: {email}")
+        return None
+
+    # Safely get role
     role = db.query(Role).filter(Role.role == role_master.role).first()
+
     return {
         "user_email": role_master.user_email,
-        "access": role.access,
+        "access": role.access if role else [],
     }
