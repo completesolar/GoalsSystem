@@ -15,6 +15,13 @@
       >
         Dashboard
       </div>
+      <div
+        class="cursor-pointer"
+        [ngClass]="{ 'active-background': currentRoute === '/goals' }"
+        (click)="goToGoals()"
+      >
+        Goals
+      </div>
 
       <div
         class="cursor-pointer"
@@ -25,11 +32,10 @@
         Goals
       </div>
 
-      <!-- Custom Settings Dropdown -->
       <div class="relative" *ngIf="goalService.userData?.access?.length > 0">
         <button
-          (click)="showSettings = !showSettings"
-          class="settings-button flex items-center"
+        (click)="toggleDropdown()"
+        class="settings-button flex items-center"
         >
           Settings
           <i class="pi pi-chevron-down ml-2"></i>
@@ -99,7 +105,6 @@
       </div>
     </div>
 
-    <!-- Date + Calendar Icon -->
     <div class="flex items-center gap-1 align-items-center">
       <img
         src="assets/solar_calendar-linear.svg"
@@ -111,7 +116,6 @@
       </span>
     </div>
 
-    <!-- Logout Dropdown -->
     <p-select
       [options]="[{ label: 'Logout', value: 'logout' }]"
       [filter]="false"

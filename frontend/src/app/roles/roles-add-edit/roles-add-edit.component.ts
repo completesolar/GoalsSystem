@@ -173,9 +173,9 @@ export class RolesAddEditComponent implements OnInit {
       next: (response: any) => {
         if (response && response.id) {
           this.selectedNodes = [];
-          this.getRolesList();
-          this.headerCom.getPermission();
-          this.editingItem = null;
+          this.getRolesList();  
+          this.headerCom.getPermission();  
+          this.editingItem = {};  
           this.messageService.add({
             severity: 'success',
             summary: 'Role',
@@ -364,10 +364,12 @@ export class RolesAddEditComponent implements OnInit {
       }
       return keys;
     };
-
+  
     this.editingItem.access = extractLeafKeys(this.selectedNodes);
+    this.updateRole(this.editingItem);
+    this.selectedNodes = [];
     this.accessDialogVisible = false;
-  }
+  }  
 
   cancelEdit(): void {
     this.editingItem = null;
