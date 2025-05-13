@@ -13,6 +13,7 @@ import {
   ApexPlotOptions,
   ApexDataLabels,
 } from 'ng-apexcharts';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 interface MetricsResponse {
   completedAndDelinquent: {
@@ -60,12 +61,12 @@ export type BarChartOptions = {
   selector: 'app-goals-metrics',
   templateUrl: './goals-metrics.component.html',
   styleUrls: ['./goals-metrics.component.scss'],
-  imports: [CommonModule, FormsModule, NgApexchartsModule, SelectModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,  // Optimizing Angular change detection
+  imports: [CommonModule, FormsModule, NgApexchartsModule, SelectModule,ProgressSpinnerModule],
+  changeDetection: ChangeDetectionStrategy.OnPush, 
 })
 export class GoalsMetricsComponent implements OnInit, OnDestroy {
-  isComponentAlive = true;  // Add this flag to track component lifecycle
-  isLoading = true; // Show loader while data is being loaded
+  isComponentAlive = true;  
+  isLoading = true; 
   statusLabels: { [key: string]: string } = {
     C: 'Complete',
     CD: 'Continuing Delinquent',
@@ -74,6 +75,11 @@ export class GoalsMetricsComponent implements OnInit, OnDestroy {
     ND: 'Newly Delinquent',
     R: 'Revised',
   };
+  isProjectsByVPLoading = true;
+isProjectStatusLoading = true;
+isYearWiseLoading = true;
+isStatusWiseLoading = true;
+
 
   // Chart options for different charts
   projectStatusChartOptions: BarChartOptions = {
@@ -150,7 +156,6 @@ export class GoalsMetricsComponent implements OnInit, OnDestroy {
   constructor(private goalsService: GoalsService, private cdRef: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    // Fetch all the data once the page is loaded
     this.fetchData();
   }
 
@@ -158,18 +163,41 @@ export class GoalsMetricsComponent implements OnInit, OnDestroy {
     this.isComponentAlive = false;
   }
 
-  fetchData(): void {
-    const fetchStartTime = performance.now(); // Start timer for data fetch
-    this.goalsService.getGoalsMetrics().subscribe((res: MetricsResponse) => {
-      const fetchEndTime = performance.now(); // End timer for data fetch
-      console.log(`Data fetch took: ${fetchEndTime - fetchStartTime} ms`);
+  // fetchData(): void {
+  //   const fetchStartTime = performance.now(); 
+  //   this.goalsService.getGoalsMetrics().subscribe((res: MetricsResponse) => {
+  //     const fetchEndTime = performance.now();
+  //     console.log(`Data fetch took: ${fetchEndTime - fetchStartTime} ms`);
 
+  //     this.updateChartOptions(res);
+  //     this.isLoading = false; 
+  //     this.cdRef.detectChanges(); 
+  //   });
+  // }
+  fetchData(): void {
+    const fetchStartTime = performance.now(); 
+    this.isProjectsByVPLoading = true;
+    this.isProjectStatusLoading = true;
+    this.isYearWiseLoading = true;
+    this.isStatusWiseLoading = true;
+  
+    this.goalsService.getGoalsMetrics().subscribe((res: MetricsResponse) => {
+      const fetchEndTime = performance.now();
+      console.log(`Data fetch took: ${fetchEndTime - fetchStartTime} ms`);
+  
       this.updateChartOptions(res);
-      this.isLoading = false; // Stop loader after data is loaded
-      this.cdRef.detectChanges(); // Trigger change detection manually
+      console.log("res",res)
+  
+      this.isProjectsByVPLoading = false;
+      this.isProjectStatusLoading = false;
+      this.isYearWiseLoading = false;
+      this.isStatusWiseLoading = false;
+  
+      this.isLoading = false;
+      this.cdRef.detectChanges(); 
     });
   }
-
+  
   updateChartOptions(res: MetricsResponse): void {
     this.statusPieOptions = {
       series: [res.completedAndDelinquent.Completed, res.completedAndDelinquent.Delinquent],
