@@ -17,7 +17,7 @@
         <div class="text-center">
           <div class="font-bold">Status</div>
           <p-select [options]="statusOptions" [(ngModel)]="roleData.status" optionLabel="label"
-            placeholder="Select a status"></p-select>
+            placeholder="Select a status" appendTo="body"></p-select>
         </div>
         <div class="text-center">
           <div class="font-bold">Remarks</div>
@@ -94,7 +94,7 @@
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewStatus">
               <p-select [options]="statusOptions" [(ngModel)]="editingItem.status" optionLabel="label"
-                optionValue="value"></p-select>
+                optionValue="value" appendTo="body"></p-select>
             </ng-container>
             <ng-template #viewStatus>{{ item.status === 1 ? 'Active' : 'Inactive' }}</ng-template>
           </td>

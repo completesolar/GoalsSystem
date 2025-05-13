@@ -1,5 +1,5 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, ElementRef, HostListener, Inject, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
 import { MsalService } from '@azure/msal-angular';
 import { ButtonModule } from 'primeng/button';
@@ -168,12 +168,6 @@ export class HeaderComponent {
       this.logout();
     }
   }
-  // onOptionChange(event: any) {
-  //   const selectedRoute = event.value;
-  //   if (selectedRoute) {
-  //     this.router.navigate([selectedRoute]);
-  //   }
-  // }
   get currentRoute(): string {
     return this.router.url;
   }
@@ -186,4 +180,18 @@ onOptionChange(event: any) {
   }
 }
 
+toggleDropdown() {
+  this.showSettings = !this.showSettings;
+}
+
+@HostListener('document:click', ['$event'])
+onDocumentClick(event: MouseEvent) {
+  if (this.showSettings && !this.isClickInsideDropdown(event)) {
+    this.showSettings = false;
+  }}
+  isClickInsideDropdown(event: MouseEvent): boolean {
+    const dropdown = document.querySelector('.settings-button');
+    return dropdown?.contains(event.target as Node) ?? false;
+  }
+  
 }
