@@ -1,4 +1,5 @@
 import difflib
+from pprint import pprint
 from sqlite3 import IntegrityError
 import string
 from typing import Dict, List, Optional
@@ -240,17 +241,17 @@ def get_goals_by_id(db: Session, goalid: int):
 def get_goalshistory_by_id(db: Session, goalid: int):
     return db.query(goalshistory).filter(goalshistory.goalid == goalid).all()
 
-# def get_all_goals(db: Session, response_model=list[GoalsResponse]):
-#     db_goals = db.query(Goals).order_by(Goals.goalid.desc()).all()
-#     return jsonable_encoder(db_goals)
-
-def get_all_goals(db: Session, who_initial: Optional[str] = None):
-    query = db.query(Goals)
-
-    if who_initial:
-        query = query.filter(Goals.who == who_initial)
-    db_goals = query.order_by(Goals.goalid.desc()).all()
+def get_all_goals(db: Session, response_model=list[GoalsResponse]):
+    db_goals = db.query(Goals).order_by(Goals.goalid.desc()).all()
     return jsonable_encoder(db_goals)
+
+# def get_all_goals(db: Session, who_initial: Optional[str] = None):
+#     query = db.query(Goals)
+
+#     if who_initial:
+#         query = query.filter(Goals.who == who_initial)
+#     db_goals = query.order_by(Goals.goalid.desc()).all()
+#     return jsonable_encoder(db_goals)
 
 
 def get_all_goals_history(db: Session, response_model=list[goalhistoryResponse]):
@@ -871,18 +872,29 @@ def update_roleMaster(db: Session, id: int, role_data: RoleMasterUpdate):
 
 
 def get_email(db: Session, email: str):
-    print("email", email)
+    print("=== get_email CALLED ===")
+    print(f"Input email: {email}")
+
     if not email:
+        print("No email provided.")
         return None
 
-    # 1. Get WHO object
-    who = db.query(Who).filter(Who.primary_email == email).first()
-    print("who", who)
+    email = email.lower()
+    print(f"Lowercased email: {email}")
 
-    # 2. Match email inside ARRAY field
-    role_master = db.query(RoleMaster).filter(RoleMaster.user_email.any(email)).first()
+    # 1. Get WHO object
+    who = db.query(Who).filter(func.lower(Who.primary_email) == email).first()
+    print("WHO object:")
+    pprint(who.__dict__ if who else "None")
+
+    # 2. Match email in roleMaster array
+    print("Checking for roleMaster with email in user_email array...")
+    role_master = db.query(RoleMaster).filter(
+        email == any_(RoleMaster.user_email)
+    ).first()
 
     if not role_master:
+        print("RoleMaster not found. Returning default access.")
         return {
             "user_email": email,
             "user": "",
@@ -891,14 +903,21 @@ def get_email(db: Session, email: str):
             "initial": who.initials if who else ""
         }
 
-    # 3. Get the Role object
+    print("RoleMaster found:")
+    pprint(role_master.__dict__)
+
+    # 3. Get Role object
+    print(f"Fetching Role for role = '{role_master.role}'")
     role = db.query(Role).filter(Role.role == role_master.role).first()
-    print("role", role)
 
     if not role:
+        print("No matching role found in Role table.")
         return None
 
-    return {
+    print("Role object:")
+    pprint(role.__dict__)
+
+    result = {
         "user_email": role_master.user_email,
         "user": role_master.user,
         "role": role_master.role,
@@ -906,12 +925,23 @@ def get_email(db: Session, email: str):
         "initial": who.initials if who else ""
     }
 
+    print("Final result to return:")
+    pprint(result)
+    print("=== get_email END ===\n")
+    return result
+
 def get_roleMaster_By_Email(db: Session, email: str):
     print("email", email)
     if not email:
         return None
 
-    role_master = db.query(RoleMaster).filter(email == any_(RoleMaster.user_email)).first()
+    # Lowercase the input
+    email = email.lower()
+
+    # Do NOT lowercase the array; only use any_() directly
+    role_master = db.query(RoleMaster).filter(
+        email == any_(RoleMaster.user_email)
+    ).first()
 
     if not role_master:
         print(f"No role_master found for email: {email}")

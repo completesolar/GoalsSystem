@@ -102,12 +102,12 @@ def read_who(id: int, db: Session = Depends(get_db)):
 def create_goals(goal: Goals, db: Session = Depends(get_db)):
     return create_goal(db=db, goal=goal)
 
-# @router.get("/api/goals", response_model=list[GoalsResponse])
-# def read_goals(db: Session = Depends(get_db)):
-#     return get_all_goals(db)
-@router.get("/api/goals/{who_initial}", response_model=list[GoalsResponse])
-def read_goals(who_initial: str, db: Session = Depends(get_db)):
-    return get_all_goals(db, who_initial)
+@router.get("/api/goals", response_model=list[GoalsResponse])
+def read_goals(db: Session = Depends(get_db)):
+    return get_all_goals(db)
+# @router.get("/api/goals/{who_initial}", response_model=list[GoalsResponse])
+# def read_goals(who_initial: str, db: Session = Depends(get_db)):
+#     return get_all_goals(db, who_initial)
 
 
 

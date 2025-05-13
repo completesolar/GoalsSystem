@@ -125,7 +125,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         const response=res as any
         this.goalsService.userData = response;
         console.log("response",response)
-        localStorage.setItem("initial", response.initial);
+        // localStorage.setItem("initial", response.initial);
         localStorage.setItem("email", response.user_email);
       },
       error: (err) => {
