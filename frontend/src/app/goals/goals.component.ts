@@ -233,7 +233,7 @@ export class GoalsComponent implements AfterViewInit {
           return this.msalService.instance.handleRedirectPromise();
         })
         .then(() => {
-          const whoInitial = this.goalsService.getInitial();                  
+          // const whoInitial = this.goalsService.getInitial();                  
           this.loadGoals();
           this.loadWhoOptions();
           this.loadInitialData();
@@ -342,8 +342,8 @@ export class GoalsComponent implements AfterViewInit {
   }
 
   loadGoals(): void {
-    const whoInitial = this.goalsService.getInitial();
-    this.goalsService.getGoals(whoInitial).subscribe((goals: any[]) => {
+    // const whoInitial = this.goalsService.getInitial();
+    this.goalsService.getGoals().subscribe((goals: any[]) => {
       const filteredGoals = goals
         .filter((g: any) => +g.fiscalyear === this.selectedYear.code)
         .map((g) => ({
@@ -574,13 +574,13 @@ export class GoalsComponent implements AfterViewInit {
             combined_diff: `${response.action} ${response.description} ${response.memo}`,
           },
         };
-        const whoInitial = this.goalsService.getInitial();
+        // const whoInitial = this.goalsService.getInitial();
 
-        if(newGoal.who==whoInitial){
+        // if(newGoal.who==whoInitial){
           this.allGoals = [newGoal, ...this.allGoals];
 
-        }
-        this.allGoals = [...this.allGoals];
+        // // }
+        // this.allGoals = [...this.allGoals];
         Object.keys(this.selectedFilters).forEach((field) => {
           this.clearFilter(field);
         });

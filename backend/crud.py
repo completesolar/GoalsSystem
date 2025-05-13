@@ -241,17 +241,17 @@ def get_goals_by_id(db: Session, goalid: int):
 def get_goalshistory_by_id(db: Session, goalid: int):
     return db.query(goalshistory).filter(goalshistory.goalid == goalid).all()
 
-# def get_all_goals(db: Session, response_model=list[GoalsResponse]):
-#     db_goals = db.query(Goals).order_by(Goals.goalid.desc()).all()
-#     return jsonable_encoder(db_goals)
-
-def get_all_goals(db: Session, who_initial: Optional[str] = None):
-    query = db.query(Goals)
-
-    if who_initial:
-        query = query.filter(Goals.who == who_initial)
-    db_goals = query.order_by(Goals.goalid.desc()).all()
+def get_all_goals(db: Session, response_model=list[GoalsResponse]):
+    db_goals = db.query(Goals).order_by(Goals.goalid.desc()).all()
     return jsonable_encoder(db_goals)
+
+# def get_all_goals(db: Session, who_initial: Optional[str] = None):
+#     query = db.query(Goals)
+
+#     if who_initial:
+#         query = query.filter(Goals.who == who_initial)
+#     db_goals = query.order_by(Goals.goalid.desc()).all()
+#     return jsonable_encoder(db_goals)
 
 
 def get_all_goals_history(db: Session, response_model=list[goalhistoryResponse]):
