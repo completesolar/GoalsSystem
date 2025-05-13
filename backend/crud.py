@@ -1,4 +1,5 @@
 import difflib
+from pprint import pprint
 from sqlite3 import IntegrityError
 import string
 from typing import Dict, List, Optional
@@ -871,22 +872,29 @@ def update_roleMaster(db: Session, id: int, role_data: RoleMasterUpdate):
 
 
 def get_email(db: Session, email: str):
-    print("email", email)
+    print("=== get_email CALLED ===")
+    print(f"Input email: {email}")
+
     if not email:
+        print("No email provided.")
         return None
 
     email = email.lower()
+    print(f"Lowercased email: {email}")
 
-    # 1. Get WHO object (case-insensitive match)
+    # 1. Get WHO object
     who = db.query(Who).filter(func.lower(Who.primary_email) == email).first()
-    print("who", who)
+    print("WHO object:")
+    pprint(who.__dict__ if who else "None")
 
-    # 2. Case-insensitive match for email inside array
+    # 2. Match email in roleMaster array
+    print("Checking for roleMaster with email in user_email array...")
     role_master = db.query(RoleMaster).filter(
-        func.lower(email) == func.any(func.lower(RoleMaster.user_email))
+        email == any_(RoleMaster.user_email)
     ).first()
 
     if not role_master:
+        print("RoleMaster not found. Returning default access.")
         return {
             "user_email": email,
             "user": "",
@@ -895,14 +903,21 @@ def get_email(db: Session, email: str):
             "initial": who.initials if who else ""
         }
 
-    # 3. Get the Role object
+    print("RoleMaster found:")
+    pprint(role_master.__dict__)
+
+    # 3. Get Role object
+    print(f"Fetching Role for role = '{role_master.role}'")
     role = db.query(Role).filter(Role.role == role_master.role).first()
-    print("role", role)
 
     if not role:
+        print("No matching role found in Role table.")
         return None
 
-    return {
+    print("Role object:")
+    pprint(role.__dict__)
+
+    result = {
         "user_email": role_master.user_email,
         "user": role_master.user,
         "role": role_master.role,
@@ -910,18 +925,22 @@ def get_email(db: Session, email: str):
         "initial": who.initials if who else ""
     }
 
-from sqlalchemy import any_, func
+    print("Final result to return:")
+    pprint(result)
+    print("=== get_email END ===\n")
+    return result
 
 def get_roleMaster_By_Email(db: Session, email: str):
     print("email", email)
     if not email:
         return None
 
+    # Lowercase the input
     email = email.lower()
 
-    # Apply LOWER only to the input, not the array column
+    # Do NOT lowercase the array; only use any_() directly
     role_master = db.query(RoleMaster).filter(
-        func.lower(email) == any_(RoleMaster.user_email)
+        email == any_(RoleMaster.user_email)
     ).first()
 
     if not role_master:
