@@ -875,12 +875,16 @@ def get_email(db: Session, email: str):
     if not email:
         return None
 
-    # 1. Get WHO object
-    who = db.query(Who).filter(Who.primary_email == email).first()
+    email = email.lower()
+
+    # 1. Get WHO object (case-insensitive match)
+    who = db.query(Who).filter(func.lower(Who.primary_email) == email).first()
     print("who", who)
 
-    # 2. Match email inside ARRAY field
-    role_master = db.query(RoleMaster).filter(RoleMaster.user_email.any(email)).first()
+    # 2. Case-insensitive match for email inside array
+    role_master = db.query(RoleMaster).filter(
+        func.lower(email) == func.any(func.lower(RoleMaster.user_email))
+    ).first()
 
     if not role_master:
         return {
@@ -906,12 +910,19 @@ def get_email(db: Session, email: str):
         "initial": who.initials if who else ""
     }
 
+from sqlalchemy import any_, func
+
 def get_roleMaster_By_Email(db: Session, email: str):
     print("email", email)
     if not email:
         return None
 
-    role_master = db.query(RoleMaster).filter(email == any_(RoleMaster.user_email)).first()
+    email = email.lower()
+
+    # Apply LOWER only to the input, not the array column
+    role_master = db.query(RoleMaster).filter(
+        func.lower(email) == any_(RoleMaster.user_email)
+    ).first()
 
     if not role_master:
         print(f"No role_master found for email: {email}")
