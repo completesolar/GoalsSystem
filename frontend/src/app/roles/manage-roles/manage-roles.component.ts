@@ -47,7 +47,6 @@ export class ManageRolesComponent {
     { field: 'id', header: 'ID', tooltip: '' },
     { field: 'role', header: 'Role', tooltip: '' },
     { field: 'user', header: 'User', tooltip: '' },
-    // { field: 'status', header: 'Status', tooltip: '' },
     { field: 'remarks', header: 'Remarks', tooltip: '' },
     { field: 'action', header: 'ACTION', tooltip: '' },
   ];
@@ -92,7 +91,7 @@ export class ManageRolesComponent {
       this.rolesOptions = response.map((item: any) => {
         return {
           label: item.role,
-          value: item.role.toLowerCase(),
+          value: item.role,
           id: item.id,
         };
       });
@@ -103,10 +102,8 @@ export class ManageRolesComponent {
       this.RoleMasterList = response;
       this.RoleMasterList.map((item: any, index: number) => {
         item.sno = index + 1;
-        // item.user_id = item.user_id[0];
-        // item.user = item.user[0];
       });
-      console.log('RoleMasterList', this.RoleMasterList);
+      // console.log('RoleMasterList', this.RoleMasterList);
     });
   }
 
