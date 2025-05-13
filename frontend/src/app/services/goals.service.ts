@@ -14,7 +14,6 @@ import { catchError, map } from 'rxjs/operators';
 })
 export class GoalsService {
   private baseURL = `${environment.baseURL}`;
-  private initialKey = 'initial';
   public userData:any;
 
   private accessChangedSource = new BehaviorSubject<boolean>(false);
@@ -25,8 +24,8 @@ export class GoalsService {
 
   constructor(private http: HttpClient) {}
 
-  getGoals(whoInitial:any) {
-    return this.http.get<Goals[]>(`${this.baseURL}/goals/${whoInitial}`);
+  getGoals() {
+    return this.http.get<Goals[]>(`${this.baseURL}/goals`);
   }
   getGoal(id: number) {
     return this.http.get(`${this.baseURL}/goals/${id}`);
@@ -168,15 +167,4 @@ loginCheck(email: string) {
   }
 
 
-  setInitial(value: string): void {
-    localStorage.setItem(this.initialKey, value);
-  }
-
-  getInitial(): string | null {
-    return localStorage.getItem(this.initialKey);
-  }
-
-  clearInitial(): void {
-    localStorage.removeItem(this.initialKey);
-  }
 }
