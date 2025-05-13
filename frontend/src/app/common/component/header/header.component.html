@@ -1,34 +1,105 @@
 <div class="mb-2 logo-section flex pl-4 p-2 items-center justify-content-between">
-
   <img src="assets/SunPower.png" alt="Complete Solar" class="logo h-10" />
 
   <div class="px-2 title-section flex items-center align-items-center justify-content-between gap-5">
- <div class="main-title">GOALS SYSTEM</div>
+    <div class="main-title">GOALS SYSTEM</div>
   </div>
 
   <div class="flex items-center justify-end gap-4 align-items-center">
-  
-    <p-menu [model]="settingsMenu" [popup]="true" #menu></p-menu>
     <div class="flex align-items-center gap-3">
-      <div class="cursor-pointer" 
-     *ngIf="goalService.userData?.access?.includes('dashboard')"
-     [ngClass]="{ 'active-background': currentRoute === '/goals-metrics' }" 
-     (click)="goToDashboard()">Dashboard</div>
+      <div
+        class="cursor-pointer"
+        *ngIf="goalService.userData?.access?.includes('dashboard')"
+        [ngClass]="{ 'active-background': currentRoute === '/goals-metrics' }"
+        (click)="goToDashboard()"
+      >
+        Dashboard
+      </div>
 
-<div class="cursor-pointer" 
-     *ngIf="goalService.userData?.access?.includes('goals')" 
-     [ngClass]="{ 'active-background': currentRoute === '/goals' }" 
-     (click)="goToGoals()">Goals</div>
-     <button *ngIf="settingsMenu.length > 0" (click)="menu.toggle($event)" class="settings-button">
+      <div
+        class="cursor-pointer"
+        *ngIf="goalService.userData?.access?.includes('goals')"
+        [ngClass]="{ 'active-background': currentRoute === '/goals' }"
+        (click)="goToGoals()"
+      >
+        Goals
+      </div>
 
-        Settings
-        <i class="pi pi-chevron-down"></i>
-      </button>
+      <!-- Custom Settings Dropdown -->
+      <div class="relative" *ngIf="goalService.userData?.access?.length > 0">
+        <button
+          (click)="showSettings = !showSettings"
+          class="settings-button flex items-center"
+        >
+          Settings
+          <i class="pi pi-chevron-down ml-2"></i>
+        </button>
+
+        <div
+          *ngIf="showSettings"
+          class="absolute right-0 mt-2 py-2 w-48 bg-white border border-gray-200 rounded shadow-md z-2 shadow-1 border-round-md"
+       style="width: max-content;" >
+          <div
+            class="px-4 py-2 cursor-pointer hover:bg-gray-100"
+            *ngIf="goalService.userData?.access?.includes('priority')"
+            (click)="onOptionChange({ value: '/priority' })"
+          >
+            Priority
+          </div>
+          <div
+            class="px-4 py-2 cursor-pointer hover:bg-gray-100"
+            *ngIf="goalService.userData?.access?.includes('status')"
+            (click)="onOptionChange({ value: '/status' })"
+          >
+            Status
+          </div>
+          <div
+            class="px-4 py-2 cursor-pointer hover:bg-gray-100"
+            *ngIf="goalService.userData?.access?.includes('beginning_week')"
+            (click)="onOptionChange({ value: '/beginning_week' })"
+          >
+            Beginning Week
+          </div>
+          <div
+            class="px-4 py-2 cursor-pointer hover:bg-gray-100"
+            *ngIf="goalService.userData?.access?.includes('end_week')"
+            (click)="onOptionChange({ value: '/end_week' })"
+          >
+            End Week
+          </div>
+          <div
+            class="px-4 py-2 cursor-pointer hover:bg-gray-100"
+            *ngIf="goalService.userData?.access?.includes('delinquent')"
+            (click)="onOptionChange({ value: '/delinquent' })"
+          >
+            Delinquent
+          </div>
+          <div
+            class="px-4 py-2 cursor-pointer hover:bg-gray-100"
+            *ngIf="goalService.userData?.access?.includes('project')"
+            (click)="onOptionChange({ value: '/project' })"
+          >
+            Project
+          </div>
+          <div
+            class="px-4 py-2 cursor-pointer hover:bg-gray-100"
+            *ngIf="goalService.userData?.access?.includes('add_roles')"
+            (click)="onOptionChange({ value: '/add_roles' })"
+          >
+            Roles
+          </div>
+          <div
+            class="px-4 py-2 cursor-pointer hover:bg-gray-100"
+            *ngIf="goalService.userData?.access?.includes('manage_role')"
+            (click)="onOptionChange({ value: '/manage_role' })"
+          >
+            Manage Roles
+          </div>
+        </div>
+      </div>
     </div>
-    
-    
-    
-    <!-- Icon + Full Date on same line -->
+
+    <!-- Date + Calendar Icon -->
     <div class="flex items-center gap-1 align-items-center">
       <img
         src="assets/solar_calendar-linear.svg"
@@ -36,11 +107,11 @@
         class="calendar-icon"
       />
       <span class="date-text white-space-nowrap" style="font-size: 12px;">
-        {{ today | date : "MM-dd-yyyy" }}
+        {{ today | date: 'MM-dd-yyyy' }}
       </span>
     </div>
 
-    <!-- WW Dropdown -->
+    <!-- Logout Dropdown -->
     <p-select
       [options]="[{ label: 'Logout', value: 'logout' }]"
       [filter]="false"

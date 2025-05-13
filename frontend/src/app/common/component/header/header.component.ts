@@ -12,6 +12,7 @@ import { GoalsService } from '../../../services/goals.service';
 
 @Component({
   selector: 'app-header',
+  standalone: true,
   imports: [
     SelectModule,
     CommonModule,
@@ -33,8 +34,10 @@ export class HeaderComponent {
     private msalService: MsalService,
     private roleService: RolesService,
     public goalService: GoalsService,
-    private router: Router
+    private router: Router,
+    
   ) {}
+  showSettings: boolean = false;
 
   settingsMenu = [
     {
@@ -80,10 +83,9 @@ export class HeaderComponent {
   
     this.getPermission();
   
-    // 🔁 Subscribe to access updates
     this.goalService.accessChanged$.subscribe((shouldRefresh) => {
       if (shouldRefresh) {
-        this.getPermission(); // re-fetch updated access
+        this.getPermission(); 
       }
     });
   }
@@ -98,7 +100,7 @@ export class HeaderComponent {
           const accessList = this.goalService.userData?.access || [];
           this.settingsMenu = this.settingsMenu.filter(item =>
             accessList.includes(this.extractRoute(item.routerLink))
-          );
+                    );
         });
       }
     } else {
@@ -166,13 +168,22 @@ export class HeaderComponent {
       this.logout();
     }
   }
-  onOptionChange(event: any) {
-    const selectedRoute = event.value;
-    if (selectedRoute) {
-      this.router.navigate([selectedRoute]);
-    }
-  }
+  // onOptionChange(event: any) {
+  //   const selectedRoute = event.value;
+  //   if (selectedRoute) {
+  //     this.router.navigate([selectedRoute]);
+  //   }
+  // }
   get currentRoute(): string {
     return this.router.url;
   }
+
+onOptionChange(event: any) {
+  const selectedRoute = event.value;
+  if (selectedRoute) {
+    this.showSettings = false;
+    this.router.navigate([selectedRoute]);
+  }
+}
+
 }
