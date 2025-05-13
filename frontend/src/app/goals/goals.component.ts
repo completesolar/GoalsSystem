@@ -1378,18 +1378,16 @@ export class GoalsComponent implements AfterViewInit {
     });
   }
 
-  onFilterChange(field: string): void {
-    Object.keys(this.selectedFilters).forEach((key) => {
-      if (key !== field) {
-        this.selectedFilters[key] = [];
-        this.activeFilters[key] = false;
-      }
-    });
-    this.applyFilters();
-    this.activeFilters[field] =
-      Array.isArray(this.selectedFilters[field]) &&
-      this.selectedFilters[field].length > 0;
-  }
+  // Method for when the filter changes
+onFilterChange(field: string): void {
+  // Update only the active filter for the current field
+  this.activeFilters[field] =
+    Array.isArray(this.selectedFilters[field]) &&
+    this.selectedFilters[field].length > 0;
+
+  // Apply filters after changes
+  this.applyFilters();
+}
 
   onGdbFilterChange(): void {
     this.applyFilters();
