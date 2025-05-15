@@ -1,3 +1,4 @@
+from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException,Query
 from sqlalchemy.orm import Session
@@ -418,3 +419,23 @@ def read_RoleMaster_By_Id(email: str, db: Session = Depends(get_db)):
     if not result:
         raise HTTPException(status_code=404, detail="Email not found or role not assigned")
     return result
+
+@router.get("/api/who-initials/{email}")
+def get_who_and_vp_by_email(email: str, db: Session = Depends(get_db)):
+    print(f"🔍 Incoming email for WHO/VP lookup: {email}")
+    
+    result = db.execute(
+        text("""
+            SELECT w.initials AS who,
+                   sv.initials AS vp
+            FROM public.who w
+            LEFT JOIN public.who sv ON w.supervisor_name = sv.employee_name
+            WHERE LOWER(w.primary_email) = LOWER(:email)
+        """),
+        {"email": email}
+    ).fetchone()
+
+    if not result:
+        raise HTTPException(status_code=404, detail="User not found or supervisor not mapped")
+
+    return {"who": result[0], "vp": result[1]}

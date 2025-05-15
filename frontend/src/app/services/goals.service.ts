@@ -166,5 +166,10 @@ loginCheck(email: string) {
     return throwError(() => new Error(error.message || 'Server error'));
   }
 
+  getWhoAndVpByEmail(email: string) {
+    return this.http.get<{ who: string; vp: string }>(
+      `${this.baseURL}/who-initials/${encodeURIComponent(email)}`
+    );
+  }  
 
 }
