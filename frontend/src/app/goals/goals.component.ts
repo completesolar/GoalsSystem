@@ -30,6 +30,7 @@ import { MultiSelect, MultiSelectModule } from 'primeng/multiselect';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { CheckboxModule } from 'primeng/checkbox';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 // import { weekConstant } from '../common/common';
 import { DropdownModule } from 'primeng/dropdown';
@@ -70,6 +71,7 @@ interface Year {
     MultiSelectModule,
     ConfirmPopupModule,
     CheckboxModule,
+    ConfirmDialogModule,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './goals.component.html',
@@ -79,6 +81,7 @@ export class GoalsComponent implements AfterViewInit {
   @ViewChild('dataTable') dataTable: Table | undefined;
   @ViewChildren('whoSelectWrapper') whoSelectWrappers!: QueryList<ElementRef>;
   @ViewChild('whoNewSelect', { read: ElementRef }) whoNewSelectRef!: ElementRef;
+  @ViewChild('confirmPopup') confirmPopup!: any;
 
   goal: any = [];
   goalHistory: any = [];
@@ -605,6 +608,120 @@ export class GoalsComponent implements AfterViewInit {
     });
   }
 
+confirmCloneViaPopup(event: Event, row: any) {
+  this.confirmationService.confirm({
+    target: event.target as EventTarget,
+    message: 'Are you sure you want to clone this goal?',
+    icon: 'pi pi-copy',
+    header: 'Confirm Clone',
+    acceptLabel: 'Yes',
+    rejectLabel: 'No',
+    acceptButtonStyleClass: 'p-button-success',
+    rejectButtonStyleClass: 'p-button-secondary',
+    accept: () => {
+      this.cloneGoal(row);
+    }
+  });
+} 
+  
+cloneGoal(row: any) {
+  const email = this.getLoggedInEmail();
+  console.log('Cloning with email:', email);
+
+  this.goalsService.getWhoAndVpByEmail(email).subscribe({
+    next: (mapping) => {
+      const currentWeek = this.getCurrentWeekNumber();
+      const utcMoment = moment.utc(); 
+
+      const clonedGoal: Goals = {
+        who: mapping.who || '',
+        vp: mapping.vp || '',
+        p: 99,
+        proj: row.proj || '',
+        b: currentWeek,
+        e: currentWeek === 53 ? 1 : currentWeek + 1,
+        d: null,
+        s: 'N',
+        action: row.action?.replace(/:$/, '') + ':' || '',
+        description: row.description || '',
+        memo: row.memo ?? '',
+        fiscalyear: this.currentYear,
+        updateBy: mapping.who || '',
+        isconfidential: !!row.isconfidential,
+        createddatetime: utcMoment.toDate(),
+        updateddatetime: utcMoment.toDate(),
+      };        
+
+      console.log('Sending cloned goal:', clonedGoal);
+
+      this.goalsService.createGoal(clonedGoal).subscribe({
+        next: (response: any) => {
+          if (response?.goalid) {
+            const mstMoment = moment.utc(response.createddatetime).tz('America/Denver');
+
+            const newGoal: Goals = {
+              ...clonedGoal,
+              goalid: response.goalid,
+              createddatetime: new Date(mstMoment.format()),
+              isEditable: false,
+              description_diff: {
+                combined_diff: `${response.action} ${response.description} ${response.memo}`,
+              },
+            };
+
+            this.allGoals = [newGoal, ...this.allGoals];
+
+            Object.keys(this.selectedFilters).forEach((field) => {
+              this.clearFilter(field);
+            });
+            this.gdbSearchText = '';
+            this.applyFilters();
+
+            if (this.dataTable) {
+              this.dataTable.clear();
+            }
+
+            this.loadGoalsHistory(response.goalid);
+
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Cloned',
+              detail: `Goal #${row.goalid} was cloned successfully.`,
+            });
+          } else {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to clone goal.',
+            });
+          }
+        },
+        error: (err) => {
+          console.error('Failed to save cloned goal:', err);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Cloned goal creation failed.',
+          });
+        }
+      });
+    },
+    error: (err) => {
+      console.error('Failed to fetch WHO/VP mapping', err);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Unable to clone. Could not resolve WHO/VP for user.',
+      });
+    }
+  });
+}
+
+  getLoggedInEmail(): string {
+    const account = this.msalService.instance.getAllAccounts()[0];
+    return account?.username || '';
+  }
+  
   exportExcelData(): void {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Goals');
