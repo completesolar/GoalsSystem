@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import List, Optional
 from datetime import date
 
 
@@ -76,6 +76,17 @@ class WhoUpdate(BaseModel):
     manager_level_3: Optional[str] = None
     manager_level_4: Optional[str] = None
 
+class WhoBase(BaseModel):
+    id: int
+    employee_id: Optional[int]
+    employee_name: Optional[str]
+    initials: Optional[str] = None
+    supervisor_name: Optional[str] = None
+    
+class SupervisorChainResponse(BaseModel):
+    who: str
+    employee_name: str
+    supervisor_names: List[str]
 
 class WhoResponse(WhoBase):
     id: int
