@@ -21,6 +21,7 @@ from crud import (
     bind_diffs_to_goals,
     create_goal,
     get_all_goal_diffs_by_goalid,
+    get_direct_reports,
     get_goals_by_id,
     get_all_goals,
     get_latest_goal_diff_by_goalid,
@@ -448,8 +449,14 @@ def get_supervisor_chain_endpoint(who: str, db: Session = Depends(get_db)):
     supervisor_chain = get_supervisor_chain(db, who)
     return supervisor_chain
 
-@router.get("/who-initials/{email}")
+@router.get("/api/who-initials/{email}")
 async def get_user_initials_endpoint(email: str, db: Session = Depends(get_db)):
     # Fetch the initials using the function
     initials = get_user_initials(db, email)
     return {"who": initials}
+
+@router.get("/api/direct-reports/{supervisor_initials}")
+async def get_direct_reports_endpoint(supervisor_initials: str, db: Session = Depends(get_db)):
+    # Fetch direct reports (subordinates) where the supervisor_name matches the given initials
+    direct_reports = get_direct_reports(db, supervisor_initials)
+    return direct_reports

@@ -178,5 +178,8 @@ getUserInitials(email: string) {
 getSupervisorHierarchy(initials: string) {
   return this.http.get<{ supervisor_names: string[] }>(`${this.baseURL}/supervisor-chain/${encodeURIComponent(initials)}`);
 }
+getDirectReports(initials: string) {
+  return this.http.get<{ direct_reports: string[] }>(`${this.baseURL}/direct-reports/${encodeURIComponent(initials)}`);
+}
 
 }

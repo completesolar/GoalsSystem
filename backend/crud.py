@@ -960,43 +960,46 @@ def get_supervisor_chain(db: Session, user_who: str):
     # Fetch the current user (the starting 'who')
     current_user = db.query(Who).filter(Who.initials == user_who).first()
 
-    # Check if the user exists
     if not current_user:
         raise HTTPException(status_code=404, detail=f"User with initials {user_who} not found")
 
-    # Save the employee name of the initial user (starting point) for the final response
     starting_employee_name = current_user.employee_name
-
-    print(f"Found user: {current_user.employee_name} (ID: {current_user.id})")  # Debug log
 
     # Loop to get the supervisor chain using the supervisor's initials
     while current_user and current_user.supervisor_name:
-        print(f"Adding supervisor: {current_user.supervisor_name}")  # Debug log
-        
-        # Fetch the supervisor using their full name (employee_name)
-        supervisor = db.query(Who).filter(Who.employee_name == current_user.supervisor_name).first()
+        supervisors.append(current_user.supervisor_name)
+        current_user = db.query(Who).filter(Who.employee_name == current_user.supervisor_name).first()
 
-        if supervisor:
-            # Add the supervisor's initials (not their full name)
-            supervisors.append(supervisor.initials)
-            # Move up to the next supervisor (using their initials)
-            current_user = db.query(Who).filter(Who.initials == supervisor.initials).first()
-        else:
-            break
-
-        # If the supervisor does not exist or has no supervisor, break out of the loop
-        if not current_user or not current_user.supervisor_name:
-            print(f"No more supervisors found for {current_user.initials if current_user else 'None'}")  # Debug log
-            break
-
-    print(f"Supervisor chain: {supervisors}")  # Debug log
-
-    # Return the supervisor chain with the original employee_name
+    # Return the supervisor hierarchy
     return {
-        "who": user_who, 
-        "employee_name": starting_employee_name,  # Use the starting employee name (KYS's name)
-        "supervisor_names": supervisors  # List of supervisor initials
+        "who": user_who,
+        "employee_name": starting_employee_name,
+        "supervisor_names": supervisors
     }
+
+def get_direct_reports(db: Session, supervisor_initials: str):
+    # Fetch the supervisor's full name based on the initials
+    supervisor_name = db.query(Who.employee_name).filter(Who.initials == supervisor_initials).first()
+
+    if not supervisor_name:
+        print(f"Supervisor with initials {supervisor_initials} not found.")  # Debugging print
+        raise HTTPException(status_code=404, detail=f"Supervisor with initials {supervisor_initials} not found.")
+    
+    print(f"Supervisor name fetched: {supervisor_name[0]}")  # Debugging print
+
+    # Fetch the direct reports (subordinates) where the supervisor_name matches the full name of the supervisor
+    direct_reports = db.query(Who).filter(Who.supervisor_name == supervisor_name[0]).all()
+
+    if not direct_reports:
+        print(f"No direct reports found for supervisor {supervisor_name[0]}.")  # Debugging print
+        return {"direct_reports": []}  # Return an empty list if no direct reports
+
+    # Log the direct reports fetched
+    direct_report_initials = [report.initials for report in direct_reports]
+    print(f"Direct reports found: {direct_report_initials}")  # Debugging print
+
+    # Return the initials of the direct reports
+    return {"direct_reports": direct_report_initials}
 
 def get_user_initials(db: Session, email: str):
     # Normalize email to lowercase
