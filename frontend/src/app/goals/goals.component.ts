@@ -45,6 +45,7 @@ import {
   DIFF_DELETE,
 } from 'diff-match-patch';
 import { ViewChildren, QueryList, ElementRef } from '@angular/core';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
 interface Year {
   name: number;
@@ -72,6 +73,7 @@ interface Year {
     ConfirmPopupModule,
     CheckboxModule,
     ConfirmDialogModule,
+    ToggleSwitchModule,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './goals.component.html',
@@ -206,6 +208,9 @@ export class GoalsComponent implements AfterViewInit {
     'rgb(253, 179, 056)',
     'rgb(219, 076, 119)',
   ];
+  checked: boolean = false;
+  sort: boolean = false;
+
   constructor(
     @Inject(PLATFORM_ID) private platform: Object,
     private goalsService: GoalsService,
@@ -376,7 +381,6 @@ export class GoalsComponent implements AfterViewInit {
       this.allGoals = filteredGoals;
       this.goal = [...filteredGoals];
       this.originalGoal = [...this.goal];
-      // console.log("this.goal", this.goal);
     });
   }
 
@@ -407,26 +411,30 @@ export class GoalsComponent implements AfterViewInit {
     this.goalsService.getGoalHistory(id).subscribe(
       (goalsHistory) => {
         let sortedHistory = (goalsHistory as any[])
-          .map((g) => ({
-            ...g,
-            createddateMST: moment(g.createddate)
-              .tz('America/Denver')
-              .format('MM/DD/YYYY hh:mm:ss A'),
-          }))
+          .map((g) => {
+            const safeCreatedDate = g.createddate
+              ? moment
+                  .utc(g.createddate)
+                  .tz('America/Denver')
+                  .format('MM/DD/YYYY hh:mm:ss A')
+              : 'N/A';
+
+            return {
+              ...g,
+              createddateMST: safeCreatedDate,
+            };
+          })
           .sort(
             (a, b) =>
               new Date(a.createddate).getTime() -
               new Date(b.createddate).getTime()
           );
-
         const coloredHistory = [];
         let cumulativeMemo: { text: string; color: string }[] = [];
         let cumulativeAction: { text: string; color: string }[] = [];
         let cumulativeDescription: { text: string; color: string }[] = [];
-
         for (let i = 0; i < sortedHistory.length; i++) {
           const current = sortedHistory[i];
-
           const rowDisplay: any = {
             ...current,
             display: {
@@ -435,7 +443,6 @@ export class GoalsComponent implements AfterViewInit {
               memo: [],
             },
           };
-
           if (i === 0) {
             rowDisplay.display.action = [
               { text: current.action || '', color: this.colorPalette[0] },
@@ -466,7 +473,7 @@ export class GoalsComponent implements AfterViewInit {
               highlightColor
             );
             rowDisplay.display.memo = this.getProgressiveChunks(
-              cumulativeDescription,
+              cumulativeMemo,
               current.memo || '',
               highlightColor
             );
@@ -478,7 +485,6 @@ export class GoalsComponent implements AfterViewInit {
 
           coloredHistory.push(rowDisplay);
         }
-
         this.goalHistory = coloredHistory.reverse();
       },
       (error) => {
@@ -648,8 +654,8 @@ cloneGoal(row: any) {
         fiscalyear: this.currentYear,
         updateBy: mapping.who || '',
         isconfidential: !!row.isconfidential,
-        createddatetime: utcMoment.toDate(),
-        updateddatetime: utcMoment.toDate(),
+        createddatetime:  moment().tz('America/Denver').toDate(),
+        updateddatetime:  moment().tz('America/Denver').toDate(),
       };        
 
       console.log('Sending cloned goal:', clonedGoal);
@@ -2175,4 +2181,5 @@ onFilterChange(field: string): void {
       }
     }, 100);
   }
+  
 }
