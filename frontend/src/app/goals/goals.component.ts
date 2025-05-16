@@ -338,22 +338,28 @@ export class GoalsComponent implements AfterViewInit {
 
     XLSX.writeFile(wb, fileName);
   }
-  loadGoals(): void {
-    // Fetch the currently signed-in user's email
-    const userEmail = this.getLoggedInEmail();
+loadGoals(): void {
+  // Fetch the currently signed-in user's email
+  const userEmail = this.getLoggedInEmail();
 
-    // First, get the user's initials from the email
-    this.goalsService.getUserInitials(userEmail).subscribe((response: { who: string }) => {
-      const userInitials = response.who;  // Get the initials from the response
+  // First, get the user's initials from the email
+  this.goalsService.getUserInitials(userEmail).subscribe((response: { who: string }) => {
+    const userInitials = response.who;  // Get the initials from the response
 
-      // Now, get the supervisor hierarchy using the initials
-      this.goalsService.getSupervisorHierarchy(userInitials).subscribe((response: { supervisor_names: string[] }) => {
-        const supervisorHierarchy = response.supervisor_names;  // Get the supervisor hierarchy from the response
+    // Now, get the supervisor hierarchy using the initials
+    this.goalsService.getSupervisorHierarchy(userInitials).subscribe((response: { supervisor_names: string[] }) => {
+      const supervisorHierarchy = response.supervisor_names; // Get the supervisor hierarchy from the response
+      console.log('supervisor hierarchy', supervisorHierarchy); // Debug log
+
+      // Get the direct reports (subordinates) of the user (supervisor)
+      this.goalsService.getDirectReports(userInitials).subscribe((directReports: { direct_reports: string[] }) => {
+        const directReportsList = directReports.direct_reports;
+        console.log('direct reports:', directReportsList); // Debug log
 
         // Now fetch the goals
         this.goalsService.getGoals().subscribe((goals: any[]) => {
           const filteredGoals = goals
-            .filter((g: any) => +g.fiscalyear === this.selectedYear.code)
+            .filter((g: any) => +g.fiscalyear === this.selectedYear.code) // Filter by fiscal year
             .map((g) => ({
               ...g,
               goalid: g.goalid,
@@ -370,12 +376,22 @@ export class GoalsComponent implements AfterViewInit {
               isconfidential: !!g.isconfidential,
             }))
             .filter((goal: any) => {
-              // If the goal is confidential, check if the user has access
+              // Check if the goal is confidential
               if (goal.isconfidential) {
-                // Check if the current user is part of the goal owner's hierarchy
-                return supervisorHierarchy.includes(goal.who) || goal.who === userInitials;
+                // If the user is a supervisor or part of the goal owner's hierarchy or the goal owner themselves
+                const isSupervisorOrOwner = supervisorHierarchy.includes(goal.who) || goal.who === userInitials;
+                const isDirectReport = directReportsList.includes(goal.who);
+
+                // If the goal is confidential, show it if:
+                // - the user is the supervisor of the goal owner
+                // - the user is the goal owner
+                // - the user is a direct report of the goal owner
+                // - or if the user is in the direct report chain (direct reports of direct reports)
+                return isSupervisorOrOwner || isDirectReport;
+              } else {
+                // Non-confidential goals should be visible to everyone, including regular employees
+                return true;
               }
-              return true;  // If the goal is not confidential, show it to everyone
             })
             .sort((a, b) => {
               const whoA = a.who.toLowerCase();
@@ -394,7 +410,9 @@ export class GoalsComponent implements AfterViewInit {
         });
       });
     });
-  }
+  });
+}
+
   onWhoSelected() {
     const currentWeek = this.getCurrentWeekNumber();
     this.newRow.p = 99;
