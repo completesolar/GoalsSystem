@@ -170,6 +170,13 @@ loginCheck(email: string) {
     return this.http.get<{ who: string; vp: string }>(
       `${this.baseURL}/who-initials/${encodeURIComponent(email)}`
     );
-  }  
+  } 
+getUserInitials(email: string) {
+  return this.http.get<{ who: string }>(`${this.baseURL}/who-initials/${encodeURIComponent(email)}`);
+}
+
+getSupervisorHierarchy(initials: string) {
+  return this.http.get<{ supervisor_names: string[] }>(`${this.baseURL}/supervisor-chain/${encodeURIComponent(initials)}`);
+}
 
 }

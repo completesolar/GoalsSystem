@@ -953,3 +953,59 @@ def get_roleMaster_By_Email(db: Session, email: str):
         "user_email": role_master.user_email,
         "access": role.access if role else [],
     }
+
+def get_supervisor_chain(db: Session, user_who: str):
+    supervisors = []
+    
+    # Fetch the current user (the starting 'who')
+    current_user = db.query(Who).filter(Who.initials == user_who).first()
+
+    # Check if the user exists
+    if not current_user:
+        raise HTTPException(status_code=404, detail=f"User with initials {user_who} not found")
+
+    # Save the employee name of the initial user (starting point) for the final response
+    starting_employee_name = current_user.employee_name
+
+    print(f"Found user: {current_user.employee_name} (ID: {current_user.id})")  # Debug log
+
+    # Loop to get the supervisor chain using the supervisor's initials
+    while current_user and current_user.supervisor_name:
+        print(f"Adding supervisor: {current_user.supervisor_name}")  # Debug log
+        
+        # Fetch the supervisor using their full name (employee_name)
+        supervisor = db.query(Who).filter(Who.employee_name == current_user.supervisor_name).first()
+
+        if supervisor:
+            # Add the supervisor's initials (not their full name)
+            supervisors.append(supervisor.initials)
+            # Move up to the next supervisor (using their initials)
+            current_user = db.query(Who).filter(Who.initials == supervisor.initials).first()
+        else:
+            break
+
+        # If the supervisor does not exist or has no supervisor, break out of the loop
+        if not current_user or not current_user.supervisor_name:
+            print(f"No more supervisors found for {current_user.initials if current_user else 'None'}")  # Debug log
+            break
+
+    print(f"Supervisor chain: {supervisors}")  # Debug log
+
+    # Return the supervisor chain with the original employee_name
+    return {
+        "who": user_who, 
+        "employee_name": starting_employee_name,  # Use the starting employee name (KYS's name)
+        "supervisor_names": supervisors  # List of supervisor initials
+    }
+
+def get_user_initials(db: Session, email: str):
+    # Normalize email to lowercase
+    email = email.lower()
+    
+    # Query the 'Who' table for the user by email
+    user = db.query(Who).filter(Who.primary_email == email).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail=f"User with email {email} not found")
+
+    return user.initials  # Return the initials of the user

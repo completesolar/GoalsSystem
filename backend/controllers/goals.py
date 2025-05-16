@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException,Query
 from sqlalchemy.orm import Session
 from schemas.schema import Goals, GoalsResponse, GoalsUpdate
 from schemas.goalshistory import goalshistory, goalhistoryResponse
-from schemas.who import WhoCreate, WhoResponse
+from schemas.who import SupervisorChainResponse, WhoCreate, WhoResponse
 from schemas.status import StatusCreate, StatusUpdate, StatusResponse
 from schemas.proj import ProjResponse,ProjUpdate,ProjCreate
 from schemas.vp import VPResponse
@@ -24,6 +24,8 @@ from crud import (
     get_goals_by_id,
     get_all_goals,
     get_latest_goal_diff_by_goalid,
+    get_supervisor_chain,
+    get_user_initials,
     update_goal,
     get_all_goals_history,
     get_goalshistory_by_id,
@@ -439,3 +441,15 @@ def get_who_and_vp_by_email(email: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found or supervisor not mapped")
 
     return {"who": result[0], "vp": result[1]}
+
+@router.get("/api/supervisor-chain/{who}", response_model=SupervisorChainResponse)
+def get_supervisor_chain_endpoint(who: str, db: Session = Depends(get_db)):
+    # Get the supervisor chain for the user
+    supervisor_chain = get_supervisor_chain(db, who)
+    return supervisor_chain
+
+@router.get("/who-initials/{email}")
+async def get_user_initials_endpoint(email: str, db: Session = Depends(get_db)):
+    # Fetch the initials using the function
+    initials = get_user_initials(db, email)
+    return {"who": initials}
