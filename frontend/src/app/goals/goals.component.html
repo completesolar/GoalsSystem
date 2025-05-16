@@ -1,11 +1,35 @@
 <div class="body">
   <p-toast position="top-right"></p-toast>
   <div class="mb-1 title-section flex items-center">
-    <div>
-      <button class="legend-toggle" (click)="toggleLegend()">
+  <div class="flex-1">
+      <div class="flex justify-content-between items-center">
+        
+    <div class="flex items-center "><button class="legend-toggle" (click)="toggleLegend()">
         <i class="fa" [ngClass]="isLegendVisible ? 'fa-arrow-down' : 'fa-arrow-right'"></i>
         <span>Legend</span>
       </button>
+      <p-toggleswitch  
+      [(ngModel)]="checked" 
+      onLabel="Yes" 
+      offLabel="No" 
+      styleClass="w-24">
+    </p-toggleswitch ></div>  
+
+    <div class="flex items-center gap-2  align-items-center">
+      <div class="flex items-center gap-2 ml-auto align-items-center">
+        <p-button icon="pi pi-filter-slash" (click)="clearAllFilters()" severity="success" size="small" label="Clear"
+          [style]="{ height: '24px', fontSize: '12px', width:'70px'}"></p-button>
+
+        <p-button severity="success" size="small" label="Clear"
+          [style]="{ height: '24px', fontSize: '12px', width:'70px'}" icon="pi pi-plus" label="Add"
+          (click)="addNewgoalDia()"></p-button>
+
+      </div>
+      <span class="white-space-nowrap export-text">Export to</span>
+      <p-select class="custom-select-width" [options]="exportOptions" [(ngModel)]="selectedExport" placeholder="Select"
+        (onChange)="onExportChange($event.value)" optionLabel="label"></p-select>
+    </div>
+   </div>
       <div *ngIf="isLegendVisible" class="legend-content">
         <p class="my-1">
           <strong>Key:</strong> WHO=Owner of the goal, P=Priority, PROJ=Project,
@@ -21,27 +45,9 @@
         </p>
       </div>
     </div>
-    <p-toggleswitch  
-    [(ngModel)]="checked" 
-    onLabel="Yes" 
-    offLabel="No" 
-    styleClass="w-24">
-  </p-toggleswitch >
  
-    <div class="flex items-center gap-2 ml-auto align-items-center">
-      <div class="flex items-center gap-2 ml-auto align-items-center">
-        <p-button icon="pi pi-filter-slash" (click)="clearAllFilters()" severity="success" size="small" label="Clear"
-          [style]="{ height: '24px', fontSize: '12px', width:'70px'}"></p-button>
-
-        <p-button severity="success" size="small" label="Clear"
-          [style]="{ height: '24px', fontSize: '12px', width:'70px'}" icon="pi pi-plus" label="Add"
-          (click)="addNewgoalDia()"></p-button>
-
-      </div>
-      <span class="white-space-nowrap export-text">Export to</span>
-      <p-select class="custom-select-width" [options]="exportOptions" [(ngModel)]="selectedExport" placeholder="Select"
-        (onChange)="onExportChange($event.value)" optionLabel="label"></p-select>
-    </div>
+ 
+  
   </div>
 
   <div class="table-container pr-3 pl-3">
