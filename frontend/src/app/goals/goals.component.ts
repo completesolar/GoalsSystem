@@ -45,6 +45,7 @@ import {
   DIFF_DELETE,
 } from 'diff-match-patch';
 import { ViewChildren, QueryList, ElementRef } from '@angular/core';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
 interface Year {
   name: number;
@@ -72,6 +73,7 @@ interface Year {
     ConfirmPopupModule,
     CheckboxModule,
     ConfirmDialogModule,
+    ToggleSwitchModule,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './goals.component.html',
@@ -172,7 +174,6 @@ export class GoalsComponent implements AfterViewInit {
     memo: '',
     isconfidential: false,
   };
-
   selectedExport: string | null = null;
   filteredGoals: any;
   allGoals: any = [];
@@ -206,6 +207,9 @@ export class GoalsComponent implements AfterViewInit {
     'rgb(253, 179, 056)',
     'rgb(219, 076, 119)',
   ];
+  checked: boolean = false;
+  sort: boolean = false;
+
   constructor(
     @Inject(PLATFORM_ID) private platform: Object,
     private goalsService: GoalsService,
@@ -246,7 +250,6 @@ export class GoalsComponent implements AfterViewInit {
         });
     }
   }
-
   loadInitialData() {
     this.loadWhoOptions();
     this.getStatus();
@@ -258,7 +261,6 @@ export class GoalsComponent implements AfterViewInit {
     this.getPriority();
     this.getActions();
   }
-
   loadWhoOptions(): void {
     this.goalsService.getWhoOptions().subscribe({
       next: (data) => {
@@ -280,17 +282,14 @@ export class GoalsComponent implements AfterViewInit {
     const selected = this.whoOptions?.find((opt) => opt.value === value);
     return selected ? selected.label : undefined;
   }
-
   getLabelForVpValue(value: any): string | undefined {
     const selected = this.vpOptions?.find((opt) => opt.value === value);
     return selected ? selected.label : undefined;
   }
-
   getLabelForStatusValue(value: any): string | undefined {
     const selected = this.statusOptions?.find((opt) => opt.value === value);
     return selected ? selected.label : undefined;
   }
-
   loadVpOptions(): void {
     this.goalsService.getVpOptions().subscribe({
       next: (data) => {
@@ -301,7 +300,6 @@ export class GoalsComponent implements AfterViewInit {
       },
     });
   }
-
   getCurrentWeekNumber(): number {
     const now = new Date();
     const utcDate = new Date(
@@ -318,14 +316,12 @@ export class GoalsComponent implements AfterViewInit {
 
     return weekNo;
   }
-
   onInputChange(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (parseInt(input.value, 10) > 53) {
       input.value = '53';
     }
   }
-
   getYearsList(goals: Goals[]) {
     const yearList = [
       ...new Set(goals.map((goal: any) => goal.fiscalyear)),
@@ -334,7 +330,6 @@ export class GoalsComponent implements AfterViewInit {
       this.years.push({ name: year, code: year });
     });
   }
-
   exportData(): void {
     const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(this.goal);
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
@@ -343,43 +338,63 @@ export class GoalsComponent implements AfterViewInit {
 
     XLSX.writeFile(wb, fileName);
   }
-
   loadGoals(): void {
-    // const whoInitial = this.goalsService.getInitial();
-    this.goalsService.getGoals().subscribe((goals: any[]) => {
-      const filteredGoals = goals
-        .filter((g: any) => +g.fiscalyear === this.selectedYear.code)
-        .map((g) => ({
-          ...g,
-          goalid: g.goalid,
-          e: g.e ? +g.e : '',
-          b: g.b ? +g.b : '',
-          d: g.d ? +g.d : '',
-          s: g.s ?? '',
-          p: g.p ? g.p : 1,
-          proj: g.proj ? g.proj.toUpperCase() : '',
-          vp: g.vp ? g.vp.toUpperCase() : '',
-          who: g.who ?? '',
-          gdb: g.gdb ?? '',
-          isEditable: false,
-          isconfidential: !!g.isconfidential,
-        }))
-        .sort((a, b) => {
-          const whoA = a.who.toLowerCase();
-          const whoB = b.who.toLowerCase();
-          if (whoA < whoB) return -1;
-          if (whoA > whoB) return 1;
-          const priorityA = isNaN(+a.p) ? Number.MAX_SAFE_INTEGER : +a.p;
-          const priorityB = isNaN(+b.p) ? Number.MAX_SAFE_INTEGER : +b.p;
-          return priorityA - priorityB;
+    // Fetch the currently signed-in user's email
+    const userEmail = this.getLoggedInEmail();
+
+    // First, get the user's initials from the email
+    this.goalsService.getUserInitials(userEmail).subscribe((response: { who: string }) => {
+      const userInitials = response.who;  // Get the initials from the response
+
+      // Now, get the supervisor hierarchy using the initials
+      this.goalsService.getSupervisorHierarchy(userInitials).subscribe((response: { supervisor_names: string[] }) => {
+        const supervisorHierarchy = response.supervisor_names;  // Get the supervisor hierarchy from the response
+
+        // Now fetch the goals
+        this.goalsService.getGoals().subscribe((goals: any[]) => {
+          const filteredGoals = goals
+            .filter((g: any) => +g.fiscalyear === this.selectedYear.code)
+            .map((g) => ({
+              ...g,
+              goalid: g.goalid,
+              e: g.e ? +g.e : '',
+              b: g.b ? +g.b : '',
+              d: g.d ? +g.d : '',
+              s: g.s ?? '',
+              p: g.p ? g.p : 1,
+              proj: g.proj ? g.proj.toUpperCase() : '',
+              vp: g.vp ? g.vp.toUpperCase() : '',
+              who: g.who ?? '',
+              gdb: g.gdb ?? '',
+              isEditable: false,
+              isconfidential: !!g.isconfidential,
+            }))
+            .filter((goal: any) => {
+              // If the goal is confidential, check if the user has access
+              if (goal.isconfidential) {
+                // Check if the current user is part of the goal owner's hierarchy
+                return supervisorHierarchy.includes(goal.who) || goal.who === userInitials;
+              }
+              return true;  // If the goal is not confidential, show it to everyone
+            })
+            .sort((a, b) => {
+              const whoA = a.who.toLowerCase();
+              const whoB = b.who.toLowerCase();
+              if (whoA < whoB) return -1;
+              if (whoA > whoB) return 1;
+              const priorityA = isNaN(+a.p) ? Number.MAX_SAFE_INTEGER : +a.p;
+              const priorityB = isNaN(+b.p) ? Number.MAX_SAFE_INTEGER : +b.p;
+              return priorityA - priorityB;
+            });
+
+          // Assign the filtered goals to the view variables
+          this.allGoals = filteredGoals;
+          this.goal = [...filteredGoals];
+          this.originalGoal = [...this.goal];
         });
-      this.allGoals = filteredGoals;
-      this.goal = [...filteredGoals];
-      this.originalGoal = [...this.goal];
-      // console.log("this.goal", this.goal);
+      });
     });
   }
-
   onWhoSelected() {
     const currentWeek = this.getCurrentWeekNumber();
     this.newRow.p = 99;
@@ -407,26 +422,30 @@ export class GoalsComponent implements AfterViewInit {
     this.goalsService.getGoalHistory(id).subscribe(
       (goalsHistory) => {
         let sortedHistory = (goalsHistory as any[])
-          .map((g) => ({
-            ...g,
-            createddateMST: moment(g.createddate)
-              .tz('America/Denver')
-              .format('MM/DD/YYYY hh:mm:ss A'),
-          }))
+          .map((g) => {
+            const safeCreatedDate = g.createddate
+              ? moment
+                  .utc(g.createddate)
+                  .tz('America/Denver')
+                  .format('MM/DD/YYYY hh:mm:ss A')
+              : 'N/A';
+
+            return {
+              ...g,
+              createddateMST: safeCreatedDate,
+            };
+          })
           .sort(
             (a, b) =>
               new Date(a.createddate).getTime() -
               new Date(b.createddate).getTime()
           );
-
         const coloredHistory = [];
         let cumulativeMemo: { text: string; color: string }[] = [];
         let cumulativeAction: { text: string; color: string }[] = [];
         let cumulativeDescription: { text: string; color: string }[] = [];
-
         for (let i = 0; i < sortedHistory.length; i++) {
           const current = sortedHistory[i];
-
           const rowDisplay: any = {
             ...current,
             display: {
@@ -435,7 +454,6 @@ export class GoalsComponent implements AfterViewInit {
               memo: [],
             },
           };
-
           if (i === 0) {
             rowDisplay.display.action = [
               { text: current.action || '', color: this.colorPalette[0] },
@@ -466,7 +484,7 @@ export class GoalsComponent implements AfterViewInit {
               highlightColor
             );
             rowDisplay.display.memo = this.getProgressiveChunks(
-              cumulativeDescription,
+              cumulativeMemo,
               current.memo || '',
               highlightColor
             );
@@ -478,7 +496,6 @@ export class GoalsComponent implements AfterViewInit {
 
           coloredHistory.push(rowDisplay);
         }
-
         this.goalHistory = coloredHistory.reverse();
       },
       (error) => {
@@ -486,13 +503,11 @@ export class GoalsComponent implements AfterViewInit {
       }
     );
   }
-
   private formatDateToMST(date: string | null | undefined): string {
     return date
       ? moment.utc(date).tz('America/Denver').format('MM/DD/YYYY hh:mm:ss A')
       : 'N/A';
   }
-
   loadHistoryIfNeeded(goalid: number): boolean {
     if (!this.loadedGoalHistoryIds.has(goalid)) {
       this.loadGoalsHistory(goalid);
@@ -500,11 +515,9 @@ export class GoalsComponent implements AfterViewInit {
     }
     return true;
   }
-
   onYearChange() {
     this.loadGoals();
   }
-
   isValidGoalData(goal: Goals): string[] {
     const missingFields: string[] = [];
     if (!goal.p) missingFields.push('P');
@@ -516,7 +529,6 @@ export class GoalsComponent implements AfterViewInit {
     if (!goal.description) missingFields.push('Goal Deliverable');
     return missingFields;
   }
-
   addNewRow() {
     this.newRow = {
       who: '',
@@ -537,94 +549,100 @@ export class GoalsComponent implements AfterViewInit {
       action: '',
     };
   }
-
-  addGoal() {
-    const missingFields = this.isValidGoalData(this.newRow);
-    if (missingFields.length > 0) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Please Add the below fields for the new goal',
-        detail: `${missingFields.join(
-          ', '
-        )}: Please fill in the following required field(s).`,
-      });
-      return;
-    }
-
-    this.showAddGoalDialog = false;
-    // Ensure fields are not empty or undefined
-    this.newRow.e = this.newRow.e;
-    this.newRow.d = this.newRow.d;
-    this.newRow.action = `${this.newRow.action}:`;
-    this.newRow.isconfidential = !!this.newRow.isconfidential;
-
-    const utcMoment = moment.utc(); 
-    this.newRow.createddatetime = utcMoment.toDate(); 
-    this.newRow.updateddatetime = utcMoment.toDate(); 
-
-    this.goalsService.createGoal(this.newRow).subscribe((response: any) => {
-      if (response && response.goalid) {
-        const mstMoment = moment
-          .utc(response.createddatetime)
-          .tz('America/Denver');
-
-        const newGoal: Goals = {
-          ...this.newRow,
-          goalid: response.goalid,
-          createddatetime: new Date(mstMoment.format()),
-          isEditable: false,
-          description_diff: {
-            combined_diff: `${response.action} ${response.description} ${response.memo}`,
-          },
-        };
-        // const whoInitial = this.goalsService.getInitial();
-
-        // if(newGoal.who==whoInitial){
-          this.allGoals = [newGoal, ...this.allGoals];
-
-        // // }
-        // this.allGoals = [...this.allGoals];
-        Object.keys(this.selectedFilters).forEach((field) => {
-          this.clearFilter(field);
-        });
-
-        this.gdbSearchText = '';
-
-        this.applyFilters();
-        if (this.dataTable) {
-          this.dataTable.clear();
-        }
-        this.loadGoalsHistory(response.goalid); 
-        this.addNewRow();
-
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Goal Added',
-          detail: 'New goal has been added successfully.',
-        });
-      } else {
-        console.warn('createGoal response missing goalid:', response);
-      }
+addGoal() {
+  const missingFields = this.isValidGoalData(this.newRow);
+  if (missingFields.length > 0) {
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'Please Add the below fields for the new goal',
+      detail: `${missingFields.join(', ')}: Please fill in the following required field(s).`,
     });
+    return;
   }
 
-confirmCloneViaPopup(event: Event, row: any) {
-  this.confirmationService.confirm({
-    target: event.target as EventTarget,
-    message: 'Are you sure you want to clone this goal?',
-    icon: 'pi pi-copy',
-    header: 'Confirm Clone',
-    acceptLabel: 'Yes',
-    rejectLabel: 'No',
-    acceptButtonStyleClass: 'p-button-success',
-    rejectButtonStyleClass: 'p-button-secondary',
-    accept: () => {
-      this.cloneGoal(row);
+  this.showAddGoalDialog = false;
+
+  this.newRow.e = this.newRow.e;
+  this.newRow.d = this.newRow.d;
+  this.newRow.action = `${this.newRow.action}:`;
+  this.newRow.isconfidential = !!this.newRow.isconfidential;
+
+  const utcMoment = moment.utc();
+  this.newRow.createddatetime = utcMoment.toDate();
+  this.newRow.updateddatetime = utcMoment.toDate();
+
+  const email = this.getLoggedInEmail(); // Make sure you implement this method
+  this.goalsService.getUserInitials(email).subscribe({
+    next: (res) => {
+      const currentUserInitial = res?.who?.toLowerCase() || '';
+
+      this.goalsService.createGoal(this.newRow).subscribe((response: any) => {
+        if (response && response.goalid) {
+          const mstMoment = moment.utc(response.createddatetime).tz('America/Denver');
+
+          const newGoal: Goals = {
+            ...this.newRow,
+            goalid: response.goalid,
+            createddatetime: new Date(mstMoment.format()),
+            isEditable: false,
+            description_diff: {
+              combined_diff: `${response.action} ${response.description} ${response.memo}`,
+            },
+          };
+
+          const isVisible =
+            !newGoal.isconfidential ||
+            newGoal.who?.toLowerCase() === currentUserInitial;
+
+          if (isVisible) {
+            this.allGoals = [newGoal, ...this.allGoals];
+          }
+
+          Object.keys(this.selectedFilters).forEach((field) =>
+            this.clearFilter(field)
+          );
+          this.gdbSearchText = '';
+          this.applyFilters();
+
+          if (this.dataTable) {
+            this.dataTable.clear();
+          }
+
+          this.loadGoalsHistory(response.goalid);
+          this.addNewRow();
+
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Goal Added',
+            detail: 'New goal has been added successfully.',
+          });
+        } else {
+          console.warn('createGoal response missing goalid:', response);
+        }
+      });
+    },
+    error: (err) => {
+      console.error('Failed to fetch user initials:', err);
+      // Proceed anyway OR show a fallback message
     }
   });
-} 
-  
-cloneGoal(row: any) {
+}
+  confirmCloneViaPopup(event: Event, row: any) {
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: 'Are you sure you want to clone this goal?',
+      icon: 'pi pi-copy',
+      header: 'Confirm Clone',
+      acceptLabel: 'Yes',
+      rejectLabel: 'No',
+      acceptButtonStyleClass: 'p-button-success',
+      rejectButtonStyleClass: 'p-button-secondary',
+      accept: () => {
+        this.cloneGoal(row);
+      }
+    });
+  }  
+  cloneGoal(row: any) {
   const email = this.getLoggedInEmail();
   console.log('Cloning with email:', email);
 
@@ -648,8 +666,8 @@ cloneGoal(row: any) {
         fiscalyear: this.currentYear,
         updateBy: mapping.who || '',
         isconfidential: !!row.isconfidential,
-        createddatetime: utcMoment.toDate(),
-        updateddatetime: utcMoment.toDate(),
+        createddatetime:  moment().tz('America/Denver').toDate(),
+        updateddatetime:  moment().tz('America/Denver').toDate(),
       };        
 
       console.log('Sending cloned goal:', clonedGoal);
@@ -715,13 +733,11 @@ cloneGoal(row: any) {
       });
     }
   });
-}
-
+  }
   getLoggedInEmail(): string {
     const account = this.msalService.instance.getAllAccounts()[0];
     return account?.username || '';
-  }
-  
+  }  
   exportExcelData(): void {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Goals');
@@ -1111,11 +1127,9 @@ cloneGoal(row: any) {
       }
     }, 100);
   }
-
   getElementByTabIndex(tabIndex: number): HTMLElement | null {
     return document.querySelector(`[tabindex="${tabIndex}"]`);
   }
-
   updateGoal(row: Goals): void {
     this.checkDifferences(this.previousRow, row);
     const missingFields = this.isValidGoalData(row);
@@ -1202,7 +1216,6 @@ cloneGoal(row: any) {
         }
       });
   }
-
   isEqualGoal(goal1: Goals, goal2: Goals): boolean {
     const fieldsToCompare = [
       'who',
@@ -1230,7 +1243,6 @@ cloneGoal(row: any) {
     }
     return true;
   }
-
   checkDifferences(original: Goals, updated: Goals): void {
     const fieldsToCompare = [
       'who',
@@ -1258,7 +1270,6 @@ cloneGoal(row: any) {
       }
     }
   }
-
   historyDialog(goalId: number) {
     if (!goalId) {
       console.warn('No goalid found for history view');
@@ -1268,7 +1279,6 @@ cloneGoal(row: any) {
     this.display = true;
     this.loadGoalsHistory(goalId);
   }
-
   onExportChange(option: any) {
     if (option?.value === 'excel') {
       this.exportExcelData();
@@ -1276,7 +1286,6 @@ cloneGoal(row: any) {
       this.exportPdfData();
     }
   }
-
   getStatus() {
     this.goalsService.getStatus().subscribe({
       next: (response) => {
@@ -1301,7 +1310,6 @@ cloneGoal(row: any) {
       },
     });
   }
-
   getPriority() {
     this.goalsService.getP().subscribe({
       next: (response) => {
@@ -1323,7 +1331,6 @@ cloneGoal(row: any) {
       },
     });
   }
-
   getProj() {
     this.goalsService.getProj().subscribe({
       next: (response) => {
@@ -1345,7 +1352,6 @@ cloneGoal(row: any) {
       },
     });
   }
-
   getActions() {
     this.goalsService.getAction().subscribe({
       next: (response) => {
@@ -1362,7 +1368,6 @@ cloneGoal(row: any) {
       },
     });
   }
-
   getDData() {
     this.goalsService.getD().subscribe({
       next: (response) => {
@@ -1403,7 +1408,6 @@ cloneGoal(row: any) {
       },
     });
   }
-
   getBData() {
     this.goalsService.getB().subscribe({
       next: (response) => {
@@ -1424,7 +1428,6 @@ cloneGoal(row: any) {
       },
     });
   }
-
   logout() {
     if (isPlatformBrowser(this.platform)) {
       this.msalService.logoutRedirect({
@@ -1438,17 +1441,14 @@ cloneGoal(row: any) {
       this.logout();
     }
   }
-
   ngOnDestroy() {
     this._destroying$.next(undefined);
     this._destroying$.complete();
   }
-
   getLabelFromValue(value: any, options: any[]): string {
     const match = options.find((opt) => opt.value === value);
     return match ? match.label : value;
   }
-
   getTooltipText(...fields: string[]): string {
     return fields
       .map((field) => {
@@ -1461,7 +1461,6 @@ cloneGoal(row: any) {
   toggleLegend() {
     this.isLegendVisible = !this.isLegendVisible;
   }
-
   getFilterOptions(field: string): any[] {
     let options: any[];
     if (field === 'who') {
@@ -1494,24 +1493,17 @@ cloneGoal(row: any) {
       }
     });
   }
-
-  // Method for when the filter changes
-onFilterChange(field: string): void {
-  // Update only the active filter for the current field
+  onFilterChange(field: string): void {
   this.activeFilters[field] =
     Array.isArray(this.selectedFilters[field]) &&
     this.selectedFilters[field].length > 0;
-
-  // Apply filters after changes
-  this.applyFilters();
-}
-
+    this.applyFilters();
+  }
   onGdbFilterChange(): void {
     this.applyFilters();
     this.activeFilters = this.activeFilters || {};
     this.activeFilters['gdb'] = !!this.gdbSearchText?.trim();
   }
-
   applyFilters(): void {
     this.goal = this.allGoals.filter((row: any) => {
       const matchMultiSelect = Object.entries(this.selectedFilters).every(
@@ -1534,7 +1526,6 @@ onFilterChange(field: string): void {
       return matchMultiSelect && matchGdb;
     });
   }
-
   clearFilter(field: string): void {
     if (field === 'gdb') {
       this.gdbSearchText = '';
@@ -1544,7 +1535,6 @@ onFilterChange(field: string): void {
       this.onFilterChange(field);
     }
   }
-
   customGdbFilter(value: any, filter: string): boolean {
     if (!filter || filter.trim() === '') return true;
 
@@ -1553,7 +1543,6 @@ onFilterChange(field: string): void {
     }`.toLowerCase();
     return gdbText.includes(filter.toLowerCase());
   }
-
   isAnyRowEditable(): boolean {
     return this.goal?.some((row: any) => row.isEditable);
   }
@@ -1583,18 +1572,12 @@ onFilterChange(field: string): void {
       return 0;
     });
   }
-
   restTable(dataTable: any) {
     dataTable.clear();
   }
-
   ngAfterViewInit(): void {
     this.onPageChange({ first: 0, rows: 10 });
-    // if (!this.dataTable) {
-    //   console.error('dataTable not found');
-    // }
   }
-
   showDescription(event: Event, fullDescription: string) {
     this.confirmationService.confirm({
       key: 'descPopup',
@@ -1610,11 +1593,9 @@ onFilterChange(field: string): void {
       this.confirmationService.close();
     }, 5000);
   }
-
   cancelEdit(row: any) {
     row.isEditable = false;
   }
-
   getSmartDiffChunksForAction(
     current: string,
     previous: string,
@@ -1628,7 +1609,6 @@ onFilterChange(field: string): void {
 
     return [{ text: cleanedCurrent, color }];
   }
-
   getSmartDiffChunks(
     current: string,
     previous: string,
@@ -1648,33 +1628,6 @@ onFilterChange(field: string): void {
       }
     });
   }
-
-  // onKeydownGeneric(
-  //   event: KeyboardEvent,
-  //   options: any[],
-  //   field: keyof Goals,
-  //   selectRef: any,
-  //   row: Goals
-  // ) {
-  //   if (event.key === 'Enter') {
-  //     const filterValue = (selectRef?.filterValue || '').toString().toUpperCase();
-
-  //     const filteredOptions = options.filter(option =>
-  //       option.label !== undefined &&
-  //       option.label.toString().toUpperCase().includes(filterValue)
-  //     );
-
-  //     if (filteredOptions.length > 0) {
-  //       row[field] = filteredOptions[0].value;
-  //       selectRef.highlightedOption = filteredOptions[0];
-  //     } else {
-  //       row[field] = filterValue;
-  //     }
-
-  //     selectRef?.hide();
-  //   }
-  // }
-
   onKeydownGeneric(
     event: KeyboardEvent,
     options: any[],
@@ -1703,7 +1656,6 @@ onFilterChange(field: string): void {
       selectRef?.hide();
     }
   }
-
   onHistoryExportChange(option: any, goalHistory: []) {
     if (option?.value === 'excel') {
       this.exportHistoryExcelData(goalHistory);
@@ -1711,7 +1663,6 @@ onFilterChange(field: string): void {
       this.exportHistoryPdfData(goalHistory);
     }
   }
-
   exportHistoryExcelData(goalHistory: []): void {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Goals');
@@ -1885,7 +1836,6 @@ onFilterChange(field: string): void {
         });
       });
   }
-
   exportHistoryPdfData(goalHistory: []): void {
     const doc = new jsPDF('landscape');
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -2035,7 +1985,6 @@ onFilterChange(field: string): void {
       doc.save(fileName);
     };
   }
-
   clearAllFilters(): void {
     this.selectedFilters = {};
     this.activeFilters = {};
@@ -2044,14 +1993,12 @@ onFilterChange(field: string): void {
     }
     this.loadUnfilteredData();
   }
-
   loadUnfilteredData(): void {
     this.goal = [...this.originalGoal];
     if (this.dataTable) {
       this.dataTable.first = 0;
     }
   }
-
   getProgressiveChunks(
     previousChunks: { text: string; color: string }[],
     currentText: string,
@@ -2123,11 +2070,9 @@ onFilterChange(field: string): void {
 
     return resultChunks;
   }
-
   onFilterEvent(event: any) {
     // console.log('Filter event:', event);
   }
-
   onPageChange(event: any): void {
     const startIndex = event.first;
     const pageSize = event.rows;
@@ -2142,7 +2087,6 @@ onFilterChange(field: string): void {
       }
     });
   }
-
   addNewgoalDia(): void {
     this.showAddGoalDialog = true;
 
@@ -2175,4 +2119,5 @@ onFilterChange(field: string): void {
       }
     }, 100);
   }
+  
 }
