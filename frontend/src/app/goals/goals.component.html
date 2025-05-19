@@ -51,14 +51,12 @@
   </div>
 
   <div class="table-container pr-3 pl-3">
-   <p-button
-    icon="pi pi-sort-alt"
-    [label]="compositeSortEnabled ? 'Default' : 'Composite'"
-    (click)="toggleSort()"
-    severity="success"
-    size="small"
-    [style]="{ height: '24px', fontSize: '12px', width: '90px' }">
-    </p-button>
+<p-button icon="pi pi-sort-alt" [label]="compositeSortEnabled ? 'Default' : 'Composite'" (click)="toggleSort()"
+  severity="success" size="small" [style]="{ height: '24px', fontSize: '12px', width: '90px' }"
+  pTooltip="Toggle between default (WHO + Priority) and composite sort (E = current week, then Delinquent)"
+  tooltipPosition="top">
+</p-button>
+
 
     <p-confirmPopup #confirmPopup></p-confirmPopup>
     <p-table #dataTable (onPage)="onPageChange($event)" [value]="goal" [paginator]="true" [rows]="10"
