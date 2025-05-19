@@ -91,7 +91,7 @@ def get_D_by_id(db: Session, id: int):
 
 
 def get_proj_by_id(db: Session, id: int):
-    return db.query(Proj).filter(P.id == id).first()
+    return db.query(Proj).filter(Proj.id == id).first()
 
 
 
@@ -399,125 +399,9 @@ def update_goal(db: Session, goal_id: int, goal_update: GoalsUpdate):
 
     return db_goal
 
-    currentdate = datetime.now()
-    # Step 1: Retrieve the goal from the database
-    db_goal = db.query(Goals).filter(Goals.goalid == goal_id).first()
-    old_goal = deepcopy(db_goal)  # Create a copy of the old goal for history
-    if db_goal is None:
-        return "Goal not found"
-
-    # Step 2: Update the goal's fields with the new data
-    if goal_update.who is not None:
-        db_goal.who = goal_update.who
-    if goal_update.p is not None:
-        db_goal.p = goal_update.p
-    if goal_update.proj is not None:
-        db_goal.proj = goal_update.proj
-    if goal_update.vp is not None:
-        db_goal.vp = goal_update.vp
-    if goal_update.b is not None:
-        db_goal.b = goal_update.b
-    if goal_update.e is not None:
-        db_goal.e = goal_update.e
-    if goal_update.d is not None:
-        db_goal.d = goal_update.d
-    if goal_update.s is not None:
-        db_goal.s = goal_update.s
-    if goal_update.action is not None:
-        db_goal.action = goal_update.action
-    if goal_update.memo is not None:
-        db_goal.memo = goal_update.memo    
-    if goal_update.description is not None:
-        db_goal.description = goal_update.description            
-    if goal_update.fiscalyear is not None:
-        db_goal.fiscalyear = goal_update.fiscalyear
-    if goal_update.updateBy is not None:
-        db_goal.updateBy = goal_update.updateBy
-
-    # Step 3: Commit the changes to the database
-    db.commit()
-
-    # Step 4: Refresh the object from the database to return updated data
-    db.refresh(db_goal)
-    return db_goal
-
-# def update_who(db: Session, goal_id: int, goal_update: GoalsUpdate):
-#     currentdate = datetime.now()
-#     # Step 1: Retrieve the goal from the database
-#     db_goal = db.query(Goals).filter(Goals.goalid == goal_id).first()
-#     old_goal = deepcopy(db_goal)  # Create a copy of the old goal for history
-#     if db_goal is None:
-#         return "Goal not found"
-
-#     # Step 2: Update the goal's fields with the new data
-#     if goal_update.who is not None:
-#         db_goal.who = goal_update.who
-#     if goal_update.p is not None:
-#         db_goal.p = goal_update.p
-#     if goal_update.proj is not None:
-#         db_goal.proj = goal_update.proj
-#     if goal_update.vp is not None:
-#         db_goal.vp = goal_update.vp
-#     if goal_update.b is not None:
-#         db_goal.b = goal_update.b
-#     if goal_update.e is not None:
-#         db_goal.e = goal_update.e
-#     if goal_update.d is not None:
-#         db_goal.d = goal_update.d
-#     if goal_update.s is not None:
-#         db_goal.s = goal_update.s
-#     if goal_update.gdb is not None:
-#         db_goal.gdb = goal_update.gdb
-#     if goal_update.fiscalyear is not None:
-#         db_goal.fiscalyear = goal_update.fiscalyear
-#     if goal_update.updateBy is not None:
-#         db_goal.updateBy = goal_update.updateBy
-
-#     # Step 3: Commit the changes to the database
-#     db.commit()
-
-#     # Step 4: Refresh the object from the database to return updated data
-#     db.refresh(db_goal)
-
-#     # Use jsonable_encoder to convert the objects to dictionaries
-#     # old_goal_dict = jsonable_encoder(old_goal)
-#     # updated_goal_dict = jsonable_encoder(db_goal)
-
-#     db_goalhistory = goalshistory(
-#         goalid=goal_id,
-#         createddate=currentdate,
-#         createdby=goal_update.updateBy,
-#         who=goal_update.who,
-#         p=goal_update.p,
-#         proj=goal_update.proj,
-#         vp=goal_update.vp,
-#         b=goal_update.b,
-#         e=goal_update.e,
-#         d=goal_update.d,
-#         s=goal_update.s,
-#         gdb=goal_update.gdb,
-#         fiscalyear=goal_update.fiscalyear,
-#         updateBy=goal_update.updateBy,
-#         description=goal_update.description
-#     )
-
-#     db.add(db_goalhistory)
-#     db.commit()
-#     db.refresh(db_goalhistory)
-
-#     return db_goal
-
-    # goalid=goal_id,
-    #     oldgoal=dumps(old_goal_dict),  # Serialize the old goal to JSON
-    #     newgoal=dumps(updated_goal_dict),  # Serialize the updated goal to JSON
-    #     createddate=currentdate,
-    #     createdby=goal_update.updateBy
-
 def get_goals_metrics(db: Session):
-    # Base query without any filters
     base_query = db.query(Goals)
 
-    # 1. Completed and Delinquent Counts
     completed_delinquent_data = {"Completed": 0, "Delinquent": 0}
     for row in base_query.with_entities(Goals.s, func.count().label("count")).filter(
         Goals.s.in_(['C', 'D'])
@@ -781,94 +665,49 @@ def get_all_roleMaster(db: Session, response_model=list[RoleMasterResponse]):
 def get_roleMaster_by_id(db: Session, id: int):
     return db.query(RoleMaster).filter(RoleMaster.id == id).first()
 
-
-# def create_roleMaster(db: Session, roleMaster_data: RoleMasterCreate):
-#     print("roleMaster_data",roleMaster_data)
-#     db_roleMaster = RoleMaster(**roleMaster_data.dict())
-#     db.add(db_roleMaster)
-#     db.commit()
-#     db.refresh(db_roleMaster)
-#     return db_roleMaster
-
 def create_roleMaster(db: Session, roleMaster_data: RoleMasterCreate):
-    try:
-        created_records: List[RoleMasterResponse] = [] 
-        print("roleMaster_data",roleMaster_data)
-        for user, user_id, email in zip(roleMaster_data.user, roleMaster_data.user_id, roleMaster_data.user_email):
-            existing_role = db.query(RoleMaster).filter(RoleMaster.user == [user]).first()
-            if existing_role:
-                print(f"User '{user}' already exists!") 
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"{user} already exists"
-                )
-            
-            db_roleMaster = RoleMaster(
-                role=roleMaster_data.role,
-                user=[user],
-                user_id=[user_id], 
-                role_id=roleMaster_data.role_id,
-                remarks=roleMaster_data.remarks,
-                user_email=[email]
-            )
-            
-            db.add(db_roleMaster)
-            db.commit() 
-            db.refresh(db_roleMaster)  
-            created_records.append(RoleMasterResponse(
-                id=db_roleMaster.id,
-                role=db_roleMaster.role,
-                user=[user], 
-                user_id=[user_id],  
-                role_id=db_roleMaster.role_id,
-                remarks=db_roleMaster.remarks,
-                user_email=[email]
-
-            ))
-
-        return created_records 
-
-    except IntegrityError as e:
-        db.rollback() 
-        print(f"Integrity error occurred: {e}")
-        raise HTTPException(status_code=400,detail=f"{user} already exists")
-    
-    except Exception as e:
-        db.rollback()  
-        print(f"Error occurred while creating RoleMaster: {e}")
-        raise HTTPException(status_code=400, detail=f"{user} already exists")
-    
+    print("roleMaster_data", roleMaster_data)
+    db_roleMaster = RoleMaster(**roleMaster_data.dict())
+    db.add(db_roleMaster)
+    db.commit()
+    db.refresh(db_roleMaster)
+    return db_roleMaster
+  
 def update_roleMaster(db: Session, id: int, role_data: RoleMasterUpdate):
     try:
         db_roleMaster = db.query(RoleMaster).filter(RoleMaster.id == id).first()
         if not db_roleMaster:
             raise HTTPException(status_code=404, detail=f"RoleMaster with ID {id} not found")
 
-        for key, value in role_data.dict(exclude_unset=True).items():
-            setattr(db_roleMaster, key, value)
+        update_data = role_data.dict(exclude_unset=True)
+        if "user" in update_data:
+            db_roleMaster.user = update_data["user"]
+
+        for key, value in update_data.items():
+            if key != "user":
+                setattr(db_roleMaster, key, value)
 
         db.commit()
         db.refresh(db_roleMaster)
+
         return RoleMasterResponse(
             id=db_roleMaster.id,
             role=db_roleMaster.role,
-            user=db_roleMaster.user,
-            user_id=db_roleMaster.user_id,
             role_id=db_roleMaster.role_id,
             remarks=db_roleMaster.remarks,
-            user_email=db_roleMaster.user_email
-
+            user=db_roleMaster.user,
         )
+
     except IntegrityError as e:
         db.rollback()
         print(f"Integrity error occurred: {e}")
         raise HTTPException(status_code=400, detail="Integrity error occurred while updating RoleMaster")
-    
+
     except Exception as e:
         db.rollback()
         print(f"Error occurred while updating RoleMaster: {e}")
         raise HTTPException(status_code=400, detail="An error occurred while updating RoleMaster")
-    
+        
 
 
 def get_email(db: Session, email: str):
@@ -882,12 +721,10 @@ def get_email(db: Session, email: str):
     email = email.lower()
     print(f"Lowercased email: {email}")
 
-    # 1. Get WHO object
     who = db.query(Who).filter(func.lower(Who.primary_email) == email).first()
     print("WHO object:")
     pprint(who.__dict__ if who else "None")
 
-    # 2. Match email in roleMaster array
     print("Checking for roleMaster with email in user_email array...")
     role_master = db.query(RoleMaster).filter(
         email == any_(RoleMaster.user_email)
@@ -906,7 +743,6 @@ def get_email(db: Session, email: str):
     print("RoleMaster found:")
     pprint(role_master.__dict__)
 
-    # 3. Get Role object
     print(f"Fetching Role for role = '{role_master.role}'")
     role = db.query(Role).filter(Role.role == role_master.role).first()
 
@@ -935,29 +771,34 @@ def get_roleMaster_By_Email(db: Session, email: str):
     if not email:
         return None
 
-    # Lowercase the input
     email = email.lower()
 
-    # Do NOT lowercase the array; only use any_() directly
-    role_master = db.query(RoleMaster).filter(
-        email == any_(RoleMaster.user_email)
-    ).first()
+    role_masters = db.query(RoleMaster).all()
+    print("role_masters", role_masters)
 
-    if not role_master:
-        print(f"No role_master found for email: {email}")
-        return None
+    for role_master in role_masters:
+        users = role_master.user  
+        print("user", users)
 
-    role = db.query(Role).filter(Role.role == role_master.role).first()
+        for user in users:
+            user_email = user.user_email.lower() if hasattr(user, "user_email") else user.get("user_email", "").lower()
 
-    return {
-        "user_email": role_master.user_email,
-        "access": role.access if role else [],
-    }
+            if user_email == email:
+                role = db.query(Role).filter(Role.role == role_master.role).first()
+
+                return {
+                    "user_email": user_email,
+                    "access": role.access if role else [],
+                }
+
+    print(f"No role_master found for email: {email}")
+    return None
+
+
 
 def get_supervisor_chain(db: Session, user_who: str):
     supervisors = []
     
-    # Fetch the current user (the starting 'who')
     current_user = db.query(Who).filter(Who.initials == user_who).first()
 
     if not current_user:
@@ -965,12 +806,10 @@ def get_supervisor_chain(db: Session, user_who: str):
 
     starting_employee_name = current_user.employee_name
 
-    # Loop to get the supervisor chain using the supervisor's initials
     while current_user and current_user.supervisor_name:
         supervisors.append(current_user.supervisor_name)
         current_user = db.query(Who).filter(Who.employee_name == current_user.supervisor_name).first()
 
-    # Return the supervisor hierarchy
     return {
         "who": user_who,
         "employee_name": starting_employee_name,
@@ -978,7 +817,6 @@ def get_supervisor_chain(db: Session, user_who: str):
     }
 
 def get_direct_reports(db: Session, supervisor_initials: str):
-    # Fetch the supervisor's full name based on the initials
     supervisor_name = db.query(Who.employee_name).filter(Who.initials == supervisor_initials).first()
 
     if not supervisor_name:
@@ -986,26 +824,19 @@ def get_direct_reports(db: Session, supervisor_initials: str):
         raise HTTPException(status_code=404, detail=f"Supervisor with initials {supervisor_initials} not found.")
     
     print(f"Supervisor name fetched: {supervisor_name[0]}")  # Debugging print
-
-    # Fetch the direct reports (subordinates) where the supervisor_name matches the full name of the supervisor
     direct_reports = db.query(Who).filter(Who.supervisor_name == supervisor_name[0]).all()
 
     if not direct_reports:
         print(f"No direct reports found for supervisor {supervisor_name[0]}.")  # Debugging print
-        return {"direct_reports": []}  # Return an empty list if no direct reports
-
-    # Log the direct reports fetched
+        return {"direct_reports": []} 
     direct_report_initials = [report.initials for report in direct_reports]
     print(f"Direct reports found: {direct_report_initials}")  # Debugging print
 
-    # Return the initials of the direct reports
     return {"direct_reports": direct_report_initials}
 
 def get_user_initials(db: Session, email: str):
-    # Normalize email to lowercase
     email = email.lower()
     
-    # Query the 'Who' table for the user by email
     user = db.query(Who).filter(Who.primary_email == email).first()
 
     if not user:

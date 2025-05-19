@@ -397,10 +397,13 @@ def read_role(id: int, db: Session = Depends(get_db)):
     return db_roleMaster
 
 
+# @router.post("/api/roleMaster", response_model=List[RoleMasterResponse])
+# def create_roleMaster_endpoint(role: RoleMasterCreate, db: Session = Depends(get_db)):
+#         return create_roleMaster(db=db, roleMaster_data=role)
 @router.post("/api/roleMaster", response_model=List[RoleMasterResponse])
 def create_roleMaster_endpoint(role: RoleMasterCreate, db: Session = Depends(get_db)):
-        return create_roleMaster(db=db, roleMaster_data=role)
-    
+    created_role = create_roleMaster(db=db, roleMaster_data=role)
+    return [created_role] 
 @router.put("/api/roleMaster/{id}", response_model=RoleMasterResponse)
 def update_role_endpoint(id: int, role: RoleMasterUpdate, db: Session = Depends(get_db)):
     db_roleMaster = update_roleMaster(db=db, id=id, role_data=role)
