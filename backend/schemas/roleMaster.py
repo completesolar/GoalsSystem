@@ -1,13 +1,16 @@
 from pydantic import BaseModel
 from typing import List, Optional
 
+class UserDetail(BaseModel):
+    user_id: int
+    user: str
+    user_email: str
+
 class RoleMasterBase(BaseModel):
     role: Optional[str] = None
-    user: Optional[List[str]] = None       
-    user_id: Optional[List[int]] = None    
+    user: Optional[List[UserDetail]] = None  # changed from List[str]
     role_id: Optional[int] = None
     remarks: Optional[str] = None
-    user_email: Optional[List[str]] = None
 
 class RoleMasterCreate(RoleMasterBase):
     pass
@@ -19,11 +22,9 @@ class RoleMasterUpdate(RoleMasterBase):
 class RoleMasterResponse(BaseModel):
     id: int
     role: Optional[str] = None
-    user: Optional[List[str]] = None 
-    user_id: Optional[List[int]] = None 
+    user: Optional[List[UserDetail]] = None  # changed from List[str]
     role_id: Optional[int] = None
     remarks: Optional[str] = None
-    user_email: Optional[List[str]] = None
 
     class Config:
         from_attributes = True

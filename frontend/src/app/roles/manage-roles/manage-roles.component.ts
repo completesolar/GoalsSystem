@@ -34,6 +34,7 @@ export class ManageRolesComponent {
     users: null as any | null,
     status: null as any,
     remarks: '',
+    email:null as any | null
   };
   RoleMasterList: any[] = [];
   allRoleMasterList: any = [];
@@ -99,21 +100,24 @@ export class ManageRolesComponent {
   }
   getRoleManageList() {
     this.roleService.getRoleMaster().subscribe((response: any) => {
+      console.log("getRoleMaster",response)
       this.RoleMasterList = response;
       this.RoleMasterList.map((item: any, index: number) => {
         item.sno = index + 1;
       });
-      // console.log('RoleMasterList', this.RoleMasterList);
     });
   }
 
   // Add new Role
   saveManageRole() {
+    // Validation for duplicate users
+    let duplicateFound = false;
     this.roleData.users.forEach((user: any) => {
-      const item = this.RoleMasterList.find(
-        (x: any) => x.user_id === user.value
+      const item = this.RoleMasterList.find((x: any) =>
+        x.user?.some((u: any) => u.user_id === user.value)
       );
       if (item) {
+        duplicateFound = true;
         this.messageService.add({
           severity: 'error',
           summary: 'Manage Role',
@@ -121,87 +125,74 @@ export class ManageRolesComponent {
         });
       }
     });
-
-    if (this.roleData.role === null || this.roleData.users === null) {
+  
+    if (duplicateFound || !this.roleData.role || !this.roleData.users) {
       this.isValid = false;
       return;
     }
-    let data = {
-      role: this.roleData?.role?.value,
-      role_id: this.roleData?.role?.id,
-      user: this.roleData?.users?.map((user: any) => user.label),
-      user_id: this.roleData?.users?.map((user: any) => user.value),
-      remarks: this.roleData?.remarks || '',
-      user_email: this.roleData?.users?.map((user: any) => user.email),
+  
+    const data = {
+      role: this.roleData.role.label,
+      role_id: this.roleData.role.id,
+      remarks: this.roleData.remarks || '',
+      user: this.roleData.users.map((user: any) => ({
+        user_id: user.value,
+        user: user.label,
+        user_email: user.email
+      }))
     };
-
+  
     this.roleService.createRoleMaster(data).subscribe({
       next: (response: any) => {
         if (response.length > 0) {
           this.getRoleManageList();
           this.roleData = {
-            role: null as string | null,
-            status: null as any,
-            users: null as string | null,
+            role: null,
+            status: null,
+            users: null,
             remarks: '',
+            email: null
           };
           this.isValid = true;
           this.messageService.add({
             severity: 'success',
             summary: 'Manage Role',
-            detail: 'Added successfully!.',
+            detail: 'Added successfully!',
           });
         }
       },
       error: (err) => {
         console.error('Create failed', err);
-        const errorMessage =
-          err?.error?.detail || 'An unexpected error occurred';
-
+        const errorMessage = err?.error?.detail || 'An unexpected error occurred';
         this.messageService.add({
           severity: 'error',
           summary: 'Manage Role',
           detail: errorMessage,
         });
-      },
+      }
     });
   }
+  
 
   // Update Role
   async updateRole(item: any) {
-    console.log('Item to update:', item);
-    console.log('Editing item:', this.editingItem);
-    console.log('usersOptions', this.usersOptions);
-    console.log('RoleMasterList', this.RoleMasterList);
-
-    // const items = this.RoleMasterList.find(
-    //   (x: any) => x.user_id[0] === item.user_id[0]
-    // );
-    // console.log('items', items);
-
-    // if (items && items.user_id[0] !== this.editingItem.user_id[0]) {
-    //   this.messageService.add({
-    //     severity: 'error',
-    //     summary: 'Manage Role',
-    //     detail: `user already exists.`,
-    //   });
-    // }
-
-    let user_ID = this.usersOptions.find(
-      (user: any) => user.label === this.editingItem.user[0]
-    );
-    console.log('user_ID', user_ID);
-    let data = {
+    // Assume editingItem.user is an array of selected user objects from p-multiSelect
+    const selectedUsers = this.editingItem.user;
+  
+    const data = {
       id: this.editingItem.id,
-      role: this.editingItem.role.value,
+      role: this.editingItem.role.label,
       role_id: this.editingItem.role.id,
-      user: [this.editingItem.user[0]],
-      user_id: [user_ID?.value || 0],
-      user_email: [user_ID?.email || ''],
+      user: selectedUsers.map((user: any) => ({
+        user_id: user.value,
+        user: user.label,
+        user_email: user.email
+      })),
       remarks: this.editingItem.remarks,
     };
+  
     console.log('Data to update:', data);
-
+  
     this.roleService.updateRoleMaster(data).subscribe({
       next: (response: any) => {
         if (response && response.id) {
@@ -209,7 +200,7 @@ export class ManageRolesComponent {
           this.messageService.add({
             severity: 'success',
             summary: 'Role',
-            detail: 'updated successfully!.',
+            detail: 'Updated successfully!',
           });
         }
       },
@@ -218,18 +209,30 @@ export class ManageRolesComponent {
         this.messageService.add({
           severity: 'error',
           summary: 'Role',
-          detail: `${this.editingItem.role} already exist.`,
+          detail: `${this.editingItem.role.label} already exists.`,
         });
       },
     });
   }
-
   onEdit(item: any) {
     console.log('Editing item:', item);
     console.log('rolesOptions:', this.rolesOptions);
-    this.editingItem = { ...item };
+  
+    const matchedRole = this.rolesOptions.find(opt => opt.label === item.role);
+    const matchedUsers = item.user.map((u: any) =>
+      this.usersOptions.find(opt =>
+        opt.label === u.user && opt.email === u.user_email
+      )
+    ).filter(Boolean); 
+  
+    this.editingItem = {
+      ...item,
+      role: matchedRole,
+      user: matchedUsers
+    };
   }
 
+  
   isObjectChanged(objA: any, objB: any): boolean {
     const { isEditable: _, ...restA } = objA;
     const { isEditable: __, ...restB } = objB;

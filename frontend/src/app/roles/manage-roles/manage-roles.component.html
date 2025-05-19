@@ -89,12 +89,24 @@
           </td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewUser">
-              <p-select appendTo="body" [options]="usersOptions" [(ngModel)]="editingItem.user[0]" optionLabel="label"
-                optionValue="label" placeholder="Select a user" class="custom-select" [style.width]="'155px'">
-              </p-select>
+              <p-multiSelect
+                appendTo="body"
+                [options]="usersOptions"
+                [(ngModel)]="editingItem.user"
+                optionLabel="label"
+                placeholder="Select users"
+                [style.width]="'200px'"
+                display="chip"
+              ></p-multiSelect>
             </ng-container>
-            <ng-template #viewUser>{{ item.user[0] }}</ng-template>
-          </td>
+          
+            <ng-template #viewUser>
+              <ng-container *ngFor="let usr of item.user; let last = last">
+                {{ usr.user }}<span *ngIf="!last">, </span>
+              </ng-container>
+            </ng-template>
+          </td>          
+          
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewRenarks">
               <input type="text" pInputText [(ngModel)]="editingItem.remarks" style="width: 100px" />

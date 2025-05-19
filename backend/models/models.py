@@ -166,11 +166,8 @@ class Role(Base):
 
 class RoleMaster(Base):
     __tablename__ = 'roleMaster'
-
     id = Column(Integer, primary_key=True, autoincrement=True)
     role = Column(String, nullable=True)
     role_id = Column(Integer)
-    user = Column(ARRAY(String), unique=True)
-    user_id = Column(ARRAY(Integer), unique=True) 
+    user = Column(JSON)
     remarks = Column(String, nullable=True)
-    user_email = Column(ARRAY(String), unique=True)

@@ -82,6 +82,7 @@ class WhoBase(BaseModel):
     employee_name: Optional[str]
     initials: Optional[str] = None
     supervisor_name: Optional[str] = None
+    primary_email: Optional[EmailStr] = None
     
 class SupervisorChainResponse(BaseModel):
     who: str
