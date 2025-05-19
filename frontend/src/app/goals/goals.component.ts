@@ -100,6 +100,8 @@ export class GoalsComponent implements AfterViewInit {
   filterSearch: { [key: string]: string } = {};
   filteredFilterOptions: { [key: string]: any[] } = {};
   activeFilters: { [key: string]: boolean } = {};
+  compositeSortEnabled = false;
+  currentWeek = this.getCurrentWeekNumber();
 
   private readonly _destroying$ = new Subject<void>();
   selectedSettings: string | undefined;
@@ -2137,5 +2139,56 @@ addGoal() {
       }
     }, 100);
   }
+
+toggleSort(): void {
+  this.compositeSortEnabled = !this.compositeSortEnabled;
+
+  if (this.compositeSortEnabled) {
+    // Composite Sort logic
+    const currentWeek = this.currentWeek;
+
+    this.goal = [...this.allGoals].sort((a, b) => {
+      const isACurrentWeek = a.e === currentWeek;
+      const isBCurrentWeek = b.e === currentWeek;
+
+      if (isACurrentWeek && !isBCurrentWeek) return -1;
+      if (!isACurrentWeek && isBCurrentWeek) return 1;
+
+      const dOrder = (d: any): number => {
+        const val = (d || '').toString().toUpperCase();
+        if (val === '') return 0;
+        if (val === 'A1') return 1;
+        if (val === '99') return 2;
+        return 3;
+      };
+
+      const dA = dOrder(a.d);
+      const dB = dOrder(b.d);
+      if (dA !== dB) return dA - dB;
+
+      const whoA = a.who.toLowerCase();
+      const whoB = b.who.toLowerCase();
+      if (whoA < whoB) return -1;
+      if (whoA > whoB) return 1;
+
+      const priorityA = isNaN(+a.p) ? Number.MAX_SAFE_INTEGER : +a.p;
+      const priorityB = isNaN(+b.p) ? Number.MAX_SAFE_INTEGER : +b.p;
+      return priorityA - priorityB;
+    });
+
+  } else {
+    // Default sort by WHO and P
+    this.goal = [...this.allGoals].sort((a, b) => {
+      const whoA = a.who.toLowerCase();
+      const whoB = b.who.toLowerCase();
+      if (whoA < whoB) return -1;
+      if (whoA > whoB) return 1;
+
+      const priorityA = isNaN(+a.p) ? Number.MAX_SAFE_INTEGER : +a.p;
+      const priorityB = isNaN(+b.p) ? Number.MAX_SAFE_INTEGER : +b.p;
+      return priorityA - priorityB;
+    });
+  }
+}
   
 }
