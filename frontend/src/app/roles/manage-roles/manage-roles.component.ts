@@ -10,6 +10,7 @@
   import { RolesService } from '../../services/roles.service';
   import { GoalsService } from '../../services/goals.service';
   import { InputTextModule } from 'primeng/inputtext';
+import { HeaderComponent } from '../../common/component/header/header.component';
 
   @Component({
     selector: 'app-manage-roles',
@@ -23,7 +24,7 @@
       SelectModule,
       InputTextModule,
     ],
-    providers: [MessageService],
+    providers: [MessageService,HeaderComponent],
     standalone: true,
     templateUrl: './manage-roles.component.html',
     styleUrl: './manage-roles.component.scss',
@@ -62,7 +63,8 @@
     constructor(
       public roleService: RolesService,
       public goalservice: GoalsService,
-      public messageService: MessageService
+      public messageService: MessageService,
+          public headerCom: HeaderComponent      
     ) {}
 
     ngOnInit(): void {
@@ -102,6 +104,8 @@
     getRoleManageList() {
       this.roleService.getRoleMaster().subscribe((response: any) => {
         this.RoleMasterList = response;
+        console.log("RoleMasterList",response)
+        this.allRoleMasterList=response;
         this.RoleMasterList.map((item: any, index: number) => {
           item.sno = index + 1;
         });
@@ -124,18 +128,9 @@
         }
       });
     
-      const roleExists = this.RoleMasterList.some(
+      const existingRole = this.RoleMasterList.find(
         (item: any) => item.role_id === this.roleData.role?.id
       );
-    
-      if (roleExists) {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Manage Role',
-          detail: `Role "${this.roleData.role.label}" is already assigned. kindly update`,
-        });
-        return;
-      }
     
       if (duplicateUserFound || !this.roleData.role || !this.roleData.users) {
         this.isValid = false;
@@ -152,6 +147,41 @@
           user_email: user.email
         }))
       };
+      if (existingRole) {
+        const updatedData = { ...data, id: existingRole.id };
+    
+        this.roleService.updateRoleMaster(updatedData).subscribe({
+          next: (response: any) => {
+            if (response && response.id) {
+              this.getRoleManageList();
+              this.roleData = {
+                role: null,
+                status: null,
+                users: null,
+                remarks: '',
+                email: null
+              };
+              this.isValid = true;
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Manage Role',
+                detail: 'Updated successfully!',
+              });
+            }
+          },
+          error: (err) => {
+            console.error('Update failed', err);
+            const errorMessage = err?.error?.detail || 'An unexpected error occurred';
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Manage Role',
+              detail: errorMessage,
+            });
+          }
+        });
+    
+        return;
+      }
     
       this.roleService.createRoleMaster(data).subscribe({
         next: (response: any) => {
@@ -170,8 +200,6 @@
               summary: 'Manage Role',
               detail: 'Added successfully!',
             });
-            this.getRoleManageList();
-
           }
         },
         error: (err) => {
@@ -189,7 +217,6 @@
 
     // Update Role
     async updateRole(item: any) {
-      // Assume editingItem.user is an array of selected user objects from p-multiSelect
       const selectedUsers = this.editingItem.user;
     
       const data = {
@@ -210,12 +237,13 @@
         next: (response: any) => {
           if (response && response.id) {
             this.editingItem = null;
+            this.getRoleManageList();
+            this.headerCom.getPermission();  
             this.messageService.add({
               severity: 'success',
               summary: 'Role',
               detail: 'Updated successfully!',
             });
-            this.getRoleManageList();
 
           }
         },
@@ -249,13 +277,11 @@
       const { isEditable: __, ...restB } = objB;
       return JSON.stringify(restA) !== JSON.stringify(restB);
     }
-
     applyFilters(): void {
       this.RoleMasterList = [...this.allRoleMasterList].filter((row: any) => {
         return Object.entries(this.selectedFilters).every(
           ([filterField, selectedValues]: [string, any[]]) => {
             if (!selectedValues || selectedValues.length === 0) return true;
-
             if (filterField === 'status') {
               return selectedValues.some(
                 (option: any) => option.value === row[filterField]
@@ -270,6 +296,11 @@
                 (option: any) => option.value == row[filterField]
               );
             }
+            if (filterField === 'user') {
+              return selectedValues.some((option: any) =>
+                row.user?.some((u: any) => u.user_id === option.value)
+              );
+            }  
             return true;
           }
         );
@@ -281,21 +312,34 @@
           this.selectedFilters[key] = [];
           this.activeFilters[key] = false;
         }
-      });
-
-      this.applyFilters();
-      Object.keys(this.selectedFilters).forEach((field) => {
-        this.activeFilters[field] = !!this.selectedFilters[field]?.length;
+      });    
+      this.applyFilters();    
+      Object.keys(this.selectedFilters).forEach((filterField) => {
+        this.activeFilters[filterField] = !!this.selectedFilters[filterField]?.length;
       });
     }
-    getFilterOptions(field: string): any[] {
-      let options: any[];
+        
 
+    getFilterOptions(field: string): any[] {
+      let options: any[] = [];    
       if (field === 'status') {
         options = [
           { label: 'Active', value: 1 },
           { label: 'Inactive', value: 0 },
         ];
+      } else if (field === 'user') {
+        const allUsers = this.allRoleMasterList.flatMap((item: any) => item.user || []);
+                const uniqueUserMap = new Map();
+        allUsers.forEach((user: any) => {
+          if (!uniqueUserMap.has(user.user_id)) {
+            uniqueUserMap.set(user.user_id, user);
+          }
+        });
+    
+        options = Array.from(uniqueUserMap.values()).map((user: any) => ({
+          label: user.user,
+          value: user.user_id,
+        }));
       } else {
         const uniqueValues = [
           ...new Set(this.allRoleMasterList.map((item: any) => item[field])),
@@ -304,27 +348,24 @@
           label: val,
           value: val,
         }));
-      }
-
-      // Sort options to bring selected values to the top
-      const selected = this.selectedFilters?.[field] || [];
+      } 
+      const selected = this.selectedFilters?.[field] || [];    
       return options.sort((a, b) => {
         const isSelectedA = selected.some((sel: any) => sel.value === a.value);
         const isSelectedB = selected.some((sel: any) => sel.value === b.value);
-
-        if (isSelectedA && !isSelectedB) {
-          return -1;
-        } else if (!isSelectedA && isSelectedB) {
-          return 1;
-        } else {
-          return 0;
-        }
+        return isSelectedA === isSelectedB ? 0 : isSelectedA ? -1 : 1;
       });
     }
-
     resetFilter() {
       this.selectedFilters = {};
       this.activeFilters = {};
       this.RoleMasterList = [...this.allRoleMasterList];
-    }
+      this.roleData = {
+        role: null,
+        status: null,
+        users: null,
+        remarks: '',
+        email: null
+      };
+    }   
   }

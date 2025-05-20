@@ -252,9 +252,13 @@ export class StatusComponent {
     });
   }
   resetFilter() {
-    // Reset selected filters
     this.selectedFilters = {};
     this.activeFilters = {};
     this.statusList = [...this.allStatusList];
+    this.initial = '';
+    this.name = '';
+    this.status = null;
+    this.remarks = '';
+    this.isValid = true;
   }
 }

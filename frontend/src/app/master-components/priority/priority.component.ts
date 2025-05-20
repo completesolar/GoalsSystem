@@ -241,7 +241,6 @@ export class PriorityComponent {
       }));
     }
 
-    // Sort options to bring selected values to the top
     const selected = this.selectedFilters?.[field] || [];
     return options.sort((a, b) => {
       const isSelectedA = selected.some((sel: any) => sel.value === a.value);
@@ -258,9 +257,12 @@ export class PriorityComponent {
   }
 
   resetFilter() {
-    // Reset selected filters
     this.selectedFilters = {};
     this.activeFilters = {};
     this.priorityList = [...this.allPriorities];
+    this.priority = undefined;
+  this.status = undefined;
+  this.remarks = '';
+  this.isValid = true;
   }
 }

@@ -423,7 +423,7 @@ def read_RoleMaster_By_Id(email: str, db: Session = Depends(get_db)):
     print("email",email)
     result = get_roleMaster_By_Email(db, email)
     if not result:
-        raise HTTPException(status_code=404, detail="Email not found or role not assigned")
+        result=[]
     return result
 
 @router.get("/api/who-initials/{email}")

@@ -235,7 +235,6 @@ export class EndWeekComponent {
       }));
     }
 
-    // Sort options to bring selected values to the top
     const selected = this.selectedFilters?.[field] || [];
     return options.sort((a, b) => {
       const isSelectedA = selected.some((sel: any) => sel.value === a.value);
@@ -252,9 +251,11 @@ export class EndWeekComponent {
   }
 
   resetFilter() {
-    // Reset selected filters
     this.selectedFilters = {};
     this.activeFilters = {};
     this.EList = [...this.allEList];
+  this.e = undefined;
+  this.status = null;
+  this.remarks = '';
   }
 }

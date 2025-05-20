@@ -177,11 +177,9 @@ export class BeginningWeekComponent {
   }
 
   isObjectChanged(objA: any, objB: any): boolean {
-    // Destructure objects to exclude `isEditable`
     const { isEditable: _, ...restA } = objA;
     const { isEditable: __, ...restB } = objB;
 
-    // Compare remaining properties
     return JSON.stringify(restA) !== JSON.stringify(restB);
   }
 
@@ -241,7 +239,6 @@ export class BeginningWeekComponent {
       }));
     }
 
-    // Sort options to bring selected values to the top
     const selected = this.selectedFilters?.[field] || [];
     return options.sort((a, b) => {
       const isSelectedA = selected.some((sel: any) => sel.value === a.value);
@@ -258,9 +255,12 @@ export class BeginningWeekComponent {
   }
 
   resetFilter() {
-    // Reset selected filters
     this.selectedFilters = {};
     this.activeFilters = {};
     this.bList = [...this.allBList];
+
+    this.b = undefined;
+    this.status = undefined;
+    this.remarks = '';
   }
 }

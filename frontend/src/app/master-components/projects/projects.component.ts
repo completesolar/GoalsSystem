@@ -234,7 +234,6 @@ export class ProjectsComponent {
       }));
     }
 
-    // Sort options to bring selected values to the top
     const selected = this.selectedFilters?.[field] || [];
     return options.sort((a, b) => {
       const isSelectedA = selected.some((sel: any) => sel.value === a.value);
@@ -250,9 +249,12 @@ export class ProjectsComponent {
     });
   }
   resetFilter() {
-    // Reset selected filters
     this.selectedFilters = {};
     this.activeFilters = {};
     this.projList = [...this.allProjList];
+    this.project = undefined;
+    this.status = null;
+    this.remarks = '';
+  
   }
 }

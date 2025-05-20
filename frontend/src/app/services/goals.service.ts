@@ -158,9 +158,11 @@ export class GoalsService {
     return this.http.put(`${this.baseURL}/b/${b.id}`, b);
   }
   
-loginCheck(email: string) {
-      return this.http.get(`${this.baseURL}/loginCheck/${encodeURIComponent(email)}`);
-  }   
+  loginCheck(email: string) {
+    const lowerCaseEmail = email.toLowerCase();
+    return this.http.get(`${this.baseURL}/loginCheck/${encodeURIComponent(lowerCaseEmail)}`);
+  }
+  
 
   private handleError(error: HttpErrorResponse) {
     return throwError(() => new Error(error.message || 'Server error'));
