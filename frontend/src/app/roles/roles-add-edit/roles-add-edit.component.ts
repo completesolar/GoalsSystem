@@ -264,7 +264,6 @@ export class RolesAddEditComponent implements OnInit {
       }));
     }
 
-    // Sort options to bring selected values to the top
     const selected = this.selectedFilters?.[field] || [];
     return options.sort((a, b) => {
       const isSelectedA = selected.some((sel: any) => sel.value === a.value);
@@ -284,6 +283,12 @@ export class RolesAddEditComponent implements OnInit {
     this.selectedFilters = {};
     this.activeFilters = {};
     this.rolesList = [...this.allRoleList];
+    this.roleData = {
+      roleName: null,
+      status: null,
+      actions: [],
+      remarks: ''
+    };
   }
 
   getLabelsFromKeys(keys: string[], options: any[]): string[] {
