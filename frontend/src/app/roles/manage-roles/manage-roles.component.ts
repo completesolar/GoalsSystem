@@ -64,7 +64,7 @@ import { HeaderComponent } from '../../common/component/header/header.component'
       public roleService: RolesService,
       public goalservice: GoalsService,
       public messageService: MessageService,
-          public headerCom: HeaderComponent      
+      public headerCom: HeaderComponent      
     ) {}
 
     ngOnInit(): void {
@@ -114,7 +114,7 @@ import { HeaderComponent } from '../../common/component/header/header.component'
 
     saveManageRole() {
       let duplicateUserFound = false;
-      this.roleData.users.forEach((user: any) => {
+          this.roleData.users.forEach((user: any) => {
         const item = this.RoleMasterList.find((x: any) =>
           x.user?.some((u: any) => u.user_id === user.value)
         );
@@ -135,20 +135,34 @@ import { HeaderComponent } from '../../common/component/header/header.component'
       if (duplicateUserFound || !this.roleData.role || !this.roleData.users) {
         this.isValid = false;
         return;
-      }
+      } 
+      const newUsers = this.roleData.users.map((user: any) => ({
+        user_id: user.value,
+        user: user.label,
+        user_email: user.email
+      }));
     
       const data = {
         role: this.roleData.role.label,
         role_id: this.roleData.role.id,
         remarks: this.roleData.remarks || '',
-        user: this.roleData.users.map((user: any) => ({
-          user_id: user.value,
-          user: user.label,
-          user_email: user.email
-        }))
-      };
+        user: newUsers
+      };   
       if (existingRole) {
-        const updatedData = { ...data, id: existingRole.id };
+        const existingUsers = existingRole.user || [];
+    
+        const mergedUsers = [
+          ...existingUsers,
+          ...newUsers.filter(
+            (            newUser: { user_id: any; }) => !existingUsers.some((existing: { user_id: any; }) => existing.user_id === newUser.user_id)
+          )
+        ];
+    
+        const updatedData = {
+          ...data,
+          id: existingRole.id,
+          user: mergedUsers
+        };
     
         this.roleService.updateRoleMaster(updatedData).subscribe({
           next: (response: any) => {
@@ -162,6 +176,7 @@ import { HeaderComponent } from '../../common/component/header/header.component'
                 email: null
               };
               this.isValid = true;
+              this.headerCom.getPermission();
               this.messageService.add({
                 severity: 'success',
                 summary: 'Manage Role',
@@ -194,6 +209,7 @@ import { HeaderComponent } from '../../common/component/header/header.component'
               remarks: '',
               email: null
             };
+            this.headerCom.getPermission();
             this.isValid = true;
             this.messageService.add({
               severity: 'success',
@@ -214,9 +230,7 @@ import { HeaderComponent } from '../../common/component/header/header.component'
       });
     }
     
-
-    // Update Role
-    async updateRole(item: any) {
+ async updateRole(item: any) {
       const selectedUsers = this.editingItem.user;
     
       const data = {
