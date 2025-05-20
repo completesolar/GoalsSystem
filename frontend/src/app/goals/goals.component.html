@@ -8,15 +8,18 @@
         <i class="fa" [ngClass]="isLegendVisible ? 'fa-arrow-down' : 'fa-arrow-right'"></i>
         <span>Legend</span>
       </button>
-      <p-toggleswitch  
-      [(ngModel)]="checked" 
-      onLabel="Yes" 
-      offLabel="No" 
-      styleClass="w-24">
-    </p-toggleswitch ></div>  
+</div>  
 
     <div class="flex items-center gap-2  align-items-center">
       <div class="flex items-center gap-2 ml-auto align-items-center">
+  <label for="goalIdToggle" [style]="{ fontSize: '15px', fontWeight: 'bolder', fontFamily: 'Arial' }" class="font-medium">Goal ID:</label>
+  <p-toggleswitch inputId="goalIdToggle" [(ngModel)]="checked" onLabel="Yes" offLabel="No" styleClass="w-24">
+  </p-toggleswitch>
+        <p-button icon="pi pi-sort-alt" [label]="compositeSortEnabled ? 'Default' : 'Sort On E & D'" (click)="toggleSort()"
+  severity="success" size="small" [style]="{ height: '24px', fontSize: '8px', width: '140px' }"
+  pTooltip="Toggle between default (WHO + Priority) and composite sort (E = current week, then Delinquent)"
+  tooltipPosition="top">
+</p-button>
         <p-button icon="pi pi-filter-slash" (click)="clearAllFilters()" severity="success" size="small" label="Clear"
           [style]="{ height: '24px', fontSize: '12px', width:'70px'}"></p-button>
 
@@ -51,13 +54,6 @@
   </div>
 
   <div class="table-container pr-3 pl-3">
-<p-button icon="pi pi-sort-alt" [label]="compositeSortEnabled ? 'Default' : 'Composite'" (click)="toggleSort()"
-  severity="success" size="small" [style]="{ height: '24px', fontSize: '12px', width: '90px' }"
-  pTooltip="Toggle between default (WHO + Priority) and composite sort (E = current week, then Delinquent)"
-  tooltipPosition="top">
-</p-button>
-
-
     <p-confirmPopup #confirmPopup></p-confirmPopup>
     <p-table #dataTable (onPage)="onPageChange($event)" [value]="goal" [paginator]="true" [rows]="10"
       [showCurrentPageReport]="true" [rowsPerPageOptions]="[10, 20, 50]"
