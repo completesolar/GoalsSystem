@@ -271,20 +271,29 @@ import { HeaderComponent } from '../../common/component/header/header.component'
         },
       });
     }
-    onEdit(item: any) {
-      const matchedRole = this.rolesOptions.find(opt => opt.id === item.role_id);
-      const matchedUsers = item.user.map((u: any) =>
-        this.usersOptions.find(opt => opt.label === u.user && opt.email === u.user_email)
-      ).filter(Boolean);
-    
-      this.editingItem = {
-        ...item,
-        role: matchedRole ?? { label: item.role, value: item.role, id: item.role_id }, 
-        user: matchedUsers,
-      };
-    }
-    
+onEdit(item: any) {
+  const matchedRole = this.rolesOptions.find(opt => opt.id === item.role_id);
 
+const matchedUsers = item.user.map((u: { user: string; user_email: string }) =>
+  this.usersOptions.find(opt => opt.label === u.user && opt.email === u.user_email)
+).filter(Boolean);
+
+const matchedEmails = new Set(
+  matchedUsers.map((u: { email: string }) => u.email)
+);
+
+  const remainingUsers = this.usersOptions
+    .filter(opt => !matchedEmails.has(opt.email))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+  this.usersOptions = [...matchedUsers, ...remainingUsers];
+
+  this.editingItem = {
+    ...item,
+    role: matchedRole ?? { label: item.role, value: item.role, id: item.role_id },
+    user: matchedUsers,
+  };
+}
     
     isObjectChanged(objA: any, objB: any): boolean {
       const { isEditable: _, ...restA } = objA;
