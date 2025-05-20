@@ -69,7 +69,7 @@
           <th *ngFor="let col of columns"     [hidden]="(col.field === 'goalid' && !checked) || (col.field === 'fiscalyear' && !isAnyRowEditable())" class="">
             <div class="flex items-center justify-between">
               <div class="test" *ngIf="col.field !== 'action' && col.field !== 'confidential'; else noSort"
-                [pSortableColumn]="col.field">
+                [pSortableColumn]="col.field" tooltipPosition="bottom"  [pTooltip]="col.tooltip">
                 <b>{{ col.header }}</b>
                 <p-sortIcon [field]="col.field"></p-sortIcon>
               </div>
