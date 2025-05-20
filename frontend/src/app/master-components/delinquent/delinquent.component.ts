@@ -28,15 +28,7 @@ import { InputTextModule } from 'primeng/inputtext';
   styleUrl: './delinquent.component.scss',
 })
 export class DelinquentComponent {
-  // columns = [
-  // { field: 's.no', header: 'S.No', tooltip: '' },
-  // { field: 'id', header: 'D ID', tooltip: '' },
-  // { field: 'd', header: 'D', tooltip: '' },
-  // { field: 'status', header: 'Status', tooltip: '' },
-  // { field: 'remarks', header: 'Remarks', tooltip: '' },
-  // { field: 'action', header: 'ACTION', tooltip: '' },
-  // ];
-
+ 
   columns = [
     { field: 'sno', header: 'S.No', tooltip: '' },
     { field: 'id', header: 'D ID', tooltip: '' },
@@ -245,7 +237,6 @@ export class DelinquentComponent {
       }));
     }
 
-    // Sort options to bring selected values to the top
     const selected = this.selectedFilters?.[field] || [];
     return options.sort((a, b) => {
       const isSelectedA = selected.some((sel: any) => sel.value === a.value);
@@ -262,9 +253,12 @@ export class DelinquentComponent {
   }
 
   resetFilter() {
-    // Reset selected filters
     this.selectedFilters = {};
     this.activeFilters = {};
     this.DList = [...this.allDdata];
+    this.d = undefined;
+    this.status = null;
+    this.remarks = '';
+  
   }
 }

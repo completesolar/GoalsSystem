@@ -708,8 +708,6 @@ def update_roleMaster(db: Session, id: int, role_data: RoleMasterUpdate):
         print(f"Error occurred while updating RoleMaster: {e}")
         raise HTTPException(status_code=400, detail="An error occurred while updating RoleMaster")
         
-
-
 def get_email(db: Session, email: str):
     print("=== get_email CALLED ===")
     print(f"Input email: {email}")
@@ -725,12 +723,28 @@ def get_email(db: Session, email: str):
     print("WHO object:")
     pprint(who.__dict__ if who else "None")
 
-    print("Checking for roleMaster with email in user_email array...")
-    role_master = db.query(RoleMaster).filter(
-        email == any_(RoleMaster.user_email)
-    ).first()
+    print("Checking RoleMaster data manually for email match...")
+    role_masters = db.query(RoleMaster).all()
+    matched_role_master = None
 
-    if not role_master:
+    for role_master in role_masters:
+        users = role_master.user 
+        print("Users in RoleMaster:", users)
+
+        for user in users:
+            if isinstance(user, dict):
+                user_email = user.get("user_email", "").lower()
+            else:
+                user_email = getattr(user, "user_email", "").lower()
+
+            if user_email == email:
+                matched_role_master = role_master
+                break
+
+        if matched_role_master:
+            break
+
+    if not matched_role_master:
         print("RoleMaster not found. Returning default access.")
         return {
             "user_email": email,
@@ -741,10 +755,10 @@ def get_email(db: Session, email: str):
         }
 
     print("RoleMaster found:")
-    pprint(role_master.__dict__)
+    pprint(matched_role_master.__dict__)
 
-    print(f"Fetching Role for role = '{role_master.role}'")
-    role = db.query(Role).filter(Role.role == role_master.role).first()
+    print(f"Fetching Role for role = '{matched_role_master.role}'")
+    role = db.query(Role).filter(Role.role == matched_role_master.role).first()
 
     if not role:
         print("No matching role found in Role table.")
@@ -754,9 +768,9 @@ def get_email(db: Session, email: str):
     pprint(role.__dict__)
 
     result = {
-        "user_email": role_master.user_email,
-        "user": role_master.user,
-        "role": role_master.role,
+        "user_email": email,
+        "user": matched_role_master.user,
+        "role": matched_role_master.role,
         "access": role.access,
         "initial": who.initials if who else ""
     }
