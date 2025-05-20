@@ -127,15 +127,15 @@ export class GoalsComponent implements AfterViewInit {
     { name: 'D' },
     { name: 'Status' },
   ];
-  columns = [
-    { field: 'goalid', header: 'Goal ID' },
+columns = [
+    { field: 'goalid', header: 'Goal ID',tooltip:'Goal Id' },
     { field: 'who', header: 'WHO', tooltip: 'Owner of the goal' },
     { field: 'p', header: 'P', tooltip: 'Priority' },
     { field: 'proj', header: 'PROJ', tooltip: 'Project' },
     { field: 'vp', header: 'VP', tooltip: 'Boss of Goal Owner' },
     { field: 'b', header: 'B', tooltip: 'WW goal was given' },
     { field: 'e', header: 'E', tooltip: 'WW goal is due' },
-    { field: 'd', header: 'D', tooltip: '' },
+    { field: 'd', header: 'D', tooltip: 'Delinquent' },
     { field: 's', header: 'S', tooltip: 'Status of the goal' },
     { field: 'gdb', header: 'GOAL DELIVERABLE', tooltip: '' },
     { field: 'fiscalyear', header: 'Year' },
