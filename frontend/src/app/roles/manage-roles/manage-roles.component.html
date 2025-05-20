@@ -107,12 +107,13 @@
             </ng-container>
           
             <ng-template #viewUser>
-              <ng-container *ngFor="let usr of item.user; let last = last">
-                {{ usr.user }}<span *ngIf="!last">, </span>
-              </ng-container>
-            </ng-template>
+              {{ item.user?.length || 0 }} {{ (item.user?.length === 1) ? 'User' : 'Users' }}
+            </ng-template>            
           </td>          
-          
+                        <!-- <ng-container *ngFor="let usr of item.user; let last = last">
+                {{ usr.user.length }}<span *ngIf="!last">, </span>
+              </ng-container> -->
+
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewRenarks">
               <input type="text" pInputText [(ngModel)]="editingItem.remarks" style="width: 100px" />
