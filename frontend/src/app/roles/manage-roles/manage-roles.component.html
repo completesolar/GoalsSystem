@@ -81,9 +81,15 @@
           <td>{{ item.id }}</td>
           <td>
             <ng-container *ngIf="editingItem?.id === item.id; else viewb">
-              <p-select appendTo="body" [options]="rolesOptions" [(ngModel)]="editingItem.role" optionLabel="label"
-                optionValue="value" placeholder="Select a role" [style.width]="'155px'">
-              </p-select>
+              <p-select 
+  appendTo="body" 
+  [options]="rolesOptions"
+  [(ngModel)]="editingItem.role"
+  optionLabel="label"
+  placeholder="Select a role"
+  [style.width]="'155px'">
+</p-select>
+
             </ng-container>
             <ng-template #viewb>{{ item.role }}</ng-template>
           </td>
