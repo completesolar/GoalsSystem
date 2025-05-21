@@ -183,5 +183,14 @@ getSupervisorHierarchy(initials: string) {
 getDirectReports(initials: string) {
   return this.http.get<{ direct_reports: string[] }>(`${this.baseURL}/direct-reports/${encodeURIComponent(initials)}`);
 }
+updateGlobalCloneSetting(value: boolean, updatedBy: string) {
+  return this.http.post<{ message: string }>(`${this.baseURL}/global-settings/update`, {
+    value,
+    updated_by: updatedBy
+  });
+}
+getGlobalCloneSetting() {
+  return this.http.get<boolean>(`${this.baseURL}/global-settings/enable_clone`);
+}
 
 }

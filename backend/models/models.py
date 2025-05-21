@@ -1,6 +1,7 @@
 from sqlalchemy import (
     ARRAY,
     JSON,
+    TIMESTAMP,
     Column,
     Integer,
     String,
@@ -171,3 +172,12 @@ class RoleMaster(Base):
     role_id = Column(Integer)
     user = Column(JSON)
     remarks = Column(String, nullable=True)
+
+
+class GlobalSettings(Base):
+    __tablename__ = "global_settings"
+
+    key_name = Column(String, primary_key=True)
+    value = Column(Boolean)
+    updated_at = Column(TIMESTAMP, default=func.current_timestamp(), onupdate=func.current_timestamp())
+    updated_by = Column(String)

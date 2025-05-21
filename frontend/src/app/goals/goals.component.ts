@@ -102,6 +102,7 @@ export class GoalsComponent implements AfterViewInit {
   activeFilters: { [key: string]: boolean } = {};
   compositeSortEnabled = false;
   currentWeek = this.getCurrentWeekNumber();
+  isCloneEnabled: boolean = true;
 
   private readonly _destroying$ = new Subject<void>();
   selectedSettings: string | undefined;
@@ -226,6 +227,7 @@ columns = [
   }
 
   ngOnInit() {
+    this.loadGlobalCloneSetting();
     this.columns.forEach((col) => {
       const field = col.field;
       if (field !== 'action' && field !== 'gdb') {
@@ -340,6 +342,18 @@ columns = [
 
     XLSX.writeFile(wb, fileName);
   }
+
+  loadGlobalCloneSetting(): void {
+  this.goalsService.getGlobalCloneSetting().subscribe({
+    next: (res: boolean) => {
+      this.isCloneEnabled = res;
+      console.log('clone',this.isCloneEnabled);
+    },
+    error: () => {
+      this.isCloneEnabled = true; // fallback if needed
+    }
+  });
+}
 loadGoals(): void {
   // Fetch the currently signed-in user's email
   const userEmail = this.getLoggedInEmail();
@@ -1524,28 +1538,7 @@ addGoal() {
     this.activeFilters = this.activeFilters || {};
     this.activeFilters['gdb'] = !!this.gdbSearchText?.trim();
   }
-  applyFilters(): void {
-    this.goal = this.allGoals.filter((row: any) => {
-      const matchMultiSelect = Object.entries(this.selectedFilters).every(
-        ([filterField, selectedValues]: any) => {
-          if (!selectedValues || selectedValues.length === 0) return true;
-          const includedValues = selectedValues.map(
-            (option: any) => option.value
-          );
-          return includedValues.includes(row[filterField]);
-        }
-      );
-
-      const gdbText = `${row.action ?? ''} ${row.description ?? ''} ${
-        row.memo ?? ''
-      }`.toLowerCase();
-      const matchGdb =
-        !this.gdbSearchText ||
-        gdbText.includes(this.gdbSearchText.toLowerCase());
-
-      return matchMultiSelect && matchGdb;
-    });
-  }
+  
   clearFilter(field: string): void {
     if (field === 'gdb') {
       this.gdbSearchText = '';
@@ -2005,14 +1998,21 @@ addGoal() {
       doc.save(fileName);
     };
   }
+
   clearAllFilters(): void {
     this.selectedFilters = {};
     this.activeFilters = {};
+    this.gdbSearchText = '';
+    this.compositeSortEnabled = false;
+  
     if (this.dataTable) {
       this.dataTable.reset();
     }
-    this.loadUnfilteredData();
+  
+    this.loadUnfilteredData(); 
+    this.applyFilters();       
   }
+  
   loadUnfilteredData(): void {
     this.goal = [...this.originalGoal];
     if (this.dataTable) {
@@ -2139,56 +2139,81 @@ addGoal() {
       }
     }, 100);
   }
-
-toggleSort(): void {
-  this.compositeSortEnabled = !this.compositeSortEnabled;
-
-  if (this.compositeSortEnabled) {
-    // Composite Sort logic
-    const currentWeek = this.currentWeek;
-
-    this.goal = [...this.allGoals].sort((a, b) => {
-      const isACurrentWeek = a.e === currentWeek;
-      const isBCurrentWeek = b.e === currentWeek;
-
-      if (isACurrentWeek && !isBCurrentWeek) return -1;
-      if (!isACurrentWeek && isBCurrentWeek) return 1;
-
-      const dOrder = (d: any): number => {
-        const val = (d || '').toString().toUpperCase();
-        if (val === '') return 0;
-        if (val === 'A1') return 1;
-        if (val === '99') return 2;
-        return 3;
-      };
-
-      const dA = dOrder(a.d);
-      const dB = dOrder(b.d);
-      if (dA !== dB) return dA - dB;
-
-      const whoA = a.who.toLowerCase();
-      const whoB = b.who.toLowerCase();
-      if (whoA < whoB) return -1;
-      if (whoA > whoB) return 1;
-
-      const priorityA = isNaN(+a.p) ? Number.MAX_SAFE_INTEGER : +a.p;
-      const priorityB = isNaN(+b.p) ? Number.MAX_SAFE_INTEGER : +b.p;
-      return priorityA - priorityB;
+  
+  applyFilters(): void {
+    let filteredGoals = this.allGoals.filter((row: any) => {
+      const matchMultiSelect = Object.entries(this.selectedFilters).every(
+        ([filterField, selectedValues]: any) => {
+          if (!selectedValues || selectedValues.length === 0) return true;
+          const includedValues = selectedValues.map((option: any) => option.value);
+          return includedValues.includes(row[filterField]);
+        }
+      );
+  
+      const gdbText = `${row.action ?? ''} ${row.description ?? ''} ${row.memo ?? ''}`.toLowerCase();
+      const matchGdb = !this.gdbSearchText || gdbText.includes(this.gdbSearchText.toLowerCase());
+  
+      return matchMultiSelect && matchGdb;
     });
-
-  } else {
-    // Default sort by WHO and P
-    this.goal = [...this.allGoals].sort((a, b) => {
-      const whoA = a.who.toLowerCase();
-      const whoB = b.who.toLowerCase();
-      if (whoA < whoB) return -1;
-      if (whoA > whoB) return 1;
-
-      const priorityA = isNaN(+a.p) ? Number.MAX_SAFE_INTEGER : +a.p;
-      const priorityB = isNaN(+b.p) ? Number.MAX_SAFE_INTEGER : +b.p;
-      return priorityA - priorityB;
-    });
+  
+    if (this.compositeSortEnabled) {
+      const currentWeek = this.currentWeek;
+      const hasCurrentWeek = filteredGoals.some((goal: { e: number; }) => goal.e === currentWeek);
+  
+      filteredGoals.sort((a: { e: string | number; d: any; who: string; p: string | number; }, b: { e: string | number; d: any; who: string; p: string | number; }) => {
+        if (hasCurrentWeek) {
+          const isACurrentWeek = a.e === currentWeek;
+          const isBCurrentWeek = b.e === currentWeek;
+  
+          if (isACurrentWeek && !isBCurrentWeek) return -1;
+          if (!isACurrentWeek && isBCurrentWeek) return 1;
+        } else {
+          const eA = a.e ?? '';
+          const eB = b.e ?? '';
+          if (eA > eB) return -1;
+          if (eA < eB) return 1;
+        }
+  
+        const dOrder = (d: any): number => {
+          const val = (d || '').toString().toUpperCase();
+          if (val === '') return 0;
+          if (val === 'A1') return 1;
+          if (val === '99') return 2;
+          return 3;
+        };
+  
+        const dA = dOrder(a.d);
+        const dB = dOrder(b.d);
+        if (dA !== dB) return dA - dB;
+  
+        const whoA = a.who.toLowerCase();
+        const whoB = b.who.toLowerCase();
+        if (whoA < whoB) return -1;
+        if (whoA > whoB) return 1;
+  
+        const priorityA = isNaN(+a.p) ? Number.MAX_SAFE_INTEGER : +a.p;
+        const priorityB = isNaN(+b.p) ? Number.MAX_SAFE_INTEGER : +b.p;
+        return priorityA - priorityB;
+      });
+    } else {
+      filteredGoals.sort((a: { who: string; p: string | number; }, b: { who: string; p: string | number; }) => {
+        const whoA = a.who.toLowerCase();
+        const whoB = b.who.toLowerCase();
+        if (whoA < whoB) return -1;
+        if (whoA > whoB) return 1;
+  
+        const priorityA = isNaN(+a.p) ? Number.MAX_SAFE_INTEGER : +a.p;
+        const priorityB = isNaN(+b.p) ? Number.MAX_SAFE_INTEGER : +b.p;
+        return priorityA - priorityB;
+      });
+    }
+  
+    this.goal = filteredGoals;
   }
-}
+  toggleSort(): void {
+    this.compositeSortEnabled = !this.compositeSortEnabled;
+    this.applyFilters(); 
+  }
+ 
   
 }

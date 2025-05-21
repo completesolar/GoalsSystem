@@ -1,10 +1,11 @@
+from datetime import datetime
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from fastapi import APIRouter, Depends, HTTPException,Query
 from sqlalchemy.orm import Session
 from schemas.schema import Goals, GoalsResponse, GoalsUpdate
 from schemas.goalshistory import goalshistory, goalhistoryResponse
-from schemas.who import SupervisorChainResponse, WhoCreate, WhoResponse
+from schemas.who import GlobalSettingRequest, SupervisorChainResponse, WhoCreate, WhoResponse
 from schemas.status import StatusCreate, StatusUpdate, StatusResponse
 from schemas.proj import ProjResponse,ProjUpdate,ProjCreate
 from schemas.vp import VPResponse
@@ -463,3 +464,39 @@ async def get_direct_reports_endpoint(supervisor_initials: str, db: Session = De
     # Fetch direct reports (subordinates) where the supervisor_name matches the given initials
     direct_reports = get_direct_reports(db, supervisor_initials)
     return direct_reports
+
+@router.post("/api/global-settings/update")
+async def save_enable_clone_setting(payload: GlobalSettingRequest, db: Session = Depends(get_db)):
+    key_name = "enable_clone"  # fixed key (global setting)
+    current_time = datetime.now()
+    db.execute(
+        text("""
+            INSERT INTO global_settings (key_name, value, updated_by, updated_at)
+            VALUES (:key_name, :value, :updated_by, :updated_at)
+            ON CONFLICT (key_name) DO UPDATE
+            SET value = :value,
+                updated_by = :updated_by,
+                updated_at = :updated_at
+        """),
+        {
+            "key_name": key_name,
+            "value": payload.value,
+            "updated_by": payload.updated_by,
+            "updated_at": current_time
+        }
+    )
+    db.commit()
+
+    return {"message": f"{key_name} updated successfully"}
+
+@router.get("/api/global-settings/enable_clone", response_model=bool)
+def get_global_clone_setting(db: Session = Depends(get_db)):
+    result = db.execute(
+        text("SELECT value FROM global_settings WHERE key_name = :key"),
+        {"key": "enable_clone"}
+    ).fetchone()
+
+    if result is None:
+        return True  # default to true if not set
+
+    return result[0]  # returns boolean directly

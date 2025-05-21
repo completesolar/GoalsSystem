@@ -86,10 +86,10 @@ isStatusWiseLoading = true;
     series: [],
     chart: { type: 'bar', stacked: true, height: 400, width: 1500, toolbar: { show: false }, animations: { enabled: false }},
     plotOptions: { bar: { horizontal: false, columnWidth: '40%' }},
-    xaxis: { labels: { rotate: -45, style: { fontSize: '12px', fontFamily: 'Arial' }}},
+    xaxis: { labels: { rotate: -45, style: { fontSize: '14px', fontFamily: 'Arial' }}},
     title: { text: 'Goals by Project (Status-wise)', align: 'center', style: { fontFamily: 'Arial' }},
     colors: ['#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6f42c1', '#20c997'],
-    dataLabels: { enabled: true, formatter: (val) => (val === 0 ? '' : val.toString()), style: { fontSize: '12px', colors: ['#000'] }},
+    dataLabels: { enabled: true, formatter: (val) => (val === 0 ? '' : val.toString()), style: { fontSize: '14px', colors: ['#000'] }},
     legend: { show: true, position: 'top' },
   };
 
@@ -97,10 +97,10 @@ isStatusWiseLoading = true;
     series: [],
     chart: { type: 'bar', stacked: true, height: 400, width: 1000, toolbar: { show: false }, animations: { enabled: false }},
     plotOptions: { bar: { horizontal: false, columnWidth: '50%' }},
-    xaxis: { categories: [], labels: { rotate: -45, style: { fontSize: '12px', fontFamily: 'Arial' }}},
+    xaxis: { categories: [], labels: { rotate: -45, style: { fontSize: '14px', fontFamily: 'Arial' }}},
     title: { text: 'Projects by VP', align: 'center', style: { fontFamily: 'Arial' }},
     colors: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6f42c1', '#20c997', '#fd7e14', '#6610f2', '#e83e8c', '#6c757d', '#198754', '#0dcaf0', '#d63384', '#343a40'],
-    dataLabels: { enabled: true, formatter: (val) => (val === 0 ? '' : val.toString()), style: { fontSize: '12px', colors: ['#000'] }},
+    dataLabels: { enabled: true, formatter: (val) => (val === 0 ? '' : val.toString()), style: { fontSize: '14px', colors: ['#000'] }},
     legend: { show: true, position: 'top' },
   };
 
@@ -124,7 +124,7 @@ isStatusWiseLoading = true;
     title: { text: 'Year-wise Goal Distribution', align: 'center', style: { fontFamily: 'Arial' }},
     plotOptions: { bar: { horizontal: false, columnWidth: '50%' }},
     colors: ['#82a3a1', '#607744', '#768948', '#76c893', '#52b69a', '#34a0a4', '#9cc5a1', '#77bfa3'],
-    dataLabels: { enabled: true, formatter: (val) => (val === 0 ? '' : val.toString()), style: { fontSize: '12px', colors: ['#000'] }},
+    dataLabels: { enabled: true, formatter: (val) => (val === 0 ? '' : val.toString()), style: { fontSize: '14px', colors: ['#000'] }},
     legend: { show: false },
   };
 
@@ -211,7 +211,7 @@ isStatusWiseLoading = true;
       fill: { type: 'none' },
       colors: ['#66a182', '#b5e48c'],
       theme: { mode: undefined },
-      dataLabels: { enabled: true, style: { fontSize: '12px' }},
+      dataLabels: { enabled: true, style: { fontSize: '14px' }},
       legend: {
         show: true,
         position: 'right',
@@ -239,7 +239,7 @@ isStatusWiseLoading = true;
       series: transformedVPProjectSeries,
       xaxis: {
         categories: pbvp.categories,
-        labels: { rotate: -45, style: { fontSize: '12px' }},
+        labels: { rotate: -45, style: { fontSize: '14px' }},
       },
       chart: {
         ...this.projectsByVPChartOptions.chart,
@@ -252,7 +252,7 @@ isStatusWiseLoading = true;
       series: transformedSeries,
       xaxis: {
         categories: pws.categories,
-        labels: { rotate: -45, trim: true, style: { fontSize: '12px', fontFamily: 'Arial' }},
+        labels: { rotate: -45, trim: true, style: { fontSize: '14px', fontFamily: 'Arial' }},
       },
       chart: {
         ...this.projectStatusChartOptions.chart,

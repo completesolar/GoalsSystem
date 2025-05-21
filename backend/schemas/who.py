@@ -94,3 +94,7 @@ class WhoResponse(WhoBase):
 
     class Config:
         from_attributes = True
+
+class GlobalSettingRequest(BaseModel):
+    value: bool
+    updated_by: str
