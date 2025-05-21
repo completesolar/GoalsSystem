@@ -102,6 +102,7 @@ export class GoalsComponent implements AfterViewInit {
   activeFilters: { [key: string]: boolean } = {};
   compositeSortEnabled = false;
   currentWeek = this.getCurrentWeekNumber();
+  isCloneEnabled: boolean = true;
 
   private readonly _destroying$ = new Subject<void>();
   selectedSettings: string | undefined;
@@ -226,6 +227,7 @@ columns = [
   }
 
   ngOnInit() {
+    this.loadGlobalCloneSetting();
     this.columns.forEach((col) => {
       const field = col.field;
       if (field !== 'action' && field !== 'gdb') {
@@ -340,6 +342,18 @@ columns = [
 
     XLSX.writeFile(wb, fileName);
   }
+
+  loadGlobalCloneSetting(): void {
+  this.goalsService.getGlobalCloneSetting().subscribe({
+    next: (res: boolean) => {
+      this.isCloneEnabled = res;
+      console.log('clone',this.isCloneEnabled);
+    },
+    error: () => {
+      this.isCloneEnabled = true; // fallback if needed
+    }
+  });
+}
 loadGoals(): void {
   // Fetch the currently signed-in user's email
   const userEmail = this.getLoggedInEmail();

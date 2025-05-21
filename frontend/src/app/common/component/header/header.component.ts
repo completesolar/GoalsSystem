@@ -9,6 +9,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MenuModule } from 'primeng/menu';
 import { RolesService } from '../../../services/roles.service';
 import { GoalsService } from '../../../services/goals.service';
+import { CheckboxModule } from 'primeng/checkbox';
 
 @Component({
   selector: 'app-header',
@@ -21,6 +22,7 @@ import { GoalsService } from '../../../services/goals.service';
     FormsModule,
     ReactiveFormsModule,
     MenuModule,
+    CheckboxModule,
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
@@ -38,6 +40,7 @@ export class HeaderComponent {
     
   ) {}
   showSettings: boolean = false;
+  isCloneEnabled: boolean = true;
 
   settingsMenu = [
     {
@@ -77,6 +80,7 @@ export class HeaderComponent {
   ngOnInit() {
     this.today = new Date();
     this.updateButtonLabel();
+    this.loadGlobalCloneSetting();
     this.router.events.subscribe(() => {
       this.updateButtonLabel();
     });
@@ -89,6 +93,36 @@ export class HeaderComponent {
       }
     });
   }
+
+  loadGlobalCloneSetting(): void {
+  this.goalService.getGlobalCloneSetting().subscribe({
+    next: (res: boolean) => {
+      this.isCloneEnabled = res;
+    },
+    error: () => {
+      this.isCloneEnabled = true;
+    }
+  });
+}
+
+onCloneToggleChange(): void {
+  const email = this.getLoggedInEmail();
+
+  this.goalService.updateGlobalCloneSetting(this.isCloneEnabled, email).subscribe({
+    next: () => {
+      console.log('Clone setting updated successfully.');
+      window.location.reload();
+    },
+    error: (err) => {
+      console.error('Failed to update clone setting:', err);
+    }
+  });
+}
+
+getLoggedInEmail(): string {
+  const account = this.msalService.instance.getAllAccounts()[0];
+  return account?.username || '';
+}
   
   getPermission() {
     if (isPlatformBrowser(this.platform)) {
