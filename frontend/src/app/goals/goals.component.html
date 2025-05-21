@@ -272,13 +272,13 @@
             <i *ngIf="!row.isEditable" class="pi pi-history actions" (click)="historyDialog(row.goalid)"></i>
             <i *ngIf="row.isEditable" class="pi pi-times actions" (click)="cancelEdit(row)" pTooltip="Cancel Edit"
               tooltipPosition="bottom"></i>
-              <i *ngIf="!row.isEditable"
-                class="pi pi-copy actions p-button-rounded p-button-text p-ml-2 p-mr-2"
-                style="font-size: 1.2rem; color: #495057; cursor: pointer;"
-                (click)="confirmCloneViaPopup($event, row)"
-                pTooltip="Clone Goal"
-                tooltipPosition="bottom">
-              </i>
+<i *ngIf="!row.isEditable && isCloneEnabled"
+   class="pi pi-copy actions p-button-rounded p-button-text p-ml-2 p-mr-2"
+   style="font-size: 1.2rem; color: #495057; cursor: pointer;"
+   (click)="confirmCloneViaPopup($event, row)"
+   pTooltip="Clone Goal"
+   tooltipPosition="bottom">
+</i>
           </td>
         </tr>
       </ng-template>
