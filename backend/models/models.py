@@ -14,10 +14,10 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.orm import relationship
-from database import Base
+from database import PostgresBase
 from datetime import datetime
 
-class B(Base):
+class B(PostgresBase):
     __tablename__ = "b"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     b = Column(Integer, unique=True, index=True)
@@ -26,7 +26,7 @@ class B(Base):
 
 
 
-class E(Base):
+class E(PostgresBase):
     __tablename__ = "e" 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     e = Column(Integer, unique=True, index=True)
@@ -35,7 +35,7 @@ class E(Base):
 
 
 
-class D(Base):
+class D(PostgresBase):
     __tablename__ = "d"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     d = Column(Integer, unique=True, index=True)
@@ -44,14 +44,14 @@ class D(Base):
 
 
 
-class P(Base):
+class P(PostgresBase):
     __tablename__ = "p"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     p = Column(Integer, unique=True, index=True)
     status = Column(Integer, default=1)  
     remarks = Column(String, nullable=True)
 
-class Goals(Base):
+class Goals(PostgresBase):
     __tablename__ = "goals"
 
     goalid = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -72,7 +72,7 @@ class Goals(Base):
     updateddatetime = Column(DateTime)  # Auto-update on row update
     isconfidential = Column(Boolean, default=False)
 
-class Status(Base):
+class Status(PostgresBase):
     __tablename__ = 'status'
     id = Column(Integer, primary_key=True, index=True)
     status = Column(String, unique=True, index=True)
@@ -81,39 +81,39 @@ class Status(Base):
     active_status = Column(Integer)
 
 
-class Who(Base):
-    __tablename__ = "who"
+# class Who(PostgresBase):
+#     __tablename__ = "who"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    employee_id = Column(BigInteger, nullable=True)
-    employee_name = Column(String(255), nullable=True)
-    last_name = Column(String(100), nullable=False)
-    first_name = Column(String(100), nullable=False)
-    initials = Column(String(10), nullable=True)
-    primary_email = Column(String(255), unique=True, nullable=True)
-    employee_status = Column(String(50), nullable=True)
-    client_hire_date = Column(Date, nullable=True)
-    employee_reference_id = Column(BigInteger, nullable=True)
-    job_title = Column(String(255), nullable=True)
-    employee_level = Column(Integer, nullable=True)
-    supervisor_name = Column(String(255), nullable=True)
-    is_manager = Column(Boolean, nullable=True)
-    manager_level = Column(Integer, nullable=True)
-    worksite_state = Column(String(10), nullable=True)
-    division = Column(String(100), nullable=True)
-    manager_level_1 = Column(String(255), nullable=True)
-    manager_level_2 = Column(String(255), nullable=True)
-    manager_level_3 = Column(String(255), nullable=True)
-    manager_level_4 = Column(String(255), nullable=True)
+#     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+#     employee_id = Column(BigInteger, nullable=True)
+#     employee_name = Column(String(255), nullable=True)
+#     last_name = Column(String(100), nullable=False)
+#     first_name = Column(String(100), nullable=False)
+#     initials = Column(String(10), nullable=True)
+#     primary_email = Column(String(255), unique=True, nullable=True)
+#     employee_status = Column(String(50), nullable=True)
+#     client_hire_date = Column(Date, nullable=True)
+#     employee_reference_id = Column(BigInteger, nullable=True)
+#     job_title = Column(String(255), nullable=True)
+#     employee_level = Column(Integer, nullable=True)
+#     supervisor_name = Column(String(255), nullable=True)
+#     is_manager = Column(Boolean, nullable=True)
+#     manager_level = Column(Integer, nullable=True)
+#     worksite_state = Column(String(10), nullable=True)
+#     division = Column(String(100), nullable=True)
+#     manager_level_1 = Column(String(255), nullable=True)
+#     manager_level_2 = Column(String(255), nullable=True)
+#     manager_level_3 = Column(String(255), nullable=True)
+#     manager_level_4 = Column(String(255), nullable=True)
 
-class Proj(Base):
+class Proj(PostgresBase):
     __tablename__ = "proj"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     proj = Column(String, unique=True, index=True)
     status = Column(Integer, default=1)  
     remarks = Column(String, nullable=True)
 
-class VP(Base):
+class VP(PostgresBase):
     __tablename__ = "vp"
     id = Column(Integer, primary_key=True, index=True)
     last_name = Column(String, index=True)
@@ -121,7 +121,7 @@ class VP(Base):
     decoder = Column(String, nullable=True)
 
 
-class goalshistory(Base):
+class goalshistory(PostgresBase):
     __tablename__ = "goalshistory"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -151,13 +151,13 @@ class goalshistory(Base):
     )
 
 
-class Action(Base):
+class Action(PostgresBase):
     __tablename__ = "action"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     action = Column(String, unique=True, index=True)
 
 
-class Role(Base):
+class Role(PostgresBase):
     __tablename__ = "role"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     role = Column(String,nullable=True,unique=True)
@@ -165,7 +165,7 @@ class Role(Base):
     remarks = Column(String, nullable=True)
     access = Column(JSON)
 
-class RoleMaster(Base):
+class RoleMaster(PostgresBase):
     __tablename__ = 'roleMaster'
     id = Column(Integer, primary_key=True, autoincrement=True)
     role = Column(String, nullable=True)
@@ -174,7 +174,7 @@ class RoleMaster(Base):
     remarks = Column(String, nullable=True)
 
 
-class GlobalSettings(Base):
+class GlobalSettings(PostgresBase):
     __tablename__ = "global_settings"
 
     key_name = Column(String, primary_key=True)

@@ -2,91 +2,36 @@ from pydantic import BaseModel, EmailStr
 from typing import List, Optional
 from datetime import date
 
-
 class WhoBase(BaseModel):
-    id: int
-    employee_id: Optional[int]
-    employee_name: Optional[str]
-    last_name: Optional[str] = None 
-    first_name: Optional[str] = None 
+    employee_full_name: Optional[str]
+    first_name: Optional[str]
+    last_name: Optional[str]
     initials: Optional[str] = None
-    primary_email: Optional[EmailStr] = None
+    email: Optional[EmailStr] = None
     employee_status: Optional[str] = None
-    client_hire_date: Optional[date] = None
-    employee_reference_id: Optional[int] = None
-    job_title: Optional[str] = None
-    employee_level: Optional[int] = None
-    supervisor_name: Optional[str] = None
-    is_manager: Optional[bool] = None
-    manager_level: Optional[int] = None
-    worksite_state: Optional[str] = None
-    division: Optional[str] = None
-    manager_level_1: Optional[str] = None
-    manager_level_2: Optional[str] = None
-    manager_level_3: Optional[str] = None
-    manager_level_4: Optional[str] = None
+    supervisor_id: Optional[int] = None
+    termination_date: Optional[date] = None
+    team_name: Optional[str] = None
+    department_name: Optional[str] = None
 
     class Config:
         from_attributes = True
 
 
-class WhoCreate(BaseModel):
-    employee_id: Optional[int]
-    employee_name: Optional[str]
-    last_name: Optional[str] = None
-    first_name: Optional[str] = None
-    initials: Optional[str] = None
-    primary_email: Optional[EmailStr] = None
-    employee_status: Optional[str] = None
-    client_hire_date: Optional[date] = None
-    employee_reference_id: Optional[int] = None
-    job_title: Optional[str] = None
-    employee_level: Optional[int] = None
-    supervisor_name: Optional[str] = None
-    is_manager: Optional[bool] = None
-    manager_level: Optional[int] = None
-    worksite_state: Optional[str] = None
-    division: Optional[str] = None
-    manager_level_1: Optional[str] = None
-    manager_level_2: Optional[str] = None
-    manager_level_3: Optional[str] = None
-    manager_level_4: Optional[str] = None
+class WhoCreate(WhoBase):
+    pass
 
 
-class WhoUpdate(BaseModel):
-    id: Optional[int]
-    employee_id: Optional[int]
-    employee_name: Optional[str]
-    last_name: Optional[str] = None
-    first_name: Optional[str] = None
-    initials: Optional[str] = None
-    primary_email: Optional[EmailStr] = None
-    employee_status: Optional[str] = None
-    client_hire_date: Optional[date] = None
-    employee_reference_id: Optional[int] = None
-    job_title: Optional[str] = None
-    employee_level: Optional[int] = None
-    supervisor_name: Optional[str] = None
-    is_manager: Optional[bool] = None
-    manager_level: Optional[int] = None
-    worksite_state: Optional[str] = None
-    division: Optional[str] = None
-    manager_level_1: Optional[str] = None
-    manager_level_2: Optional[str] = None
-    manager_level_3: Optional[str] = None
-    manager_level_4: Optional[str] = None
+class WhoUpdate(WhoBase):
+    pass
 
-class WhoBase(BaseModel):
-    id: int
-    employee_id: Optional[int]
-    employee_name: Optional[str]
-    initials: Optional[str] = None
-    supervisor_name: Optional[str] = None
-    primary_email: Optional[EmailStr] = None
+
+class WhoResponse(WhoBase):
+    id: int  # assuming each record has a unique ID
     
 class SupervisorChainResponse(BaseModel):
-    who: str
-    employee_name: str
+    initials: str
+    employee_full_name: str
     supervisor_names: List[str]
 
 class WhoResponse(WhoBase):

@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from dateutil import tz
 
 # from schemas.schema import Goals
-from models.models import Goals, Who, Proj, VP, Status, goalshistory, P, B, E, D, Action,Role,RoleMaster
+from models.models import Goals, Proj, VP, Status, goalshistory, P, B, E, D, Action,Role,RoleMaster
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from schemas.schema import GoalsResponse, GoalsUpdate  # Pydantic schema
@@ -95,9 +95,46 @@ def get_proj_by_id(db: Session, id: int):
 
 
 
-def get_all_who(db: Session, response_model=list[WhoResponse]):
-    db_who = db.query(Who).order_by(Who.id.desc()).all()
-    return jsonable_encoder(db_who)
+# def get_all_who(db: Session, response_model=list[WhoResponse]):
+#     db_who = db.query(Who).order_by(Who.id.desc()).all()
+#     return jsonable_encoder(db_who)
+def get_all_who(db: Session) -> List[dict]:
+    query = text("""
+        SELECT 
+            EMPLOYEEFULLNAME,
+            FIRSTNAME,
+            LASTNAME,
+            INITIALS,
+            EMAIL,
+            EMPLOYEESTATUS,
+            SUPERVISORID,
+            TERMINATIONDATE,
+            TEAMNAME,
+            DEPARTMENTNAME
+        FROM humanresources.hr.employee;
+    """)
+    
+    result = db.execute(query)
+    rows = result.fetchall()
+    columns = result.keys()
+
+    # Convert result to list of dictionaries
+    data = [dict(zip(columns, row)) for row in rows]
+    print("data",data[0])
+
+    # Map to Pydantic model and return JSON-compatible response
+    return jsonable_encoder([WhoResponse(**row) for row in data])
+# def get_all_who(db: Session, response_model: List[WhoResponse]):
+#     query = text("select * from humanresources.hr.employee;")
+#     result = db.execute(query)
+#     rows = result.fetchall()
+#     columns = result.keys()
+
+#     # Convert to list of dictionaries
+#     data = [dict(zip(columns, row)) for row in rows]
+
+#     # Optionally map to Pydantic model
+#     return jsonable_encoder([WhoResponse(**row) for row in data])
 
 
 def get_action(db: Session):
