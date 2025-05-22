@@ -89,26 +89,6 @@ def read_who(db: Session = Depends(get_snowflake_db)):
     print("db",db)
     return get_all_who(db)
 
-# @router.get("/api/who", response_model=list[WhoResponse])
-# def read_who(db: Session = Depends(get_snowflake_db)):
-#     print("db",db)
-#     return get_all_who(db)
-
-@router.post("/api/who", response_model=WhoCreate)
-def create_whos(who: WhoCreate, db: Session = Depends(get_postgres_db)):
-    return create_who(db=db, who=who)
-
-@router.get("/api/who/{id}", response_model=WhoResponse)
-def read_who(id: int, db: Session = Depends(get_postgres_db)):
-    db_who = get_who_by_id(db, id=id)
-    if db_who is None:
-        raise HTTPException(status_code=404, detail="Goal not found")
-    return db_who
-
-# @router.put("/api/who/{id}", response_model=GoalsUpdate)
-# def update_whos(id: int, who_update: GoalsUpdate, db: Session = Depends(get_postgres_db)):
-#     return update_who(db=db, who_id=id, who_update=who_update)
-
 @router.post("/api/goals", response_model=GoalsResponse)
 def create_goals(goal: Goals, db: Session = Depends(get_postgres_db)):
     return create_goal(db=db, goal=goal)
@@ -116,11 +96,6 @@ def create_goals(goal: Goals, db: Session = Depends(get_postgres_db)):
 @router.get("/api/goals", response_model=list[GoalsResponse])
 def read_goals(db: Session = Depends(get_postgres_db)):
     return get_all_goals(db)
-# @router.get("/api/goals/{who_initial}", response_model=list[GoalsResponse])
-# def read_goals(who_initial: str, db: Session = Depends(get_postgres_db)):
-#     return get_all_goals(db, who_initial)
-
-
 
 @router.get("/api/goalshistory/{goalid}", response_model=list[goalhistoryResponse])
 async def get_goalshistory(goalid: int, db: Session = Depends(get_postgres_db)):

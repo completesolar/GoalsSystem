@@ -122,7 +122,6 @@ def get_all_who(db: Session) -> List[dict]:
     data = [dict(zip(columns, row)) for row in rows]
     print("data",data[0])
 
-    # Map to Pydantic model and return JSON-compatible response
     return jsonable_encoder([WhoResponse(**row) for row in data])
 # def get_all_who(db: Session, response_model: List[WhoResponse]):
 #     query = text("select * from humanresources.hr.employee;")
@@ -282,38 +281,9 @@ def get_all_goals(db: Session, response_model=list[GoalsResponse]):
     db_goals = db.query(Goals).order_by(Goals.goalid.desc()).all()
     return jsonable_encoder(db_goals)
 
-# def get_all_goals(db: Session, who_initial: Optional[str] = None):
-#     query = db.query(Goals)
-
-#     if who_initial:
-#         query = query.filter(Goals.who == who_initial)
-#     db_goals = query.order_by(Goals.goalid.desc()).all()
-#     return jsonable_encoder(db_goals)
-
-
 def get_all_goals_history(db: Session, response_model=list[goalhistoryResponse]):
     db_goalshistory = db.query(goalshistory).order_by(goalshistory.goalid.desc()).all()
     return jsonable_encoder(db_goalshistory)
-
-def get_who_by_id(db: Session, id: int):
-    return db.query(Who).filter(Who.id == id).first()
-
-def create_who(db: Session, who: str):
-    db_who = Who(
-        slno=who.slno,
-        ee_id=who.ee_id,
-        last_name=who.last_name,
-        first_name=who.first_name,
-        middle_name=who.middle_name,
-        decoder=who.decoder,
-        mobile=who.mobile,
-        work_email=who.work_email,
-        title=who.title
-    )
-    db.add(db_who)
-    db.commit()
-    db.refresh(db_who)
-    return db_who
 
 def create_proj(db: Session, proj_data: ProjCreate):
     db_proj = Proj(**proj_data.dict())
