@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import List, Optional
 from datetime import date
 
@@ -17,7 +17,6 @@ class WhoBase(BaseModel):
     class Config:
         from_attributes = True
 
-
 class WhoCreate(WhoBase):
     pass
 
@@ -25,10 +24,11 @@ class WhoCreate(WhoBase):
 class WhoUpdate(WhoBase):
     pass
 
-
 class WhoResponse(WhoBase):
-    id: int  # assuming each record has a unique ID
-    
+    id: Optional[int] = None
+
+    class Config:
+        from_attributes = True
 class SupervisorChainResponse(BaseModel):
     initials: str
     employee_full_name: str

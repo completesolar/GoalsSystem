@@ -12,3 +12,4 @@ python-dotenv
 fastapi[standard]
 pytz
 python-dateutil
+snowflake-sqlalchemy

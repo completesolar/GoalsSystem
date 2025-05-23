@@ -93,48 +93,28 @@ def get_D_by_id(db: Session, id: int):
 def get_proj_by_id(db: Session, id: int):
     return db.query(Proj).filter(Proj.id == id).first()
 
-
-
-# def get_all_who(db: Session, response_model=list[WhoResponse]):
-#     db_who = db.query(Who).order_by(Who.id.desc()).all()
-#     return jsonable_encoder(db_who)
 def get_all_who(db: Session) -> List[dict]:
     query = text("""
         SELECT 
-            EMPLOYEEFULLNAME,
-            FIRSTNAME,
-            LASTNAME,
-            INITIALS,
-            EMAIL,
-            EMPLOYEESTATUS,
-            SUPERVISORID,
-            TERMINATIONDATE,
-            TEAMNAME,
-            DEPARTMENTNAME
+            EMPLOYEEFULLNAME as employee_full_name,
+            FIRSTNAME as first_name,
+            LASTNAME as last_name,
+            INITIALS as initials,
+            EMAIL as email,
+            EMPLOYEESTATUS as employee_status,
+            SUPERVISORID as supervisor_id,
+            TERMINATIONDATE as termination_date,
+            TEAMNAME as team_name,
+            DEPARTMENTNAME as department_name
         FROM humanresources.hr.employee;
     """)
-    
+
     result = db.execute(query)
     rows = result.fetchall()
-    columns = result.keys()
 
-    # Convert result to list of dictionaries
-    data = [dict(zip(columns, row)) for row in rows]
-    print("data",data[0])
+    data = [dict(row._mapping) for row in rows]
 
-    return jsonable_encoder([WhoResponse(**row) for row in data])
-# def get_all_who(db: Session, response_model: List[WhoResponse]):
-#     query = text("select * from humanresources.hr.employee;")
-#     result = db.execute(query)
-#     rows = result.fetchall()
-#     columns = result.keys()
-
-#     # Convert to list of dictionaries
-#     data = [dict(zip(columns, row)) for row in rows]
-
-#     # Optionally map to Pydantic model
-#     return jsonable_encoder([WhoResponse(**row) for row in data])
-
+    return jsonable_encoder(data)
 
 def get_action(db: Session):
     db_action = db.query(Action).order_by(Action.id.desc()).all()
@@ -149,18 +129,6 @@ def get_all_role(db: Session, response_model=list[RoleResponse]):
 def get_role_by_id(db: Session, id: int):
     return db.query(Role).filter(Role.id == id).first()
 
-
-# def get_mst_now():
-#     # Get current UTC time
-#     utc_now = datetime.utcnow().replace(tzinfo=ZoneInfo("UTC"))
-#     print(f"UTC Time: {utc_now}")  # Debugging: Check UTC time
-
-#     # Convert UTC to MST (America/Denver)
-#     mst = ZoneInfo("America/Denver")  
-#     mst_time = utc_now.astimezone(mst)
-
-#     print(f"MST Time: {mst_time}")  
-#     return mst_time
 def get_mst_now():
     """Return current time in MST (Mountain Standard Time)."""
     utc_now = datetime.utcnow().replace(tzinfo=ZoneInfo("UTC"))

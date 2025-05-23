@@ -91,16 +91,17 @@ import { HeaderComponent } from '../../common/component/header/header.component'
 
     getRoleList() {
       this.roleService.getRole().subscribe((response: any) => {
-        console.log("roles option",response)
-        this.rolesOptions = response.map((item: any) => {
-          return {
+        console.log("roles option", response);
+        this.rolesOptions = response
+          .filter((item: any) => item.status === 1)  
+          .map((item: any) => ({
             label: item.role,
             value: item.role,
             id: item.id,
-          };
-        });
+          }));
       });
     }
+    
     getRoleManageList() {
       this.roleService.getRoleMaster().subscribe((response: any) => {
         this.RoleMasterList = response;

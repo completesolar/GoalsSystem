@@ -81,9 +81,8 @@ router = APIRouter()
 def read_vp(db: Session = Depends(get_postgres_db)):
     return get_all_vp(db)
 
-@router.get("/api/who", response_model=list[WhoResponse])
+@router.get("/api/who")
 def read_who(db: Session = Depends(get_snowflake_db)):
-    print("db",db)
     return get_all_who(db)
 
 @router.post("/api/goals", response_model=GoalsResponse)
@@ -426,8 +425,7 @@ def get_who_and_vp_by_email(email: str, db: Session = Depends(get_postgres_db)):
     return {"who": result[0], "vp": result[1]}
 
 @router.get("/api/supervisor-chain/{who}", response_model=SupervisorChainResponse)
-def get_supervisor_chain_endpoint(who: str, db: Session = Depends(get_postgres_db)):
-    # Get the supervisor chain for the user
+def get_supervisor_chain_endpoint(who: str, db: Session = Depends(get_snowflake_db)):
     supervisor_chain = get_supervisor_chain(db, who)
     return supervisor_chain
 
