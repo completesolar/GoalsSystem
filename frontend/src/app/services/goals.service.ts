@@ -161,5 +161,8 @@ updateGlobalCloneSetting(value: boolean, updatedBy: string) {
 getGlobalCloneSetting() {
   return this.http.get<boolean>(`${this.baseURL}/global-settings/enable_clone`);
 }
+getVpOf(whoInitials: string) {
+  return this.http.get<{ vp: string }>(`${this.baseURL}/vp-of/${encodeURIComponent(whoInitials)}`);
+}
 
 }

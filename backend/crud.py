@@ -953,4 +953,22 @@ def get_user_initials(db: Session, email: str):
     if not initials:
         raise HTTPException(status_code=404, detail=f"User with email {email} not found")
 
-    return initials 
+    return initials
+
+def get_vp_of_who(db: Session, who_initials: str) -> str:
+    query = text("""
+        SELECT supervisor.INITIALS as vp
+        FROM humanresources.hr.employee AS emp
+        JOIN humanresources.hr.employee AS supervisor
+          ON emp.SUPERVISORID = supervisor.EMPLOYEEID
+        WHERE emp.INITIALS = :initials
+          AND emp.EMPLOYEESTATUS IN ('Active', 'ACTIVE')
+          AND supervisor.EMPLOYEESTATUS IN ('Active', 'ACTIVE')
+        LIMIT 1
+    """)
+    result = db.execute(query, {"initials": who_initials}).fetchone()
+
+    if not result or not result.vp:
+        raise HTTPException(status_code=404, detail=f"VP not found for WHO '{who_initials}'")
+
+    return result.vp
