@@ -96,6 +96,7 @@ def get_proj_by_id(db: Session, id: int):
 def get_all_who(db: Session) -> List[dict]:
     query = text("""
 SELECT 
+    EMPLOYEEID as employee_id,
     EMPLOYEEFULLNAME as employee_full_name,
     FIRSTNAME as first_name,
     LASTNAME as last_name,
@@ -108,7 +109,7 @@ SELECT
     DEPARTMENTNAME as department_name
 FROM humanresources.hr.employee
 WHERE 
-    EMPLOYEESTATUS IN ('Active', 'ACTIVE')
+    UPPER(EMPLOYEESTATUS) = 'ACTIVE'
     AND INITIALS IS NOT NULL
     AND TRIM(INITIALS) <> '';
     """)
@@ -120,6 +121,7 @@ WHERE
 
     return jsonable_encoder(data)
 
+
 def get_all_vps(db: Session) -> List[Dict]:
     query = text("""
     SELECT 
@@ -130,7 +132,7 @@ def get_all_vps(db: Session) -> List[Dict]:
         EMPLOYEESTATUS as employee_status
     FROM humanresources.hr.employee
     WHERE 
-        EMPLOYEESTATUS IN ('Active', 'ACTIVE')
+        UPPER(EMPLOYEESTATUS) = 'ACTIVE'
         AND INITIALS IS NOT NULL
         AND TRIM(INITIALS) <> '';
     """)
@@ -848,7 +850,7 @@ def get_supervisor_chain(db: Session, user_who: str) -> Dict[str, List[Dict]]:
             INITIALS as initials,
             EMPLOYEESTATUS as employee_status
         FROM humanresources.hr.employee
-        WHERE INITIALS = :initials AND EMPLOYEESTATUS IN ('Active', 'ACTIVE')
+        WHERE INITIALS = :initials AND UPPER(EMPLOYEESTATUS) = 'ACTIVE'
         LIMIT 1
     """)
 
@@ -877,7 +879,7 @@ def get_supervisor_chain(db: Session, user_who: str) -> Dict[str, List[Dict]]:
                 INITIALS as initials,
                 EMPLOYEESTATUS as employee_status
             FROM humanresources.hr.employee
-            WHERE EMPLOYEEID = :employee_id AND EMPLOYEESTATUS IN ('Active', 'ACTIVE')
+            WHERE EMPLOYEEID = :employee_id AND UPPER(EMPLOYEESTATUS) = 'ACTIVE'
             LIMIT 1
         """)
         supervisor_result = db.execute(supervisor_query, {"employee_id": current_supervisor_id}).fetchone()
@@ -909,7 +911,7 @@ def get_direct_reports(db: Session, supervisor_initials: str) -> Dict:
             INITIALS as initials,
             EMPLOYEESTATUS as employee_status
         FROM humanresources.hr.employee
-        WHERE INITIALS = :initials AND EMPLOYEESTATUS IN ('Active', 'ACTIVE')
+        WHERE INITIALS = :initials AND UPPER(EMPLOYEESTATUS) = 'ACTIVE'
         LIMIT 1
     """)
     supervisor_row = db.execute(supervisor_query, {"initials": supervisor_initials}).fetchone()
@@ -926,7 +928,7 @@ def get_direct_reports(db: Session, supervisor_initials: str) -> Dict:
             EMPLOYEEFULLNAME as employee_full_name,
             INITIALS as initials
         FROM humanresources.hr.employee
-        WHERE SUPERVISORID = :supervisor_id AND EMPLOYEESTATUS IN ('Active', 'ACTIVE')
+        WHERE SUPERVISORID = :supervisor_id AND UPPER(EMPLOYEESTATUS) = 'ACTIVE'
     """)
     reports_result = db.execute(direct_reports_query, {"supervisor_id": supervisor["employee_id"]}).fetchall()
     direct_reports = [dict(row._mapping) for row in reports_result]

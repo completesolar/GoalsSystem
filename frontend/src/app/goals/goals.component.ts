@@ -363,26 +363,18 @@ loadVpOptions(): void {
   });
 }
 loadGoals(): void {
-  // Fetch the currently signed-in user's email
-  //const userEmail = this.getLoggedInEmail();
   const userEmail = 'venki.sundaresan@sunpower.com'
-
-  // First, get the user's initials from the email
   this.goalsService.getUserInitials(userEmail).subscribe((response: { who: string }) => {
-    const userInitials = response.who;  // Get the initials from the response
+    const userInitials = response.who;  
     console.log('who',userInitials);
-
-    // Now, get the supervisor hierarchy using the initials
     this.goalsService.getSupervisorHierarchy(userInitials).subscribe((response: { supervisor_names: string[] }) => {
       const supervisorHierarchy = response.supervisor_names; // Get the supervisor hierarchy from the response
       console.log('supervisor hierarchy', response.supervisor_names); // Debug log
 
-      // Get the direct reports (subordinates) of the user (supervisor)
       this.goalsService.getDirectReports(userInitials).subscribe((directReports: { direct_reports: string[] }) => {
         const directReportsList = directReports.direct_reports;
         console.log('direct reports:', directReportsList); // Debug log
 
-        // Now fetch the goals
         this.goalsService.getGoals().subscribe((goals: any[]) => {
           const filteredGoals = goals
             .filter((g: any) => +g.fiscalyear === this.selectedYear.code) // Filter by fiscal year
@@ -402,20 +394,11 @@ loadGoals(): void {
               isconfidential: !!g.isconfidential,
             }))
             .filter((goal: any) => {
-              // Check if the goal is confidential
               if (goal.isconfidential) {
-                // If the user is a supervisor or part of the goal owner's hierarchy or the goal owner themselves
                 const isSupervisorOrOwner = supervisorHierarchy.includes(goal.who) || goal.who === userInitials;
                 const isDirectReport = directReportsList.includes(goal.who);
-
-                // If the goal is confidential, show it if:
-                // - the user is the supervisor of the goal owner
-                // - the user is the goal owner
-                // - the user is a direct report of the goal owner
-                // - or if the user is in the direct report chain (direct reports of direct reports)
                 return isSupervisorOrOwner || isDirectReport;
               } else {
-                // Non-confidential goals should be visible to everyone, including regular employees
                 return true;
               }
             })
@@ -615,7 +598,7 @@ addGoal() {
   this.newRow.createddatetime = utcMoment.toDate();
   this.newRow.updateddatetime = utcMoment.toDate();
 
-  const email = this.getLoggedInEmail(); // Make sure you implement this method
+  const email = this.getLoggedInEmail();
   this.goalsService.getUserInitials(email).subscribe({
     next: (res) => {
       const currentUserInitial = res?.who?.toLowerCase() || '';
@@ -637,7 +620,7 @@ addGoal() {
           const isVisible =
             !newGoal.isconfidential ||
             newGoal.who?.toLowerCase() === currentUserInitial;
-
+          // console.log("newGoal",newGoal)
           if (isVisible) {
             this.allGoals = [newGoal, ...this.allGoals];
           }
@@ -651,7 +634,7 @@ addGoal() {
           if (this.dataTable) {
             this.dataTable.clear();
           }
-
+          // this.loadGoals();
           this.loadGoalsHistory(response.goalid);
           this.addNewRow();
 
@@ -660,6 +643,8 @@ addGoal() {
             summary: 'Goal Added',
             detail: 'New goal has been added successfully.',
           });
+          this.goal = [newGoal, ...this.allGoals];
+
         } else {
           console.warn('createGoal response missing goalid:', response);
         }

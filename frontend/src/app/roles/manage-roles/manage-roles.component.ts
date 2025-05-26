@@ -77,17 +77,16 @@ import { HeaderComponent } from '../../common/component/header/header.component'
       this.goalservice.getWhoOptions().subscribe((response: any) => {
         this.usersOptions = response
           .map((item: any) => {
-            console.log('userop',this.usersOptions);
             return {
               label: item.initials + ' (' + item.employee_full_name + ')',
-              value: item.id,
+              value: item.employee_id,
               email: item.email,
             };
           })
           .sort((a: any, b: any) => {
             return a.label.localeCompare(b.label);
           });
-      });
+          });
     }
 
     getRoleList() {
@@ -106,7 +105,6 @@ import { HeaderComponent } from '../../common/component/header/header.component'
     getRoleManageList() {
       this.roleService.getRoleMaster().subscribe((response: any) => {
         this.RoleMasterList = response;
-        console.log("RoleMasterList",response)
         this.allRoleMasterList=response;
         this.RoleMasterList.map((item: any, index: number) => {
           item.sno = index + 1;
@@ -114,9 +112,11 @@ import { HeaderComponent } from '../../common/component/header/header.component'
       });
     }
 
+    
     saveManageRole() {
       let duplicateUserFound = false;
-          this.roleData.users.forEach((user: any) => {
+      let invalidUserFound = false; 
+           this.roleData.users.forEach((user: any) => {
         const item = this.RoleMasterList.find((x: any) =>
           x.user?.some((u: any) => u.user_id === user.value)
         );
@@ -128,18 +128,28 @@ import { HeaderComponent } from '../../common/component/header/header.component'
             detail: `${user.label} already exists.`,
           });
         }
+    
+        if (isNaN(user.value)) {
+          invalidUserFound = true;
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Manage Role',
+            detail: `${user.label} has an invalid user ID.`,
+          });
+        }
       });
     
       const existingRole = this.RoleMasterList.find(
         (item: any) => item.role_id === this.roleData.role?.id
       );
     
-      if (duplicateUserFound || !this.roleData.role || !this.roleData.users) {
+      if (duplicateUserFound || invalidUserFound || !this.roleData.role || !this.roleData.users) {
         this.isValid = false;
         return;
-      } 
+      }
+    
       const newUsers = this.roleData.users.map((user: any) => ({
-        user_id: user.value,
+        user_id: Number(user.value), 
         user: user.label,
         user_email: user.email
       }));
@@ -149,14 +159,15 @@ import { HeaderComponent } from '../../common/component/header/header.component'
         role_id: this.roleData.role.id,
         remarks: this.roleData.remarks || '',
         user: newUsers
-      };   
+      };
+    
       if (existingRole) {
         const existingUsers = existingRole.user || [];
-    
         const mergedUsers = [
           ...existingUsers,
           ...newUsers.filter(
-            (            newUser: { user_id: any; }) => !existingUsers.some((existing: { user_id: any; }) => existing.user_id === newUser.user_id)
+            (newUser: { user_id: any }) =>
+              !existingUsers.some((existing: { user_id: any }) => existing.user_id === newUser.user_id)
           )
         ];
     
@@ -199,6 +210,7 @@ import { HeaderComponent } from '../../common/component/header/header.component'
     
         return;
       }
+        
     
       this.roleService.createRoleMaster(data).subscribe({
         next: (response: any) => {
