@@ -255,7 +255,6 @@ columns = [
     }
   }
   loadInitialData() {
-    this.loadWhoOptions();
     this.getStatus();
     this.getProj();
     this.getDData();
@@ -268,10 +267,11 @@ columns = [
   loadWhoOptions(): void {
     this.goalsService.getWhoOptions().subscribe({
       next: (data) => {
+        // console.log("who data",data)
         this.fullWhoList = data;
         this.whoOptions = data
           .map((item) => ({
-            label: `${item.initials ?? ''} (${item.employee_name ?? ''})`,
+            label: `${item.initials ?? ''} (${item.employee_full_name ?? ''})`,
             value: item.initials,
           }))
           .sort((a, b) => a.label.localeCompare(b.label));

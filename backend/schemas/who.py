@@ -32,7 +32,8 @@ class WhoResponse(WhoBase):
 class SupervisorChainResponse(BaseModel):
     initials: str
     employee_full_name: str
-    supervisor_names: List[str]
+    supervisor_name: Optional[str]
+    supervisor_id: Optional[str]
 
 class WhoResponse(WhoBase):
     id: int

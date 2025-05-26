@@ -85,6 +85,7 @@ def read_vp(db: Session = Depends(get_postgres_db)):
 def read_who(db: Session = Depends(get_snowflake_db)):
     return get_all_who(db)
 
+
 @router.post("/api/goals", response_model=GoalsResponse)
 def create_goals(goal: Goals, db: Session = Depends(get_postgres_db)):
     return create_goal(db=db, goal=goal)
@@ -390,8 +391,12 @@ def update_role_endpoint(id: int, role: RoleMasterUpdate, db: Session = Depends(
     return db_roleMaster
 
 @router.get("/api/loginCheck/{email}")
-def read_loginCred(email: str, db: Session = Depends(get_postgres_db)):
-    result = get_email(db, email)
+def read_loginCred(
+    email: str,
+    snowflake_db: Session = Depends(get_snowflake_db),
+    postgres_db: Session = Depends(get_postgres_db)
+):
+    result = get_email(snowflake_db, postgres_db, email)
     if not result:
         raise HTTPException(status_code=404, detail="Email not found or role not assigned")
     return result
@@ -429,9 +434,8 @@ def get_supervisor_chain_endpoint(who: str, db: Session = Depends(get_snowflake_
     supervisor_chain = get_supervisor_chain(db, who)
     return supervisor_chain
 
-@router.get("/api/who-initials/{email}")
-async def get_user_initials_endpoint(email: str, db: Session = Depends(get_postgres_db)):
-    # Fetch the initials using the function
+@router.get("/api/who-initial-email/{email}")
+async def get_user_initials_endpoint(email: str, db: Session = Depends(get_snowflake_db)):
     initials = get_user_initials(db, email)
     return {"who": initials}
 

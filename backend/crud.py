@@ -106,7 +106,7 @@ def get_all_who(db: Session) -> List[dict]:
             TERMINATIONDATE as termination_date,
             TEAMNAME as team_name,
             DEPARTMENTNAME as department_name
-        FROM humanresources.hr.employee;
+        FROM humanresources.hr.employee WHERE UPPER(EMPLOYEESTATUS)='ACTIVE' ;
     """)
 
     result = db.execute(query)
@@ -682,8 +682,8 @@ def update_roleMaster(db: Session, id: int, role_data: RoleMasterUpdate):
         db.rollback()
         print(f"Error occurred while updating RoleMaster: {e}")
         raise HTTPException(status_code=400, detail="An error occurred while updating RoleMaster")
-        
-def get_email(db: Session, email: str):
+
+def get_email(snowflake_db: Session, postgres_db: Session, email: str) -> Optional[dict]:
     print("=== get_email CALLED ===")
     print(f"Input email: {email}")
 
@@ -694,24 +694,32 @@ def get_email(db: Session, email: str):
     email = email.lower()
     print(f"Lowercased email: {email}")
 
-    who = db.query(Who).filter(func.lower(Who.primary_email) == email).first()
-    print("WHO object:")
-    pprint(who.__dict__ if who else "None")
+    who_query = text("""
+        SELECT 
+            INITIALS AS initials
+        FROM humanresources.hr.employee
+        WHERE EMAIL = :email AND UPPER(EMPLOYEESTATUS) = 'ACTIVE'
+        LIMIT 1
+    """)
+    print('who_query', who_query)
+    who_result = snowflake_db.execute(who_query, {"email": email}).fetchone()
+    print('who_result', who_result)
 
+    initials = who_result[0] if who_result else ""
+    print("WHO object initials:", initials if initials else "None")
     print("Checking RoleMaster data manually for email match...")
-    role_masters = db.query(RoleMaster).all()
+    role_masters = postgres_db.query(RoleMaster).all()
     matched_role_master = None
 
     for role_master in role_masters:
-        users = role_master.user 
+        users = role_master.user
         print("Users in RoleMaster:", users)
 
         for user in users:
-            if isinstance(user, dict):
-                user_email = user.get("user_email", "").lower()
-            else:
-                user_email = getattr(user, "user_email", "").lower()
-
+            user_email = (
+                user.get("user_email", "").lower() if isinstance(user, dict)
+                else getattr(user, "user_email", "").lower()
+            )
             if user_email == email:
                 matched_role_master = role_master
                 break
@@ -726,14 +734,14 @@ def get_email(db: Session, email: str):
             "user": "",
             "role": "Default",
             "access": ["Goals"],
-            "initial": who.initials if who else ""
+            "initial": initials
         }
 
     print("RoleMaster found:")
     pprint(matched_role_master.__dict__)
 
     print(f"Fetching Role for role = '{matched_role_master.role}'")
-    role = db.query(Role).filter(Role.role == matched_role_master.role).first()
+    role = postgres_db.query(Role).filter(Role.role == matched_role_master.role).first()
 
     if not role:
         print("No matching role found in Role table.")
@@ -747,13 +755,14 @@ def get_email(db: Session, email: str):
         "user": matched_role_master.user,
         "role": matched_role_master.role,
         "access": role.access,
-        "initial": who.initials if who else ""
+        "initial": initials
     }
 
     print("Final result to return:")
     pprint(result)
     print("=== get_email END ===\n")
     return result
+
 
 def get_roleMaster_By_Email(db: Session, email: str):
     print("email", email)
@@ -784,36 +793,111 @@ def get_roleMaster_By_Email(db: Session, email: str):
     return None
 
 
-
 def get_supervisor_chain(db: Session, user_who: str):
-    supervisors = []
-    
-    current_user = db.query(Who).filter(Who.initials == user_who).first()
+    # Initial user fetch
+    print("user_who",user_who)
+    who_query = text("""
+        SELECT 
+            EMPLOYEEID as employee_id,
+            EMPLOYEEFULLNAME as employee_full_name,
+            SUPERVISORID as supervisor_id,
+            EMPLOYEESTATUS as employee_status
+        FROM humanresources.hr.employee
+        WHERE INITIALS = :initials AND UPPER(EMPLOYEESTATUS) = 'ACTIVE'
+        LIMIT 1
+    """)
+    current_user = db.execute(who_query, {"initials": user_who}).fetchone()
+    print("current_user",current_user)
 
     if not current_user:
-        raise HTTPException(status_code=404, detail=f"User with initials {user_who} not found")
+        raise HTTPException(status_code=404, detail=f"User with initials '{user_who}' not found or not active")
 
-    starting_employee_name = current_user.employee_name
+    starting_employee_name = current_user.employee_full_name
+    current_supervisor_id = current_user.supervisor_id
+    print("starting_employee_name",starting_employee_name)
+    print("current_supervisor_id",current_supervisor_id)
 
-    while current_user and current_user.supervisor_name:
-        supervisors.append(current_user.supervisor_name)
-        current_user = db.query(Who).filter(Who.employee_name == current_user.supervisor_name).first()
+    supervisor_name = None
+    supervisor_id = None
 
+    if current_supervisor_id:
+        supervisor_query = text("""
+            SELECT 
+                EMPLOYEEID as employee_id,
+                EMPLOYEEFULLNAME as employee_full_name,
+                SUPERVISORID as supervisor_id,
+                EMPLOYEESTATUS as employee_status
+            FROM humanresources.hr.employee
+            WHERE EMPLOYEEID = :employee_id AND UPPER(EMPLOYEESTATUS) = 'ACTIVE'
+            LIMIT 1
+        """)
+        supervisor = db.execute(supervisor_query, {"employee_id": current_supervisor_id}).fetchone()
+        print("supervisor",supervisor)
+
+        if supervisor:
+            supervisor_name = supervisor.employee_full_name
+            supervisor_id = supervisor.employee_id
+        print("user_who",user_who)
+        print("starting_employee_name",starting_employee_name)
+        print("supervisor_name",supervisor_name)
+        print("supervisor_id",supervisor_id)
     return {
-        "who": user_who,
-        "employee_name": starting_employee_name,
-        "supervisor_names": supervisors
-    }
+    "initials": user_who,
+    "employee_full_name": starting_employee_name,
+    "supervisor_name": supervisor_name,
+    "supervisor_id": supervisor_id,
+}
+
 
 def get_direct_reports(db: Session, supervisor_initials: str):
-    supervisor_name = db.query(Who.employee_name).filter(Who.initials == supervisor_initials).first()
+    # supervisor_name = db.query(Who.employee_name).filter(Who.initials == supervisor_initials).first()
+    who_query = text("""
+        SELECT 
+            EMPLOYEEID as employee_id,
+            EMPLOYEEFULLNAME as employee_full_name,
+            SUPERVISORID as supervisor_id,
+            EMPLOYEESTATUS as employee_status
+        FROM humanresources.hr.employee
+        WHERE INITIALS = :initials AND UPPER(EMPLOYEESTATUS) = 'ACTIVE'
+        LIMIT 1
+    """)
+    current_user = db.execute(who_query, {"initials": supervisor_initials}).fetchone()
+    print("current_user",current_user)
 
-    if not supervisor_name:
-        print(f"Supervisor with initials {supervisor_initials} not found.")  # Debugging print
-        raise HTTPException(status_code=404, detail=f"Supervisor with initials {supervisor_initials} not found.")
-    
+    if not current_user:
+        raise HTTPException(status_code=404, detail=f"User with initials '{supervisor_initials}' not found or not active")
+
+    starting_employee_name = current_user.employee_full_name
+    current_supervisor_id = current_user.supervisor_id
+    print("starting_employee_name",starting_employee_name)
+    print("current_supervisor_id",current_supervisor_id)
+
+    supervisor_name = None
+    supervisor_id = None
+
+    if current_supervisor_id:
+        supervisor_query = text("""
+            SELECT 
+                EMPLOYEEID as employee_id,
+                EMPLOYEEFULLNAME as employee_full_name,
+                SUPERVISORID as supervisor_id,
+                EMPLOYEESTATUS as employee_status,
+                INITIALS AS initials
+
+            FROM humanresources.hr.employee
+            WHERE EMPLOYEEID = :employee_id AND UPPER(EMPLOYEESTATUS) = 'ACTIVE'
+            LIMIT 1
+        """)
+        supervisor = db.execute(supervisor_query, {"employee_id": current_supervisor_id}).fetchone()
+        print("supervisor",supervisor)
+    if supervisor:
+            supervisor_name = supervisor.employee_full_name
+            supervisor_id = supervisor.employee_id
+            supervisor_initials=supervisor.initials
+
     print(f"Supervisor name fetched: {supervisor_name[0]}")  # Debugging print
-    direct_reports = db.query(Who).filter(Who.supervisor_name == supervisor_name[0]).all()
+    # direct_reports = db.query(Who).filter(Who.supervisor_name == supervisor_name[0]).all()
+    direct_reports = supervisor.initials
 
     if not direct_reports:
         print(f"No direct reports found for supervisor {supervisor_name[0]}.")  # Debugging print
@@ -822,13 +906,20 @@ def get_direct_reports(db: Session, supervisor_initials: str):
     print(f"Direct reports found: {direct_report_initials}")  # Debugging print
 
     return {"direct_reports": direct_report_initials}
-
 def get_user_initials(db: Session, email: str):
     email = email.lower()
-    
-    user = db.query(Who).filter(Who.primary_email == email).first()
+    who_query = text("""
+        SELECT 
+            INITIALS AS initials
+        FROM humanresources.hr.employee
+        WHERE EMAIL = :email AND UPPER(EMPLOYEESTATUS) = 'ACTIVE'
+        LIMIT 1
+    """)
+    who_result = db.execute(who_query, {"email": email}).fetchone()
 
-    if not user:
+    initials = who_result[0] if who_result else ""
+
+    if not initials:
         raise HTTPException(status_code=404, detail=f"User with email {email} not found")
 
-    return user.initials  # Return the initials of the user
+    return initials 
