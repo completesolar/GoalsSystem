@@ -52,9 +52,9 @@ def get_all_p(db: Session, response_model=list[PResponse]):
     db_p = db.query(P).order_by(P.id.desc()).all()
     return jsonable_encoder(db_p)
 
-def get_all_vp(db: Session, response_model=list[VPResponse]):
-    db_vp = db.query(VP).order_by(VP.id.desc()).all()
-    return jsonable_encoder(db_vp)
+# def get_all_vp(db: Session, response_model=list[VPResponse]):
+#     db_vp = db.query(VP).order_by(VP.id.desc()).all()
+#     return jsonable_encoder(db_vp)
 
 def get_all_proj(db: Session, response_model=list[ProjResponse]):
     db_proj = db.query(Proj).order_by(Proj.id.desc()).all()
@@ -95,18 +95,22 @@ def get_proj_by_id(db: Session, id: int):
 
 def get_all_who(db: Session) -> List[dict]:
     query = text("""
-        SELECT 
-            EMPLOYEEFULLNAME as employee_full_name,
-            FIRSTNAME as first_name,
-            LASTNAME as last_name,
-            INITIALS as initials,
-            EMAIL as email,
-            EMPLOYEESTATUS as employee_status,
-            SUPERVISORID as supervisor_id,
-            TERMINATIONDATE as termination_date,
-            TEAMNAME as team_name,
-            DEPARTMENTNAME as department_name
-        FROM humanresources.hr.employee WHERE UPPER(EMPLOYEESTATUS)='ACTIVE' ;
+SELECT 
+    EMPLOYEEFULLNAME as employee_full_name,
+    FIRSTNAME as first_name,
+    LASTNAME as last_name,
+    INITIALS as initials,
+    EMAIL as email,
+    EMPLOYEESTATUS as employee_status,
+    SUPERVISORID as supervisor_id,
+    TERMINATIONDATE as termination_date,
+    TEAMNAME as team_name,
+    DEPARTMENTNAME as department_name
+FROM humanresources.hr.employee
+WHERE 
+    EMPLOYEESTATUS IN ('Active', 'ACTIVE')
+    AND INITIALS IS NOT NULL
+    AND TRIM(INITIALS) <> '';
     """)
 
     result = db.execute(query)
@@ -115,6 +119,43 @@ def get_all_who(db: Session) -> List[dict]:
     data = [dict(row._mapping) for row in rows]
 
     return jsonable_encoder(data)
+
+def get_all_vps(db: Session) -> List[Dict]:
+    query = text("""
+    SELECT 
+        EMPLOYEEID as employee_id,
+        EMPLOYEEFULLNAME as employee_full_name,
+        INITIALS as initials,
+        SUPERVISORID as supervisor_id,
+        EMPLOYEESTATUS as employee_status
+    FROM humanresources.hr.employee
+    WHERE 
+        EMPLOYEESTATUS IN ('Active', 'ACTIVE')
+        AND INITIALS IS NOT NULL
+        AND TRIM(INITIALS) <> '';
+    """)
+    result = db.execute(query).mappings().all()
+    employees = list(result)  # now rows are dicts
+
+    employee_lookup = {emp["employee_id"]: emp for emp in employees}
+
+    vp_set = set()
+    vp_list = []
+
+    for emp in employees:
+        supervisor_id = emp.get("supervisor_id")
+        if supervisor_id and supervisor_id not in vp_set:
+            supervisor = employee_lookup.get(supervisor_id)
+            if supervisor and supervisor.get("initials") and supervisor.get("employee_full_name"):
+                vp_list.append({
+                    "initials": supervisor["initials"],
+                    "employee_full_name": supervisor["employee_full_name"]
+                })
+                vp_set.add(supervisor_id)
+
+    vp_list.sort(key=lambda x: f"{x['initials']} ({x['employee_full_name']})")
+
+    return vp_list
 
 def get_action(db: Session):
     db_action = db.query(Action).order_by(Action.id.desc()).all()
@@ -793,119 +834,109 @@ def get_roleMaster_By_Email(db: Session, email: str):
     return None
 
 
-def get_supervisor_chain(db: Session, user_who: str):
-    # Initial user fetch
-    print("user_who",user_who)
-    who_query = text("""
+def get_supervisor_chain(db: Session, user_who: str) -> Dict[str, List[Dict]]:
+    print("user_who", user_who)
+
+    supervisor_chain = []
+
+    # Step 1: Fetch the starting user by initials
+    current_query = text("""
         SELECT 
             EMPLOYEEID as employee_id,
             EMPLOYEEFULLNAME as employee_full_name,
             SUPERVISORID as supervisor_id,
+            INITIALS as initials,
             EMPLOYEESTATUS as employee_status
         FROM humanresources.hr.employee
-        WHERE INITIALS = :initials AND UPPER(EMPLOYEESTATUS) = 'ACTIVE'
+        WHERE INITIALS = :initials AND EMPLOYEESTATUS IN ('Active', 'ACTIVE')
         LIMIT 1
     """)
-    current_user = db.execute(who_query, {"initials": user_who}).fetchone()
-    print("current_user",current_user)
 
-    if not current_user:
+    current_result = db.execute(current_query, {"initials": user_who}).fetchone()
+
+    if not current_result:
         raise HTTPException(status_code=404, detail=f"User with initials '{user_who}' not found or not active")
 
-    starting_employee_name = current_user.employee_full_name
-    current_supervisor_id = current_user.supervisor_id
-    print("starting_employee_name",starting_employee_name)
-    print("current_supervisor_id",current_supervisor_id)
+    current = dict(current_result._mapping)
 
-    supervisor_name = None
-    supervisor_id = None
+    supervisor_chain.append({
+        "employee_id": current["employee_id"],
+        "employee_full_name": current["employee_full_name"],
+        "initials": current["initials"],
+    })
 
-    if current_supervisor_id:
+    current_supervisor_id = current["supervisor_id"]
+
+    # Step 2: Traverse up the supervisor chain
+    while current_supervisor_id:
         supervisor_query = text("""
             SELECT 
                 EMPLOYEEID as employee_id,
                 EMPLOYEEFULLNAME as employee_full_name,
                 SUPERVISORID as supervisor_id,
+                INITIALS as initials,
                 EMPLOYEESTATUS as employee_status
             FROM humanresources.hr.employee
-            WHERE EMPLOYEEID = :employee_id AND UPPER(EMPLOYEESTATUS) = 'ACTIVE'
+            WHERE EMPLOYEEID = :employee_id AND EMPLOYEESTATUS IN ('Active', 'ACTIVE')
             LIMIT 1
         """)
-        supervisor = db.execute(supervisor_query, {"employee_id": current_supervisor_id}).fetchone()
-        print("supervisor",supervisor)
+        supervisor_result = db.execute(supervisor_query, {"employee_id": current_supervisor_id}).fetchone()
 
-        if supervisor:
-            supervisor_name = supervisor.employee_full_name
-            supervisor_id = supervisor.employee_id
-        print("user_who",user_who)
-        print("starting_employee_name",starting_employee_name)
-        print("supervisor_name",supervisor_name)
-        print("supervisor_id",supervisor_id)
-    return {
-    "initials": user_who,
-    "employee_full_name": starting_employee_name,
-    "supervisor_name": supervisor_name,
-    "supervisor_id": supervisor_id,
-}
+        if not supervisor_result:
+            break
 
+        supervisor = dict(supervisor_result._mapping)
 
-def get_direct_reports(db: Session, supervisor_initials: str):
-    # supervisor_name = db.query(Who.employee_name).filter(Who.initials == supervisor_initials).first()
-    who_query = text("""
+        supervisor_chain.append({
+            "employee_id": supervisor["employee_id"],
+            "employee_full_name": supervisor["employee_full_name"],
+            "initials": supervisor.get("initials"),
+        })
+
+        current_supervisor_id = supervisor["supervisor_id"]
+
+    return jsonable_encoder({
+        "initial_user": user_who,
+        "chain": supervisor_chain
+    })
+
+def get_direct_reports(db: Session, supervisor_initials: str) -> Dict:
+    # Step 1: Get supervisor info
+    supervisor_query = text("""
         SELECT 
             EMPLOYEEID as employee_id,
             EMPLOYEEFULLNAME as employee_full_name,
-            SUPERVISORID as supervisor_id,
+            INITIALS as initials,
             EMPLOYEESTATUS as employee_status
         FROM humanresources.hr.employee
-        WHERE INITIALS = :initials AND UPPER(EMPLOYEESTATUS) = 'ACTIVE'
+        WHERE INITIALS = :initials AND EMPLOYEESTATUS IN ('Active', 'ACTIVE')
         LIMIT 1
     """)
-    current_user = db.execute(who_query, {"initials": supervisor_initials}).fetchone()
-    print("current_user",current_user)
+    supervisor_row = db.execute(supervisor_query, {"initials": supervisor_initials}).fetchone()
 
-    if not current_user:
-        raise HTTPException(status_code=404, detail=f"User with initials '{supervisor_initials}' not found or not active")
+    if not supervisor_row:
+        raise HTTPException(status_code=404, detail=f"Supervisor with initials '{supervisor_initials}' not found or not active")
 
-    starting_employee_name = current_user.employee_full_name
-    current_supervisor_id = current_user.supervisor_id
-    print("starting_employee_name",starting_employee_name)
-    print("current_supervisor_id",current_supervisor_id)
+    supervisor = dict(supervisor_row._mapping)
 
-    supervisor_name = None
-    supervisor_id = None
+    # Step 2: Get their direct reports
+    direct_reports_query = text("""
+        SELECT 
+            EMPLOYEEID as employee_id,
+            EMPLOYEEFULLNAME as employee_full_name,
+            INITIALS as initials
+        FROM humanresources.hr.employee
+        WHERE SUPERVISORID = :supervisor_id AND EMPLOYEESTATUS IN ('Active', 'ACTIVE')
+    """)
+    reports_result = db.execute(direct_reports_query, {"supervisor_id": supervisor["employee_id"]}).fetchall()
+    direct_reports = [dict(row._mapping) for row in reports_result]
 
-    if current_supervisor_id:
-        supervisor_query = text("""
-            SELECT 
-                EMPLOYEEID as employee_id,
-                EMPLOYEEFULLNAME as employee_full_name,
-                SUPERVISORID as supervisor_id,
-                EMPLOYEESTATUS as employee_status,
-                INITIALS AS initials
+    return jsonable_encoder({
+        "supervisor_initials": supervisor["initials"],
+        "supervisor_name": supervisor["employee_full_name"],
+        "direct_reports": direct_reports  # list of dicts with employee_id, name, initials
+    })
 
-            FROM humanresources.hr.employee
-            WHERE EMPLOYEEID = :employee_id AND UPPER(EMPLOYEESTATUS) = 'ACTIVE'
-            LIMIT 1
-        """)
-        supervisor = db.execute(supervisor_query, {"employee_id": current_supervisor_id}).fetchone()
-        print("supervisor",supervisor)
-    if supervisor:
-            supervisor_name = supervisor.employee_full_name
-            supervisor_id = supervisor.employee_id
-            supervisor_initials=supervisor.initials
-
-    print(f"Supervisor name fetched: {supervisor_name[0]}")  # Debugging print
-    # direct_reports = db.query(Who).filter(Who.supervisor_name == supervisor_name[0]).all()
-    direct_reports = supervisor.initials
-
-    if not direct_reports:
-        print(f"No direct reports found for supervisor {supervisor_name[0]}.")  # Debugging print
-        return {"direct_reports": []} 
-    direct_report_initials = [report.initials for report in direct_reports]
-    print(f"Direct reports found: {direct_report_initials}")  # Debugging print
-
-    return {"direct_reports": direct_report_initials}
 def get_user_initials(db: Session, email: str):
     email = email.lower()
     who_query = text("""

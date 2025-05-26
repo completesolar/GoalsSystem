@@ -77,10 +77,11 @@ import { HeaderComponent } from '../../common/component/header/header.component'
       this.goalservice.getWhoOptions().subscribe((response: any) => {
         this.usersOptions = response
           .map((item: any) => {
+            console.log('userop',this.usersOptions);
             return {
-              label: item.initials + ' (' + item.employee_name + ')',
+              label: item.initials + ' (' + item.employee_full_name + ')',
               value: item.id,
-              email: item.primary_email,
+              email: item.email,
             };
           })
           .sort((a: any, b: any) => {

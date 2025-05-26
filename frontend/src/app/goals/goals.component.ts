@@ -96,6 +96,7 @@ export class GoalsComponent implements AfterViewInit {
   whoOptions: any[] = [];
   vpOptions: any[] = [];
   fullWhoList: any[] = [];
+  fullVpList: any[] = [];
   actionOptions: any[] = [];
   filterSearch: { [key: string]: string } = {};
   filteredFilterOptions: { [key: string]: any[] } = {};
@@ -264,24 +265,22 @@ columns = [
     this.getPriority();
     this.getActions();
   }
-  loadWhoOptions(): void {
-    this.goalsService.getWhoOptions().subscribe({
-      next: (data) => {
-        // console.log("who data",data)
-        this.fullWhoList = data;
-        this.whoOptions = data
-          .map((item) => ({
-            label: `${item.initials ?? ''} (${item.employee_full_name ?? ''})`,
-            value: item.initials,
-          }))
-          .sort((a, b) => a.label.localeCompare(b.label));
-        // console.log("whoOptions",this.whoOptions)
-      },
-      error: (err) => {
-        console.error('Failed to load WHO options:', err);
-      },
-    });
-  }
+	loadWhoOptions(): void {
+  this.goalsService.getWhoOptions().subscribe({
+    next: (data) => {
+      this.fullWhoList = data;
+      this.whoOptions = data
+        .map((item) => ({
+          label: `${item.initials ?? ''} (${item.employee_full_name ?? ''})`,
+          value: item.initials,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label));
+    },
+    error: (err) => {
+      console.error('Failed to load WHO options:', err);
+    },
+  });
+}
   getLabelForValue(value: any): string | undefined {
     const selected = this.whoOptions?.find((opt) => opt.value === value);
     return selected ? selected.label : undefined;
@@ -294,16 +293,25 @@ columns = [
     const selected = this.statusOptions?.find((opt) => opt.value === value);
     return selected ? selected.label : undefined;
   }
-  loadVpOptions(): void {
-    this.goalsService.getVpOptions().subscribe({
-      next: (data) => {
-        this.vpOptions = data;
-      },
-      error: (err) => {
-        console.error('Failed to load VP options:', err);
-      },
-    });
-  }
+loadVpOptions(): void {
+  this.goalsService.getVpOptions().subscribe({
+    next: (data) => {
+      this.fullVpList = data; // Save raw list
+      this.vpOptions = data
+        .map((item) => ({
+          label: `${item.initials ?? ''} (${item.employee_full_name ?? ''})`,
+          value: item.initials,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label));
+
+      console.log('VP Options:', this.vpOptions);
+    },
+    error: (err) => {
+      console.error('Failed to load VP options:', err);
+    },
+  });
+}
+
   getCurrentWeekNumber(): number {
     const now = new Date();
     const utcDate = new Date(
@@ -356,16 +364,18 @@ columns = [
 }
 loadGoals(): void {
   // Fetch the currently signed-in user's email
-  const userEmail = this.getLoggedInEmail();
+  //const userEmail = this.getLoggedInEmail();
+  const userEmail = 'venki.sundaresan@sunpower.com'
 
   // First, get the user's initials from the email
   this.goalsService.getUserInitials(userEmail).subscribe((response: { who: string }) => {
     const userInitials = response.who;  // Get the initials from the response
+    console.log('who',userInitials);
 
     // Now, get the supervisor hierarchy using the initials
     this.goalsService.getSupervisorHierarchy(userInitials).subscribe((response: { supervisor_names: string[] }) => {
       const supervisorHierarchy = response.supervisor_names; // Get the supervisor hierarchy from the response
-      console.log('supervisor hierarchy', supervisorHierarchy); // Debug log
+      console.log('supervisor hierarchy', response.supervisor_names); // Debug log
 
       // Get the direct reports (subordinates) of the user (supervisor)
       this.goalsService.getDirectReports(userInitials).subscribe((directReports: { direct_reports: string[] }) => {

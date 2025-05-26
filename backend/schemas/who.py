@@ -29,11 +29,15 @@ class WhoResponse(WhoBase):
 
     class Config:
         from_attributes = True
-class SupervisorChainResponse(BaseModel):
-    initials: str
+        
+class ChainMember(BaseModel):
+    employee_id: str
     employee_full_name: str
-    supervisor_name: Optional[str]
-    supervisor_id: Optional[str]
+    initials: Optional[str]
+
+class SupervisorChainResponse(BaseModel):
+    initial_user: str
+    chain: List[ChainMember]
 
 class WhoResponse(WhoBase):
     id: int

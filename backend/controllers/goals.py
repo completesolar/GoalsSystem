@@ -15,13 +15,14 @@ from schemas.b import BResponse,BCreate,BUpdate
 from schemas.e import EResponse,ECreate,EUpdate
 from schemas.d import DResponse,DUpdate,DCreate
 from schemas.action import ActionResponse
-from typing import List, Optional
+from typing import Dict, List, Optional
 from database import get_postgres_db,get_snowflake_db
 from schemas.roleMaster import RoleMasterCreate,RoleMasterUpdate,RoleMasterResponse
 from crud import (
     bind_diffs_to_goals,
     create_goal,
     get_all_goal_diffs_by_goalid,
+    get_all_vps,
     get_direct_reports,
     get_goals_by_id,
     get_all_goals,
@@ -36,7 +37,7 @@ from crud import (
     get_status_by_id,
     create_status_entry,
     get_all_proj,
-    get_all_vp,
+    get_all_vps,
     get_all_p,
     get_all_b,
     get_all_e,
@@ -75,11 +76,9 @@ from typing import Annotated
 router = APIRouter()
 
 
-
-
-@router.get("/api/vp", response_model=list[VPResponse])
-def read_vp(db: Session = Depends(get_postgres_db)):
-    return get_all_vp(db)
+@router.get("/api/vp")
+def read_who(db: Session = Depends(get_snowflake_db)):
+    return get_all_vps(db)
 
 @router.get("/api/who")
 def read_who(db: Session = Depends(get_snowflake_db)):
@@ -429,21 +428,29 @@ def get_who_and_vp_by_email(email: str, db: Session = Depends(get_postgres_db)):
 
     return {"who": result[0], "vp": result[1]}
 
-@router.get("/api/supervisor-chain/{who}", response_model=SupervisorChainResponse)
-def get_supervisor_chain_endpoint(who: str, db: Session = Depends(get_snowflake_db)):
-    supervisor_chain = get_supervisor_chain(db, who)
-    return supervisor_chain
+@router.get("/api/supervisor-chain/{user_who}", response_model=dict)
+def read_supervisor_chain(user_who: str, db: Session = Depends(get_snowflake_db)):
+    full_chain = get_supervisor_chain(db, user_who)
+
+    supervisor_names = [
+        entry["initials"]
+        for entry in full_chain["chain"][1:]
+        if entry.get("initials")
+    ]
+    return {"supervisor_names": supervisor_names}
 
 @router.get("/api/who-initial-email/{email}")
 async def get_user_initials_endpoint(email: str, db: Session = Depends(get_snowflake_db)):
     initials = get_user_initials(db, email)
     return {"who": initials}
 
-@router.get("/api/direct-reports/{supervisor_initials}")
-async def get_direct_reports_endpoint(supervisor_initials: str, db: Session = Depends(get_postgres_db)):
-    # Fetch direct reports (subordinates) where the supervisor_name matches the given initials
-    direct_reports = get_direct_reports(db, supervisor_initials)
-    return direct_reports
+@router.get("/api/direct-reports/{supervisor_initials}", response_model=Dict)
+async def get_direct_reports_endpoint(
+    supervisor_initials: str, 
+    db: Session = Depends(get_snowflake_db)
+):
+    return get_direct_reports(db, supervisor_initials)
+
 
 @router.post("/api/global-settings/update")
 async def save_enable_clone_setting(payload: GlobalSettingRequest, db: Session = Depends(get_postgres_db)):

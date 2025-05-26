@@ -84,38 +84,7 @@ export class GoalsService {
   }
 
   getVpOptions(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseURL}/who`).pipe(
-      map((data) => {
-        const vpMap = new Map<
-          string,
-          { initials: string; employee_name: string }
-        >();
-
-        data.forEach((row) => {
-          const supervisorName = row.supervisor_name;
-
-          if (supervisorName && !vpMap.has(supervisorName)) {
-            const supervisor = data.find(
-              (who) => who.employee_name === supervisorName
-            );
-
-            if (supervisor && supervisor.initials && supervisor.employee_name) {
-              vpMap.set(supervisorName, {
-                initials: supervisor.initials,
-                employee_name: supervisor.employee_name,
-              });
-            }
-          }
-        });
-
-        const vpOptions = Array.from(vpMap.values()).map((item) => ({
-          label: `${item.initials} (${item.employee_name})`,
-          value: item.initials,
-        }));
-
-        return vpOptions.sort((a, b) => a.label.localeCompare(b.label));
-      })
-    );
+     return this.http.get<any[]>(`${this.baseURL}/vp`);
   }
 
   getProj() {
