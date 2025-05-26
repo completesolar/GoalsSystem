@@ -29,6 +29,7 @@ from crud import (
     get_latest_goal_diff_by_goalid,
     get_supervisor_chain,
     get_user_initials,
+    get_vp_of_who,
     update_goal,
     get_all_goals_history,
     get_goalshistory_by_id,
@@ -487,3 +488,8 @@ def get_global_clone_setting(db: Session = Depends(get_postgres_db)):
         return True  # default to true if not set
 
     return result[0]  # returns boolean directly
+
+@router.get("/api/vp-of/{who_initials}")
+async def get_vp_of_endpoint(who_initials: str, db: Session = Depends(get_snowflake_db)):
+    vp_initials = get_vp_of_who(db, who_initials)
+    return {"vp": vp_initials}

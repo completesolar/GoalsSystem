@@ -422,29 +422,33 @@ loadGoals(): void {
   });
 }
 
-  onWhoSelected() {
-    const currentWeek = this.getCurrentWeekNumber();
-    this.newRow.p = 99;
-    this.newRow.b = currentWeek;
-    this.newRow.e = currentWeek === 53 ? 1 : currentWeek + 1;
-    this.newRow.s = 'N';
-    this.newRow.action = 'MEMO';
-    const selectedWho = this.fullWhoList.find(
-      (who) => who.initials === this.newRow.who
-    );
-    if (selectedWho && selectedWho.supervisor_name) {
-      const supervisor = this.fullWhoList.find(
-        (who) => who.employee_name === selectedWho.supervisor_name
-      );
-      if (supervisor && supervisor.initials) {
-        this.newRow.vp = supervisor.initials;
-      } else {
-        console.warn('Supervisor not found or has no initials.');
+onWhoSelected() {
+  const currentWeek = this.getCurrentWeekNumber();
+
+  // Set default values
+  this.newRow.p = 99;
+  this.newRow.b = currentWeek;
+  this.newRow.e = currentWeek === 53 ? 1 : currentWeek + 1;
+  this.newRow.s = 'N';
+  this.newRow.action = 'MEMO';
+
+  if (this.newRow.who) {
+    // Call backend to get VP for the selected WHO
+    this.goalsService.getVpOf(this.newRow.who).subscribe({
+      next: (response) => {
+        this.newRow.vp = response.vp;
+        console.log(`VP for WHO ${this.newRow.who}: ${response.vp}`);
+      },
+      error: (err) => {
+        console.warn('Failed to fetch VP from backend:', err);
+        this.newRow.vp = ''; // Clear if not found
       }
-    } else {
-      console.warn('Selected WHO has no supervisor_name.');
-    }
+    });
+  } else {
+    console.warn('No WHO selected.');
+    this.newRow.vp = '';
   }
+}
   loadGoalsHistory(id: number) {
     this.goalsService.getGoalHistory(id).subscribe(
       (goalsHistory) => {
