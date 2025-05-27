@@ -14,6 +14,8 @@ import {
   ApexDataLabels,
 } from 'ng-apexcharts';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { ButtonModule } from 'primeng/button';
+import { MultiSelect, MultiSelectModule } from 'primeng/multiselect';
 
 interface MetricsResponse {
   completedAndDelinquent: {
@@ -45,6 +47,7 @@ export type PieChartOptions = {
   dataLabels: ApexDataLabels;
 };
 
+
 export type BarChartOptions = {
   colors: any[];
   series: { name: string; data: number[] }[];
@@ -61,7 +64,7 @@ export type BarChartOptions = {
   selector: 'app-goals-metrics',
   templateUrl: './goals-metrics.component.html',
   styleUrls: ['./goals-metrics.component.scss'],
-  imports: [CommonModule, FormsModule, NgApexchartsModule, SelectModule,ProgressSpinnerModule],
+  imports: [CommonModule, FormsModule, NgApexchartsModule, SelectModule,ProgressSpinnerModule,ButtonModule,MultiSelect, MultiSelectModule],
   changeDetection: ChangeDetectionStrategy.OnPush, 
 })
 export class GoalsMetricsComponent implements OnInit, OnDestroy {
@@ -79,6 +82,13 @@ export class GoalsMetricsComponent implements OnInit, OnDestroy {
 isProjectStatusLoading = true;
 isYearWiseLoading = true;
 isStatusWiseLoading = true;
+vpOptions: { label: string; value: string }[] = [];
+projectOptions: { label: string; value: string }[] = [];
+
+// selectedVP: { label: string; value: string }[] = [];
+selectedVP: string[] = [];
+selectedProject: { label: string; value: string } | null = null;
+cachedMetricsResponse: MetricsResponse | null = null;
 
 
   // Chart options for different charts
@@ -163,17 +173,6 @@ isStatusWiseLoading = true;
     this.isComponentAlive = false;
   }
 
-  // fetchData(): void {
-  //   const fetchStartTime = performance.now(); 
-  //   this.goalsService.getGoalsMetrics().subscribe((res: MetricsResponse) => {
-  //     const fetchEndTime = performance.now();
-  //     console.log(`Data fetch took: ${fetchEndTime - fetchStartTime} ms`);
-
-  //     this.updateChartOptions(res);
-  //     this.isLoading = false; 
-  //     this.cdRef.detectChanges(); 
-  //   });
-  // }
   fetchData(): void {
     const fetchStartTime = performance.now(); 
     this.isProjectsByVPLoading = true;
@@ -195,8 +194,78 @@ isStatusWiseLoading = true;
   
       this.isLoading = false;
       this.cdRef.detectChanges(); 
+      this.vpOptions = res.projectsByVP.categories.map(vp => ({ label: vp, value: vp }));
+this.projectOptions = res.projectWiseByStatus.categories.map(proj => ({ label: proj, value: proj }));
+this.cachedMetricsResponse = res;
+
     });
   }
+  
+  onFilterChange(): void {
+    const vpValues = this.selectedVP && this.selectedVP.length > 0 ? this.selectedVP : null;
+    const projValue = this.selectedProject?.value ?? null;
+  
+    if ((!vpValues || vpValues.length === 0) && !projValue) {
+      this.updateChartOptions(this.cachedMetricsResponse!);
+    } else {
+      this.updateChartOptionsFiltered(vpValues, projValue);
+    }
+  }
+  
+  updateChartOptionsFiltered(vp: string[] | null, project: string | null): void {
+    const res = this.cachedMetricsResponse;
+    if (!res) return;
+  
+    const filteredVPSeries = res.projectsByVP.series.map(s => ({
+      name: s.name,
+      data: vp && vp.length > 0
+        ? s.data.filter((_: any, idx: any) => vp.includes(res.projectsByVP.categories[idx]))
+        : s.data
+    }));
+  
+    const filteredVPLabels = vp && vp.length > 0 ? vp : res.projectsByVP.categories;
+  
+    const filteredProjectStatusSeries = res.projectWiseByStatus.series.map(s => ({
+      name: this.statusLabels[s.name] || s.name,
+      data: project
+        ? s.data.filter((_: any, idx: any) => res.projectWiseByStatus.categories[idx] === project)
+        : s.data
+    }));
+  
+    const filteredProjectLabels = project ? [project] : res.projectWiseByStatus.categories;
+  
+    this.projectsByVPChartOptions = {
+      ...this.projectsByVPChartOptions,
+      series: filteredVPSeries,
+      xaxis: {
+        ...this.projectsByVPChartOptions.xaxis,
+        categories: filteredVPLabels,
+        labels: { rotate: -45, style: { fontSize: '14px', fontFamily: 'Arial' } },
+      },
+      chart: {
+        ...this.projectsByVPChartOptions.chart,
+        width: Math.max(filteredVPLabels.length * 60, 400)  // add min width for usability
+      }
+    };
+  
+    this.projectStatusChartOptions = {
+      ...this.projectStatusChartOptions,
+      series: filteredProjectStatusSeries,
+      xaxis: {
+        ...this.projectStatusChartOptions.xaxis,
+        categories: filteredProjectLabels,
+        labels: { rotate: -45, trim: true, style: { fontSize: '14px', fontFamily: 'Arial' } },
+      },
+      chart: {
+        ...this.projectStatusChartOptions.chart,
+        width: Math.max(filteredProjectLabels.length * 50, 400)  // min width
+      }
+    };
+  
+    this.cdRef.detectChanges();
+  }
+  
+  
   
   updateChartOptions(res: MetricsResponse): void {
     this.statusPieOptions = {
@@ -280,4 +349,11 @@ isStatusWiseLoading = true;
       labels: res.statusWise.map((s: any) => s.status),
     };
   }
+  clearFilters(): void {
+    this.selectedVP = [];
+    this.selectedProject = null;
+    this.updateChartOptions(this.cachedMetricsResponse!);
+    this.cdRef.detectChanges();
+  }
+  
 }

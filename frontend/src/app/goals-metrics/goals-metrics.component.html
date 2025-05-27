@@ -1,7 +1,34 @@
 
 <div >
-  <div class="pagetitle">Dashboard</div>
-  <div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; overflow-x: auto;">
+  <div class="pagetitle pb-2 flex align-items-center justify-content-between gap-3">
+    <div>Dashboard</div>
+    <div class="flex gap-2 align-items-center">
+      <p-multiSelect
+      placeholder="Select VP" 
+      [options]="vpOptions"
+      [(ngModel)]="selectedVP"
+      optionLabel="label"
+      optionValue="value"    
+      styleClass="p-select-sm"
+      (onChange)="onFilterChange()"
+      [showClear]="true"
+    ></p-multiSelect>
+    
+      <p-select 
+        [options]="projectOptions" 
+        [(ngModel)]="selectedProject" 
+        placeholder="Select Project" 
+        optionLabel="label" 
+        styleClass="p-select-sm"
+        (onChange)="onFilterChange()"
+        [showClear]="true"
+
+      ></p-select>
+      <p-button  label="Clear Filters" (click)="clearFilters()" icon="pi pi-times" class="p-button-secondary"></p-button>
+
+    </div>
+  </div>
+    <div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; overflow-x: auto;">
     <div [style.minWidth.px]="projectsByVPChartOptions.chart.width">
       <p-progress-spinner *ngIf="isProjectsByVPLoading" styleClass="custom-spinner"></p-progress-spinner>
       
@@ -41,26 +68,8 @@
 
   </div>
 
-  <!-- Year-wise & Status-wise Charts (Bottom Row) -->
-  <div class="flex gap-3 p-3" style="flex-wrap: wrap;">
-    <!-- Year-wise Chart Placeholder -->
-    <div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; max-height: 400px; overflow-y: auto;">
-      <p-progressSpinner *ngIf="isYearWiseLoading" styleClass="custom-spinner"></p-progressSpinner>
-      <apx-chart
-        *ngIf="!isYearWiseLoading && yearWiseChartOptions?.series?.length"
-        [series]="yearWiseChartOptions.series"
-        [chart]="yearWiseChartOptions.chart"
-        [xaxis]="yearWiseChartOptions.xaxis"
-        [title]="yearWiseChartOptions.title"
-        [dataLabels]="yearWiseChartOptions.dataLabels"
-        [plotOptions]="yearWiseChartOptions.plotOptions"
-        [legend]="yearWiseChartOptions.legend"
-        [colors]="yearWiseChartOptions.colors">
-      </apx-chart>
-    </div>
 
-    <!-- Status-wise Chart Placeholder -->
-    <div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; max-height: 400px; display: flex; align-items: center; justify-content: center;">
+     <div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; max-height: 400px; display: flex; align-items: center; justify-content: center;">
       <div style="width: 100%; display: flex; align-items: center; justify-content: center;">
         <p-progressSpinner *ngIf="isStatusWiseLoading" styleClass="custom-spinner"></p-progressSpinner>
         <apx-chart
@@ -87,6 +96,36 @@
           [stroke]="{ show: false }">
         </apx-chart>
       </div>
-    </div>
-  </div>
+    </div> 
 </div>
+
+
+
+  <!-- Year-wise & Status-wise Charts (Bottom Row) -->
+  <!-- <div class="flex gap-3 p-3" style="flex-wrap: wrap;">
+    <div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; max-height: 400px; overflow-y: auto;">
+      <p-progressSpinner *ngIf="isStatusWiseLoading" styleClass="custom-spinner"></p-progressSpinner>
+      <apx-chart
+        *ngIf="!isStatusWiseLoading && statusWiseChartOptions?.series?.length"
+        [series]="statusWiseChartOptions.series"
+        [labels]="statusWiseChartOptions.labels"
+        [chart]="statusWiseChartOptions.chart"
+        [title]="statusWiseChartOptions.title"
+        [colors]="statusWiseChartOptions.colors"
+        [legend]="{ position: 'bottom' }"
+        [plotOptions]="{
+          pie: {
+            donut: {
+              labels: {
+                show: true,
+                name: { show: true },
+                value: { show: true },
+                total: { show: true }
+              }
+            }
+          }
+        }"
+        [dataLabels]="statusWiseChartOptions.dataLabels"
+        [stroke]="{ show: false }">
+      </apx-chart>
+    </div> -->
