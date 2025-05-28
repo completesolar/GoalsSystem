@@ -30,7 +30,8 @@ import { CheckboxModule } from 'primeng/checkbox';
 export class HeaderComponent {
   today: Date = new Date();
   buttonLabel: string = 'Dashboard';
-
+  userEmail:any;
+  userInitials: any;
   constructor(
     @Inject(PLATFORM_ID) private platform: Object,
     private msalService: MsalService,
@@ -84,10 +85,11 @@ export class HeaderComponent {
     this.router.events.subscribe(() => {
       this.updateButtonLabel();
     });
-  
     this.getPermission();
-  
-    this.goalService.accessChanged$.subscribe((shouldRefresh) => {
+    if (isPlatformBrowser(this.platform)) {
+      this.userEmail = localStorage.getItem("email");
+      this.userName(this.userEmail);
+    }    this.goalService.accessChanged$.subscribe((shouldRefresh) => {
       if (shouldRefresh) {
         this.getPermission(); 
       }
@@ -107,7 +109,6 @@ export class HeaderComponent {
 
 onCloneToggleChange(): void {
   const email = this.getLoggedInEmail();
-
   this.goalService.updateGlobalCloneSetting(this.isCloneEnabled, email).subscribe({
     next: () => {
       console.log('Clone setting updated successfully.');
@@ -121,6 +122,7 @@ onCloneToggleChange(): void {
 
 getLoggedInEmail(): string {
   const account = this.msalService.instance.getAllAccounts()[0];
+  this.userEmail =  account?.username;
   return account?.username || '';
 }
   
@@ -226,6 +228,16 @@ onDocumentClick(event: MouseEvent) {
   isClickInsideDropdown(event: MouseEvent): boolean {
     const dropdown = document.querySelector('.settings-button');
     return dropdown?.contains(event.target as Node) ?? false;
+  }
+  userName(userEmail: string): void {
+    this.goalService.getUserInitials(userEmail).subscribe(
+      (response: any) => {
+        this.userInitials = `${response.who} (${response.name})`;
+      },
+      (error) => {
+        console.error("Error fetching user initials", error);
+      }
+    );
   }
   
 }

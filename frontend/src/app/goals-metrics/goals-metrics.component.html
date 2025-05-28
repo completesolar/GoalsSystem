@@ -24,79 +24,41 @@
         [showClear]="true"
 
       ></p-select>
-      <p-button  label="Clear Filters" (click)="clearFilters()" icon="pi pi-times" class="p-button-secondary"></p-button>
+      <p-button icon="pi pi-filter-slash" (click)="clearFilters()" severity="success" size="small" label="Clear"
+      [style]="{ height: '24px', fontSize: '14px', width:'70px'}"></p-button>
+
 
     </div>
   </div>
-    <div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; overflow-x: auto;">
-    <div [style.minWidth.px]="projectsByVPChartOptions.chart.width">
-      <p-progress-spinner *ngIf="isProjectsByVPLoading" styleClass="custom-spinner"></p-progress-spinner>
-      
-      <apx-chart
-        *ngIf="!isProjectsByVPLoading && projectsByVPChartOptions?.series?.length"
-        [series]="projectsByVPChartOptions.series"
-        [chart]="projectsByVPChartOptions.chart"
-        [xaxis]="projectsByVPChartOptions.xaxis"
-        [title]="projectsByVPChartOptions.title"
-        [legend]="projectsByVPChartOptions.legend"
-        [plotOptions]="projectsByVPChartOptions.plotOptions"
-        [dataLabels]="projectsByVPChartOptions.dataLabels"
-        [colors]="projectsByVPChartOptions.colors">
-      </apx-chart>
-    </div>
-  </div>
-  
 
-  <div class="flex gap-3 p-3" style="flex-wrap: wrap;">
-    <!-- Project-wise Bar Chart (Scrollable) -->
-    <div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; overflow-x: auto; overflow-y: hidden;">
-      <div [style.minWidth.px]="projectStatusChartOptions.chart.width">
-        <p-progressSpinner *ngIf="isProjectStatusLoading" styleClass="custom-spinner"></p-progressSpinner>
-        <apx-chart
-          *ngIf="!isProjectStatusLoading && projectStatusChartOptions?.series?.length"
-          [series]="projectStatusChartOptions.series"
-          [chart]="projectStatusChartOptions.chart"
-          [xaxis]="projectStatusChartOptions.xaxis"
-          [title]="projectStatusChartOptions.title"
-          [legend]="projectStatusChartOptions.legend"
-          [plotOptions]="projectStatusChartOptions.plotOptions"
-          [dataLabels]="projectStatusChartOptions.dataLabels"
-          [colors]="projectStatusChartOptions.colors">
-        </apx-chart>
-      </div>
-    </div>
+<div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; overflow-x: auto;">
+  <p-chart
+    *ngIf="!isProjectsByVPLoading && projectsByVPChartData"
+    type="bar"
+    [data]="projectsByVPChartData"
+    [options]="projectsByVPChartOptions"
+    style="min-width: 1000px; height: 400px;"
+  ></p-chart>
+</div>
 
-  </div>
+<div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; overflow-x: auto; overflow-y: hidden;">
+  <p-chart
+    *ngIf="!isProjectStatusLoading && projectStatusChartData"
+    type="bar"
+    [data]="projectStatusChartData"
+    [options]="projectStatusChartOptions"
+    style="min-width: 1500px; height: 400px;"
+  ></p-chart>
+</div>
 
-
-     <div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; max-height: 400px; display: flex; align-items: center; justify-content: center;">
-      <div style="width: 100%; display: flex; align-items: center; justify-content: center;">
-        <p-progressSpinner *ngIf="isStatusWiseLoading" styleClass="custom-spinner"></p-progressSpinner>
-        <apx-chart
-          *ngIf="!isStatusWiseLoading && statusWiseChartOptions?.series?.length"
-          [series]="statusWiseChartOptions.series"
-          [labels]="statusWiseChartOptions.labels"
-          [chart]="statusWiseChartOptions.chart"
-          [title]="statusWiseChartOptions.title"
-          [colors]="statusWiseChartOptions.colors"
-          [legend]="{ position: 'bottom' }"
-          [plotOptions]="{
-            pie: {
-              donut: {
-                labels: {
-                  show: true,
-                  name: { show: true },
-                  value: { show: true },
-                  total: { show: true }
-                }
-              }
-            }
-          }"
-          [dataLabels]="statusWiseChartOptions.dataLabels"
-          [stroke]="{ show: false }">
-        </apx-chart>
-      </div>
-    </div> 
+<div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; max-height: 400px; display: flex; align-items: center; justify-content: center;">
+  <p-chart
+    *ngIf="!isStatusWiseLoading && statusWiseChartData"
+    type="pie"
+    [data]="statusWiseChartData"
+    [options]="statusWiseChartOptions"
+    style="width: 420px; height: 400px;"
+  ></p-chart>
 </div>
 
 

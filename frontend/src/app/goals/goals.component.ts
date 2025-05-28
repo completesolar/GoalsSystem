@@ -31,8 +31,6 @@ import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-
-// import { weekConstant } from '../common/common';
 import { DropdownModule } from 'primeng/dropdown';
 import { SelectModule } from 'primeng/select';
 import { Goals, GoalUpdateResponse } from '../models/goals';
@@ -153,7 +151,6 @@ columns = [
     { field: 'e', header: 'E' },
     { field: 'd', header: 'D' },
     { field: 's', header: 'S' },
-    // { field: 'fiscalyear', header: 'Year' },
     { field: 'gdb', header: 'GOAL DELIVERABLE' },
     { field: 'createdAt', header: 'Created Date & Time' },
   ];
@@ -244,7 +241,6 @@ columns = [
           return this.msalService.instance.handleRedirectPromise();
         })
         .then(() => {
-          // const whoInitial = this.goalsService.getInitial();                  
           this.loadGoals();
           this.loadWhoOptions();
           this.loadInitialData();
@@ -275,7 +271,6 @@ columns = [
             value: item.initials,
           }))
           .sort((a, b) => a.label.localeCompare(b.label));
-        // console.log("whoOptions",this.whoOptions)
       },
       error: (err) => {
         console.error('Failed to load WHO options:', err);
@@ -350,32 +345,21 @@ columns = [
       console.log('clone',this.isCloneEnabled);
     },
     error: () => {
-      this.isCloneEnabled = true; // fallback if needed
+      this.isCloneEnabled = true; 
     }
   });
 }
 loadGoals(): void {
-  // Fetch the currently signed-in user's email
   const userEmail = this.getLoggedInEmail();
-
-  // First, get the user's initials from the email
   this.goalsService.getUserInitials(userEmail).subscribe((response: { who: string }) => {
-    const userInitials = response.who;  // Get the initials from the response
-
-    // Now, get the supervisor hierarchy using the initials
+    const userInitials = response.who; 
     this.goalsService.getSupervisorHierarchy(userInitials).subscribe((response: { supervisor_names: string[] }) => {
-      const supervisorHierarchy = response.supervisor_names; // Get the supervisor hierarchy from the response
-      console.log('supervisor hierarchy', supervisorHierarchy); // Debug log
-
-      // Get the direct reports (subordinates) of the user (supervisor)
+      const supervisorHierarchy = response.supervisor_names; 
       this.goalsService.getDirectReports(userInitials).subscribe((directReports: { direct_reports: string[] }) => {
         const directReportsList = directReports.direct_reports;
-        console.log('direct reports:', directReportsList); // Debug log
-
-        // Now fetch the goals
         this.goalsService.getGoals().subscribe((goals: any[]) => {
           const filteredGoals = goals
-            .filter((g: any) => +g.fiscalyear === this.selectedYear.code) // Filter by fiscal year
+            .filter((g: any) => +g.fiscalyear === this.selectedYear.code) 
             .map((g) => ({
               ...g,
               goalid: g.goalid,
@@ -392,20 +376,11 @@ loadGoals(): void {
               isconfidential: !!g.isconfidential,
             }))
             .filter((goal: any) => {
-              // Check if the goal is confidential
               if (goal.isconfidential) {
-                // If the user is a supervisor or part of the goal owner's hierarchy or the goal owner themselves
                 const isSupervisorOrOwner = supervisorHierarchy.includes(goal.who) || goal.who === userInitials;
                 const isDirectReport = directReportsList.includes(goal.who);
-
-                // If the goal is confidential, show it if:
-                // - the user is the supervisor of the goal owner
-                // - the user is the goal owner
-                // - the user is a direct report of the goal owner
-                // - or if the user is in the direct report chain (direct reports of direct reports)
                 return isSupervisorOrOwner || isDirectReport;
               } else {
-                // Non-confidential goals should be visible to everyone, including regular employees
                 return true;
               }
             })
@@ -418,8 +393,6 @@ loadGoals(): void {
               const priorityB = isNaN(+b.p) ? Number.MAX_SAFE_INTEGER : +b.p;
               return priorityA - priorityB;
             });
-
-          // Assign the filtered goals to the view variables
           this.allGoals = filteredGoals;
           this.goal = [...filteredGoals];
           this.originalGoal = [...this.goal];
@@ -605,7 +578,7 @@ addGoal() {
   this.newRow.createddatetime = utcMoment.toDate();
   this.newRow.updateddatetime = utcMoment.toDate();
 
-  const email = this.getLoggedInEmail(); // Make sure you implement this method
+  const email = this.getLoggedInEmail(); 
   this.goalsService.getUserInitials(email).subscribe({
     next: (res) => {
       const currentUserInitial = res?.who?.toLowerCase() || '';
@@ -657,7 +630,6 @@ addGoal() {
     },
     error: (err) => {
       console.error('Failed to fetch user initials:', err);
-      // Proceed anyway OR show a fallback message
     }
   });
 }
@@ -1114,7 +1086,6 @@ addGoal() {
     this.isEdit = true;
     row.isEditable = true;
 
-    // Strip trailing colon from action for dropdown match
     if (typeof row.action === 'string') {
       row.action = row.action.replace(/:$/, '');
     }
@@ -1141,10 +1112,8 @@ addGoal() {
               'keydown',
               (event: KeyboardEvent) => {
                 if (event.key === 'Tab') {
-                  // console.log('Tab pressed - move to next field');
                   triggerEl.click();
                 } else {
-                  // console.log('Key pressed:', event.key);
                 }
               },
               { once: true }
@@ -1154,7 +1123,6 @@ addGoal() {
           }
         } else {
           console.warn('Could not find .p-select-label inside WHO');
-          // console.log('Wrapper content:', wrapperEl.innerHTML);
         }
       } else {
         console.warn('No wrapper found for WHO at index', index);
@@ -1213,7 +1181,6 @@ addGoal() {
       createddatetime: row.createddatetime,
       updateddatetime: moment().tz('America/Denver').toDate(),
     };
-    // console.log("updateddatetime",updatedGoal.updateddatetime)
     this.goalsService
       .updateGoal(updatedGoal)
       .subscribe((response: GoalUpdateResponse) => {
@@ -1298,9 +1265,6 @@ addGoal() {
       const updatedValue = updated[field];
 
       if (originalValue !== updatedValue) {
-        // console.log(
-        //   `Changed field: ${field} | Original: ${originalValue} | Updated: ${updatedValue}`
-        // );
       }
     }
   }
@@ -1335,7 +1299,7 @@ addGoal() {
         this.statusOptions = filteredStatus
           .map((item) => ({
             label: `${item.status} (${item.description})`,
-            value: item.status, // Store only the status code
+            value: item.status,
           }))
           .sort((a, b) => a.label.localeCompare(b.label));
       },
@@ -1873,7 +1837,6 @@ addGoal() {
 
       doc.text(title, titleX, titleY);
 
-      // Date + Sort Order block
       const currentMSTTime = moment().tz('America/Denver');
       const fileNameDate = currentMSTTime.format('MM-DD-YY');
       const formattedTime = currentMSTTime.format('hh-mm-ss A');
@@ -2070,7 +2033,6 @@ addGoal() {
           color: highlightColor,
         });
       } else if (op === DIFF_DELETE) {
-        // Skip deleted text
         let remainingLength = data.length;
         while (remainingLength > 0 && prevChunkIndex < previousChunks.length) {
           const chunk = previousChunks[prevChunkIndex];
