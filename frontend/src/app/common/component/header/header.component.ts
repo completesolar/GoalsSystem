@@ -85,24 +85,33 @@ export class HeaderComponent {
     }
   ];
 
-  ngOnInit() {
-    
-    this.today = new Date();
-    this.updateButtonLabel();
-    this.loadGlobalCloneSetting();
-    this.router.events.subscribe(() => {
-      this.updateButtonLabel();
-    });
-    this.getPermission();
-    if (isPlatformBrowser(this.platform)) {
-      this.userEmail = localStorage.getItem("email");
-      this.userName(this.userEmail);
-    }    this.goalService.accessChanged$.subscribe((shouldRefresh) => {
-      if (shouldRefresh) {
-        this.getPermission(); 
-      }
-    });
+ngOnInit() {
+  this.today = new Date();
+  this.updateButtonLabel();
+
+  const email = this.getLoggedInEmail();
+  if (email) {
+    this.userName(email);
+  } else {
+    console.warn('No logged-in user email found');
   }
+
+  this.loadGlobalCloneSetting();
+
+  this.router.events.subscribe(() => {
+    this.updateButtonLabel();
+  });
+
+  this.getPermission();
+
+  this.goalService.accessChanged$.subscribe((shouldRefresh) => {
+    if (shouldRefresh) {
+      this.getPermission();
+    }
+  });
+}
+
+  
 
   loadGlobalCloneSetting(): void {
   this.goalService.getGlobalCloneSetting().subscribe({
@@ -241,7 +250,6 @@ onDocumentClick(event: MouseEvent) {
     this.goalService.getUserInitials(userEmail).subscribe(
       (response: any) => {
         this.userInitials = `${response.who} (${response.name})`;
-        console.log("userInitials",this.userInitials)
       },
       (error) => {
         console.error("Error fetching user initials", error);
