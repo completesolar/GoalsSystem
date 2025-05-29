@@ -128,21 +128,30 @@ class="px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
       </span>
     </div>
     <p>WW{{ getCurrentWeekNumber() }}</p>
-    <p-select
-    [options]="[{ label: 'Logout', value: 'logout' }]"
-    [filter]="false"
-    [placeholder]="userInitials"
-    appendTo="body"
-    (onChange)="onLogoutChange($event)"
-    [showClear]="false"
-    class="settingSelect"
+<p-button
+(click)="menu.toggle($event)"
+text
+      size="small"
+      severity="secondary"
+      [label]="userInitials"
+      icon="pi pi-check"
+      iconPos="right"
+      styleClass="text-xs"
+      icon="pi pi-chevron-down"
+>
+</p-button>
+
+<p-menu #menu [model]="logoutOptions" [popup]="true">
+<ng-template let-item pTemplate="item">
+  <a
+    pRipple
+    class="flex items-center p-menu-item-link font-semibold"
+    [ngClass]="{ 'text-red-500': item.severity === 'danger' }"
   >
-  
-      <ng-template let-item pTemplate="item">
-        <div class="text-red-500 font-semibold">
-          {{ item.label }}
-        </div>
-      </ng-template>
-    </p-select>
+    <span class="ml-2">{{ item.label }}</span>
+  </a>
+</ng-template>
+</p-menu>
+
   </div>
 </div>
