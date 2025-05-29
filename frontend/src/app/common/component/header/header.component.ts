@@ -42,7 +42,11 @@ export class HeaderComponent {
   ) {}
   showSettings: boolean = false;
   isCloneEnabled: boolean = true;
-
+  // logoutOptions = [{ label: 'Logout', value: 'logout' }];
+  logoutOptions = [
+    { label: 'Logout', severity: 'danger', command: () => this.logout() },
+  ];
+ 
   settingsMenu = [
     {
       label: 'Priority',
@@ -82,6 +86,7 @@ export class HeaderComponent {
   ];
 
   ngOnInit() {
+    
     this.today = new Date();
     this.updateButtonLabel();
     this.loadGlobalCloneSetting();
@@ -236,6 +241,7 @@ onDocumentClick(event: MouseEvent) {
     this.goalService.getUserInitials(userEmail).subscribe(
       (response: any) => {
         this.userInitials = `${response.who} (${response.name})`;
+        console.log("userInitials",this.userInitials)
       },
       (error) => {
         console.error("Error fetching user initials", error);
