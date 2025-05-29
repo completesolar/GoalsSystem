@@ -79,23 +79,203 @@ export class GoalsMetricsComponent implements OnInit {
     });
   }
 
+  // }
+  // onFilterChange() {
+  //   const vpValues = this.selectedVP.length > 0 ? this.selectedVP : null;
+  //   const projValue = this.selectedProject?.value ?? null;
+  
+  //   const filteredRes = this.filterMetricsByVP(this.cachedMetricsResponse, vpValues);
+  
+  //   this.buildProjectsByVPChart(filteredRes);
+  
+  //   if (projValue) {
+  //     this.buildProjectStatusChartFiltered(projValue);
+  //   } else {
+  //     this.buildProjectStatusChart(filteredRes);
+  //   }
+  
+  //   this.buildStatusWiseChart(filteredRes);
+  //   this.cdRef.detectChanges();
+  // }
+
+
+
+
   onFilterChange() {
     const vpValues = this.selectedVP.length > 0 ? this.selectedVP : null;
     const projValue = this.selectedProject?.value ?? null;
-
-    if ((!vpValues || vpValues.length === 0) && !projValue) {
-      this.buildProjectsByVPChart(this.cachedMetricsResponse);
-      this.buildProjectStatusChart(this.cachedMetricsResponse);
-      this.buildStatusWiseChart(this.cachedMetricsResponse);
-    } else {
-      this.buildProjectsByVPChartFiltered(vpValues);
-      this.buildProjectStatusChartFiltered(projValue);
-      this.buildStatusWiseChart(this.cachedMetricsResponse); // or filter if needed
-    }
-
+  
+    const filteredRes = this.filterMetricsByVPAndProject(this.cachedMetricsResponse, vpValues, projValue);
+  
+    this.buildProjectsByVPChart(filteredRes);
+    this.buildProjectStatusChart(filteredRes);
+    this.buildStatusWiseChart(filteredRes);
+  
     this.cdRef.detectChanges();
   }
+  filterMetricsByVPAndProject(metrics: any, selectedVPs: string[] | null, selectedProject: string | null): any {
+    const vpIndexMap = metrics.projectsByVP.categories.reduce((acc: any, vp: string, idx: number) => {
+      if (!selectedVPs || selectedVPs.includes(vp)) acc[vp] = idx;
+      return acc;
+    }, {});
+  
+    const filteredVPs = Object.keys(vpIndexMap);
+  
+    const filteredProjectsSet = new Set<string>();
+    metrics.projectsByVP.series.forEach((serie: any) => {
+      serie.data.forEach((count: number, idx: number) => {
+        const vp = metrics.projectsByVP.categories[idx];
+        const project = serie.name;
+        if ((!selectedVPs || selectedVPs.includes(vp)) && count > 0) {
+          filteredProjectsSet.add(project);
+        }
+      });
+    });
+  
+    let filteredProjects = Array.from(filteredProjectsSet);
+    if (selectedProject) {
+      filteredProjects = filteredProjects.filter((proj) => proj === selectedProject);
+    }
+  
+    const projectsByVPSeries = metrics.projectsByVP.series
+      .filter((serie: any) => filteredProjects.includes(serie.name))
+      .map((serie: any) => ({
+        name: serie.name,
+        data: filteredVPs.map(vp => serie.data[vpIndexMap[vp]] ?? 0),
+      }));
+  
+    const projIndexMap = metrics.projectWiseByStatus.categories.reduce((acc: any, proj: string, idx: number) => {
+      if (filteredProjects.includes(proj)) acc[proj] = idx;
+      return acc;
+    }, {});
+  
+    const filteredProjectsFinal = Object.keys(projIndexMap);
+  
+    const projectStatusSeries = metrics.projectWiseByStatus.series.map((serie: any) => ({
+      name: serie.name,
+      data: filteredProjectsFinal.map(proj => serie.data[projIndexMap[proj]] ?? 0),
+    }));
+  
+    const statusCountMap: { [key: string]: number } = {};
+    metrics.projectWiseByStatus.series.forEach((serie: any) => {
+      serie.data.forEach((count: number, idx: number) => {
+        const proj = metrics.projectWiseByStatus.categories[idx];
+        if (filteredProjects.includes(proj)) {
+          statusCountMap[serie.name] = (statusCountMap[serie.name] || 0) + count;
+        }
+      });
+    });
+  
+    const statusWise = Object.entries(statusCountMap).map(([status, count]) => ({
+      status,
+      count,
+    }));
+  
+    return {
+      ...metrics,
+      projectsByVP: {
+        categories: filteredVPs,
+        series: projectsByVPSeries,
+      },
+      projectWiseByStatus: {
+        categories: filteredProjectsFinal,
+        series: projectStatusSeries,
+      },
+      statusWise,
+    };
+  }
+    
+  filterMetricsByVP(metrics: any, selectedVPs: string[] | null): any {
+    if (!selectedVPs || selectedVPs.length === 0) {
+      return metrics;
+    }
+  
+    // 1. Filter ProjectsByVP
+    const vpIndexMap = metrics.projectsByVP.categories.reduce((acc: any, vp: string, idx: number) => {
+      if (selectedVPs.includes(vp)) acc[vp] = idx;
+      return acc;
+    }, {});
+  
+    const filteredVPs = Object.keys(vpIndexMap);
+    const projectsByVPSeries = metrics.projectsByVP.series.map((serie: any) => ({
+      name: serie.name,
+      data: filteredVPs.map(vp => serie.data[vpIndexMap[vp]] ?? 0),
+    }));
+  
+    // 2. Get valid projects for selected VPs
+    const validProjectsSet = new Set<string>();
+    metrics.projectsByVP.series.forEach((serie: any) => {
+      serie.data.forEach((count: number, idx: number) => {
+        const vp = metrics.projectsByVP.categories[idx];
+        const project = serie.name;
+        if (selectedVPs.includes(vp) && count > 0) {
+          validProjectsSet.add(project);
+        }
+      });
+    });
+    const validProjects = Array.from(validProjectsSet);
+  
+    // 3. Filter ProjectWiseByStatus
+    const projIndexMap = metrics.projectWiseByStatus.categories.reduce((acc: any, proj: string, idx: number) => {
+      if (validProjects.includes(proj)) acc[proj] = idx;
+      return acc;
+    }, {});
+    const filteredProjects = Object.keys(projIndexMap);
+    const projectStatusSeries = metrics.projectWiseByStatus.series.map((serie: any) => ({
+      name: serie.name,
+      data: filteredProjects.map(proj => serie.data[projIndexMap[proj]] ?? 0),
+    }));
+  
+    // 4. Filter StatusWise based on above validProjects (optional approximation)
+    const statusCountMap: { [key: string]: number } = {};
+    metrics.projectWiseByStatus.series.forEach((serie: any) => {
+      serie.data.forEach((count: number, idx: number) => {
+        const proj = metrics.projectWiseByStatus.categories[idx];
+        if (validProjects.includes(proj)) {
+          statusCountMap[serie.name] = (statusCountMap[serie.name] || 0) + count;
+        }
+      });
+    });
+  
+    const statusWise = Object.entries(statusCountMap).map(([status, count]) => ({
+      status,
+      count,
+    }));
+  
+    return {
+      ...metrics,
+      projectsByVP: {
+        categories: filteredVPs,
+        series: projectsByVPSeries
+      },
+      projectWiseByStatus: {
+        categories: filteredProjects,
+        series: projectStatusSeries
+      },
+      statusWise
+    };
+  }
 
+
+  getChartStyle(chartData: any): { [key: string]: string } {
+    const labelCount = chartData?.labels?.length ?? 0;
+    if (labelCount >= 1 && labelCount <= 6) {
+      return {
+        width: '300px',
+        display: 'block'
+      };
+    } else {
+      return {
+        minWidth: '100%',
+        display: 'block'
+      };
+    }
+  }
+
+  
+
+  
+  
   buildProjectsByVPChart(res: any) {
     const labels = res.projectsByVP.categories;
     const colors = [
@@ -111,6 +291,10 @@ export class GoalsMetricsComponent implements OnInit {
       stack: 'Stack 0',
     }));
 
+
+
+    
+
     this.projectsByVPChartData = {
       labels,
       datasets,
@@ -118,6 +302,7 @@ export class GoalsMetricsComponent implements OnInit {
 
     this.projectsByVPChartOptions = {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
           position: 'top',

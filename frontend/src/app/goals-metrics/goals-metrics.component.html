@@ -31,34 +31,34 @@
     </div>
   </div>
 
-<div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; overflow-x: auto;">
+<div class="bg-white p-3 border-round-md flex justify-content-center align-items-center" >
   <p-chart
-    *ngIf="!isProjectsByVPLoading && projectsByVPChartData"
-    type="bar"
-    [data]="projectsByVPChartData"
-    [options]="projectsByVPChartOptions"
-    style="min-width: 1000px; height: 400px;"
-  ></p-chart>
+  *ngIf="!isProjectsByVPLoading && projectsByVPChartData"
+  type="bar"
+  [data]="projectsByVPChartData"
+  [options]="projectsByVPChartOptions"
+  [style]="getChartStyle(projectsByVPChartData)"
+></p-chart>
 </div>
 
-<div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; overflow-x: auto; overflow-y: hidden;">
+<div class="bg-white p-3 border-round-md flex justify-content-center align-items-center" >
   <p-chart
     *ngIf="!isProjectStatusLoading && projectStatusChartData"
     type="bar"
     [data]="projectStatusChartData"
     [options]="projectStatusChartOptions"
-    style="min-width: 1500px; height: 400px;"
-  ></p-chart>
+    [style]="getChartStyle(projectStatusChartData)"
+    ></p-chart>
 </div>
 
-<div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; max-height: 400px; display: flex; align-items: center; justify-content: center;">
+<div class="bg-white p-3 border-round-md flex justify-content-center align-items-center" >
   <p-chart
     *ngIf="!isStatusWiseLoading && statusWiseChartData"
     type="pie"
     [data]="statusWiseChartData"
     [options]="statusWiseChartOptions"
-    style="width: 420px; height: 400px;"
-  ></p-chart>
+    [style]="getChartStyle(statusWiseChartData)"
+    ></p-chart>
 </div>
 
 

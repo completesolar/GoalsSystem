@@ -55,3 +55,8 @@
     transform: translate(-50%, -50%); 
     z-index: 10; 
   }  
+
+  ::ng-deep canvas {
+    width: 100% !important;
+    height: 450px !important;
+  }
