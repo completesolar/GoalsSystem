@@ -101,7 +101,10 @@
           >
             Manage Roles
           </div>
-<div class="px-4 py-2 hover:bg-gray-100 flex items-center gap-2" (click)="$event.stopPropagation()">
+<div 
+class="px-4 py-2 hover:bg-gray-100 flex items-center gap-2" 
+*ngIf="goalService.userData?.access?.includes('enable_clone')"
+(click)="$event.stopPropagation()">
   <p-checkbox
     inputId="cloneToggle"
     [(ngModel)]="isCloneEnabled"
@@ -124,17 +127,17 @@
         {{ today | date: 'MM-dd-yyyy' }}
       </span>
     </div>
-
+    <p>WW{{ getCurrentWeekNumber() }}</p>
     <p-select
-      [options]="[{ label: 'Logout', value: 'logout' }]"
-      [filter]="false"
-      [style]="{ width: '6rem' }"
-      placeholder="WW{{ getCurrentWeekNumber() }}"
-      appendTo="body"
-      (onChange)="onLogoutChange($event)"
-      [showClear]="false"
-      class="settingSelect"
-    >
+    [options]="[{ label: 'Logout', value: 'logout' }]"
+    [filter]="false"
+    [placeholder]="userInitials"
+    appendTo="body"
+    (onChange)="onLogoutChange($event)"
+    [showClear]="false"
+    class="settingSelect"
+  >
+  
       <ng-template let-item pTemplate="item">
         <div class="text-red-500 font-semibold">
           {{ item.label }}

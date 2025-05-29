@@ -433,19 +433,20 @@ def get_who_and_vp_by_email(email: str, db: Session = Depends(get_db)):
     
     result = db.execute(
         text("""
-            SELECT w.initials AS who,
-                   sv.initials AS vp
-            FROM public.who w
-            LEFT JOIN public.who sv ON w.supervisor_name = sv.employee_name
-            WHERE LOWER(w.primary_email) = LOWER(:email)
+            SELECT
+    w.initials AS who,
+    w.employee_name AS employee,
+    sv.initials AS vp
+FROM public.who w
+LEFT JOIN public.who sv ON w.supervisor_name = sv.employee_name
+WHERE LOWER(w.primary_email) = LOWER(:email)
         """),
         {"email": email}
     ).fetchone()
 
     if not result:
         raise HTTPException(status_code=404, detail="User not found or supervisor not mapped")
-
-    return {"who": result[0], "vp": result[1]}
+    return {"who": result[0], "name": result[1],"vp": result[2]}
 
 @router.get("/api/supervisor-chain/{who}", response_model=SupervisorChainResponse)
 def get_supervisor_chain_endpoint(who: str, db: Session = Depends(get_db)):
@@ -453,11 +454,11 @@ def get_supervisor_chain_endpoint(who: str, db: Session = Depends(get_db)):
     supervisor_chain = get_supervisor_chain(db, who)
     return supervisor_chain
 
-@router.get("/api/who-initials/{email}")
-async def get_user_initials_endpoint(email: str, db: Session = Depends(get_db)):
-    # Fetch the initials using the function
-    initials = get_user_initials(db, email)
-    return {"who": initials}
+# @router.get("/api/who-initials/{email}")
+# async def get_user_initials_endpoint(email: str, db: Session = Depends(get_db)):
+#     # Fetch the initials using the function
+#     initials = get_user_initials(db, email)
+#     return {"who": initials}
 
 @router.get("/api/direct-reports/{supervisor_initials}")
 async def get_direct_reports_endpoint(supervisor_initials: str, db: Session = Depends(get_db)):

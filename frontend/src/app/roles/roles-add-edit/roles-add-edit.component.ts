@@ -68,6 +68,7 @@ export class RolesAddEditComponent implements OnInit {
         { key: 'delinquent', label: 'Delinquent' },
         { key: 'add_roles', label: 'Add roles' },
         { key: 'manage_role', label: 'Manage role' },
+        { key: 'enable_clone', label: 'Enable clone' },
       ],
     },
   ];
