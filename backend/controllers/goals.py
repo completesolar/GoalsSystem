@@ -454,11 +454,11 @@ def get_supervisor_chain_endpoint(who: str, db: Session = Depends(get_db)):
     supervisor_chain = get_supervisor_chain(db, who)
     return supervisor_chain
 
-# @router.get("/api/who-initials/{email}")
-# async def get_user_initials_endpoint(email: str, db: Session = Depends(get_db)):
-#     # Fetch the initials using the function
-#     initials = get_user_initials(db, email)
-#     return {"who": initials}
+@router.get("/api/who-initials/{email}")
+async def get_user_initials_endpoint(email: str, db: Session = Depends(get_db)):
+    # Fetch the initials using the function
+    initials = get_user_initials(db, email)
+    return {"who": initials}
 
 @router.get("/api/direct-reports/{supervisor_initials}")
 async def get_direct_reports_endpoint(supervisor_initials: str, db: Session = Depends(get_db)):
