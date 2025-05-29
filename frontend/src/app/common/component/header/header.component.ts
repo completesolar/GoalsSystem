@@ -75,6 +75,9 @@ export class HeaderComponent {
     {
       label: 'Manage Roles',
       routerLink: ['/manage_role'],
+    },
+    {
+      label: 'Enable clone',
     }
   ];
 

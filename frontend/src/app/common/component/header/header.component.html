@@ -101,7 +101,10 @@
           >
             Manage Roles
           </div>
-<div class="px-4 py-2 hover:bg-gray-100 flex items-center gap-2" (click)="$event.stopPropagation()">
+<div 
+class="px-4 py-2 hover:bg-gray-100 flex items-center gap-2" 
+*ngIf="goalService.userData?.access?.includes('enable_clone')"
+(click)="$event.stopPropagation()">
   <p-checkbox
     inputId="cloneToggle"
     [(ngModel)]="isCloneEnabled"
