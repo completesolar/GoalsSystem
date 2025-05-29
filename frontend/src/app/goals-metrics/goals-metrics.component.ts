@@ -6,6 +6,9 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import { MultiSelect, MultiSelectModule } from 'primeng/multiselect';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { Chart } from 'chart.js';
+Chart.register(ChartDataLabels);
 
 @Component({
   standalone: true,
@@ -78,25 +81,6 @@ export class GoalsMetricsComponent implements OnInit {
       this.cdRef.detectChanges();
     });
   }
-
-  // }
-  // onFilterChange() {
-  //   const vpValues = this.selectedVP.length > 0 ? this.selectedVP : null;
-  //   const projValue = this.selectedProject?.value ?? null;
-  
-  //   const filteredRes = this.filterMetricsByVP(this.cachedMetricsResponse, vpValues);
-  
-  //   this.buildProjectsByVPChart(filteredRes);
-  
-  //   if (projValue) {
-  //     this.buildProjectStatusChartFiltered(projValue);
-  //   } else {
-  //     this.buildProjectStatusChart(filteredRes);
-  //   }
-  
-  //   this.buildStatusWiseChart(filteredRes);
-  //   this.cdRef.detectChanges();
-  // }
 
 
 
@@ -271,6 +255,20 @@ export class GoalsMetricsComponent implements OnInit {
       };
     }
   }
+  getProjChartStyle(chartData: any): { [key: string]: string } {
+    const labelCount = chartData?.labels?.length ?? 0;
+    if (labelCount >= 1 && labelCount <= 6) {
+      return {
+        width: '300px',
+        display: 'block'
+      };
+    } else {
+      return {
+        minWidth: '100%',
+        display: 'block'
+      };
+    }
+  }
 
   
 
@@ -299,7 +297,6 @@ export class GoalsMetricsComponent implements OnInit {
       labels,
       datasets,
     };
-
     this.projectsByVPChartOptions = {
       responsive: true,
       maintainAspectRatio: false,
@@ -310,7 +307,31 @@ export class GoalsMetricsComponent implements OnInit {
             boxWidth: 10,
           }
         },
-        title: { display: true, text: 'Projects by VP' },
+        title: {
+          display: true,
+          text: 'Projects by VP'
+        },
+        datalabels: {
+          anchor: 'end',
+          align: 'end',
+          font: {
+            weight: 'bold'
+          },
+          formatter: (value: any, context: any) => {
+            const datasets = context.chart.data.datasets;
+            const dataIndex = context.dataIndex;
+            const datasetIndex = context.datasetIndex;
+    
+            if (datasetIndex === datasets.length - 1) {
+              let total = 0;
+              datasets.forEach((ds: any) => {
+                total += ds.data[dataIndex] || 0;
+              });
+              return total;
+            }
+            return '';
+          }
+        }
       },
       scales: {
         x: { 
@@ -371,15 +392,42 @@ export class GoalsMetricsComponent implements OnInit {
 
     this.projectStatusChartOptions = {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
           position: 'top',
           labels: {
             boxWidth: 10,
+            padding:20
           }
         },
-        title: { display: true, text: 'Goals by Project (Status-wise)' },
+        title: {
+          display: true,
+          text: 'Goals by Project (Status-wise)'
+        },
+        datalabels: {
+          anchor: 'end',
+          align: 'end',
+          font: {
+            weight: 'bold'
+          },
+          formatter: (value: any, context: any) => {
+            const datasets = context.chart.data.datasets;
+            const dataIndex = context.dataIndex;
+            const datasetIndex = context.datasetIndex;
+    
+            if (datasetIndex === datasets.length - 1) {
+              let total = 0;
+              datasets.forEach((ds: any) => {
+                total += ds.data[dataIndex] || 0;
+              });
+              return total;
+            }
+            return '';
+          }
+        }
       },
+      
       scales: {
         x: { 
           stacked: true, 
@@ -393,6 +441,7 @@ export class GoalsMetricsComponent implements OnInit {
         },
       },
     };
+    
   }
 
   buildProjectStatusChartFiltered(selectedProject: string | null) {
@@ -438,14 +487,30 @@ export class GoalsMetricsComponent implements OnInit {
         },
       ],
     };
-
     this.statusWiseChartOptions = {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
-        legend: { position: 'right' },
-        title: { display: true, text: 'Status-wise Goal Distribution' },
-      },
+        legend: {
+          position: 'right',
+          labels: {
+            boxWidth: 10,
+          }
+        },
+        title: {
+          display: true,
+          text: 'Status-wise Goal Distribution'
+        },
+        datalabels: {
+          display: false 
+        },
+        tooltip: {
+          enabled: true 
+        }
+      }
     };
+    
+       
   }
 
   clearFilters() {
@@ -453,4 +518,16 @@ export class GoalsMetricsComponent implements OnInit {
     this.selectedProject = null;
     this.onFilterChange();
   }
+  projectsByVPTotal(): number {
+    if (!this.projectsByVPChartData?.datasets) return 0;
+    return this.projectsByVPChartData.datasets.reduce((total: any, ds: any) => 
+      total + ds.data.reduce((sum: number, val: number) => sum + val, 0), 0);
+  }
+  
+  projectStatusTotal(): number {
+    if (!this.projectStatusChartData?.datasets) return 0;
+    return this.projectStatusChartData.datasets.reduce((total: any, ds: any) => 
+      total + ds.data.reduce((sum: number, val: number) => sum + val, 0), 0);
+  }
+  
 }

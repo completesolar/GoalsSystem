@@ -56,7 +56,13 @@
     z-index: 10; 
   }  
 
-  ::ng-deep canvas {
+  ::ng-deep .bar-chart canvas {
     width: 100% !important;
     height: 450px !important;
   }
+  p.text-center.font-bold {
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #333;
+  }
+  

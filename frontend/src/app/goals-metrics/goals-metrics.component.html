@@ -4,33 +4,38 @@
     <div>Dashboard</div>
     <div class="flex gap-2 align-items-center">
       <p-multiSelect
-      placeholder="Select VP" 
-      [options]="vpOptions"
-      [(ngModel)]="selectedVP"
-      optionLabel="label"
-      optionValue="value"    
-      styleClass="p-select-sm"
-      (onChange)="onFilterChange()"
-      [showClear]="true"
-    ></p-multiSelect>
-    
-      <p-select 
-        [options]="projectOptions" 
-        [(ngModel)]="selectedProject" 
-        placeholder="Select Project" 
-        optionLabel="label" 
+        placeholder="Select VP"
+        [options]="vpOptions"
+        [(ngModel)]="selectedVP"
+        optionLabel="label"
+        optionValue="value"
         styleClass="p-select-sm"
         (onChange)="onFilterChange()"
-        [showClear]="true"
-
+        [style]="{ height: '32px' ,fontSize: '14px'}"
+      ></p-multiSelect>
+    
+      <p-select
+        [options]="projectOptions"
+        [(ngModel)]="selectedProject"
+        placeholder="Select Project"
+        optionLabel="label"
+        styleClass="p-select-sm"
+        (onChange)="onFilterChange()"
+        [style]="{ height: '32px',fontSize: '14px' }"
       ></p-select>
-      <p-button icon="pi pi-filter-slash" (click)="clearFilters()" severity="success" size="small" label="Clear"
-      [style]="{ height: '24px', fontSize: '14px', width:'70px'}"></p-button>
-
-
+    
+      <p-button
+        icon="pi pi-filter-slash"
+        (click)="clearFilters()"
+        severity="success"
+        size="small"
+        label="Clear"
+        [style]="{ height: '32px', fontSize: '14px', width: '70px' }"
+      ></p-button>
     </div>
+    
   </div>
-
+  
 <div class="bg-white p-3 border-round-md flex justify-content-center align-items-center" >
   <p-chart
   *ngIf="!isProjectsByVPLoading && projectsByVPChartData"
@@ -38,6 +43,7 @@
   [data]="projectsByVPChartData"
   [options]="projectsByVPChartOptions"
   [style]="getChartStyle(projectsByVPChartData)"
+  class="bar-chart"
 ></p-chart>
 </div>
 
@@ -47,47 +53,17 @@
     type="bar"
     [data]="projectStatusChartData"
     [options]="projectStatusChartOptions"
-    [style]="getChartStyle(projectStatusChartData)"
+    [style]="getProjChartStyle(projectStatusChartData)"
+    class="bar-chart"
     ></p-chart>
-</div>
+</div> 
 
-<div class="bg-white p-3 border-round-md flex justify-content-center align-items-center" >
+<div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; max-height: 400px; display: flex; align-items: center; justify-content: center;">
   <p-chart
     *ngIf="!isStatusWiseLoading && statusWiseChartData"
     type="pie"
     [data]="statusWiseChartData"
     [options]="statusWiseChartOptions"
-    [style]="getChartStyle(statusWiseChartData)"
-    ></p-chart>
+    style="width: 420px; height: 400px;"
+  ></p-chart>
 </div>
-
-
-
-  <!-- Year-wise & Status-wise Charts (Bottom Row) -->
-  <!-- <div class="flex gap-3 p-3" style="flex-wrap: wrap;">
-    <div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; max-height: 400px; overflow-y: auto;">
-      <p-progressSpinner *ngIf="isStatusWiseLoading" styleClass="custom-spinner"></p-progressSpinner>
-      <apx-chart
-        *ngIf="!isStatusWiseLoading && statusWiseChartOptions?.series?.length"
-        [series]="statusWiseChartOptions.series"
-        [labels]="statusWiseChartOptions.labels"
-        [chart]="statusWiseChartOptions.chart"
-        [title]="statusWiseChartOptions.title"
-        [colors]="statusWiseChartOptions.colors"
-        [legend]="{ position: 'bottom' }"
-        [plotOptions]="{
-          pie: {
-            donut: {
-              labels: {
-                show: true,
-                name: { show: true },
-                value: { show: true },
-                total: { show: true }
-              }
-            }
-          }
-        }"
-        [dataLabels]="statusWiseChartOptions.dataLabels"
-        [stroke]="{ show: false }">
-      </apx-chart>
-    </div> -->
