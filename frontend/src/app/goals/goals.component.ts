@@ -525,17 +525,23 @@ loadGoals(): void {
   onYearChange() {
     this.loadGoals();
   }
-  isValidGoalData(goal: Goals): string[] {
-    const missingFields: string[] = [];
-    if (!goal.p) missingFields.push('P');
-    if (!goal.proj) missingFields.push('Proj');
-    if (!goal.vp) missingFields.push('VP');
-    if (!goal.b) missingFields.push('B');
-    if (!goal.s) missingFields.push('S');
-    if (!goal.action) missingFields.push('Action');
-    if (!goal.description) missingFields.push('Goal Deliverable');
-    return missingFields;
+isValidGoalData(goal: Goals): string[] {
+  const missingFields: string[] = [];
+  if (!goal.p) missingFields.push('P');
+  if (!goal.proj) missingFields.push('Proj');
+  if (!goal.vp) missingFields.push('VP');
+  if (!goal.b) missingFields.push('B');
+  if (!goal.s) missingFields.push('S');
+  if (!goal.action) missingFields.push('Action');
+  if (!goal.description) missingFields.push('Goal Deliverable');
+
+  // Fiscal year validation
+  const yearRegex = /^20[2-9][0-9]$/;
+  if (!goal.fiscalyear || !yearRegex.test(goal.fiscalyear.toString())) {
+    missingFields.push('Fiscal Year (valid year between 2020 and 2099)');
   }
+  return missingFields;
+}
   addNewRow() {
     this.newRow = {
       who: '',
@@ -1459,38 +1465,38 @@ addGoal() {
   toggleLegend() {
     this.isLegendVisible = !this.isLegendVisible;
   }
-  getFilterOptions(field: string): any[] {
-    let options: any[];
-    if (field === 'who') {
-      options = [...this.whoOptions];
-    } else if (field === 'vp') {
-      options = [...this.vpOptions];
-    } else if (field === 's') {
-      options = [...this.statusOptions];
-    } else {
-      const uniqueValues = [
-        ...new Set(this.allGoals.map((row: any) => row[field] ?? '')),
-      ];
-      options = uniqueValues.map((val) => ({
-        label: val === '' ? 'Empty' : val,
-        value: val,
-      }));
-    }
-
-    const selected = this.selectedFilters[field] || [];
-    return options.sort((a, b) => {
-      const isSelectedA = selected.some((sel: any) => sel.value === a.value);
-      const isSelectedB = selected.some((sel: any) => sel.value === b.value);
-
-      if (isSelectedA && !isSelectedB) {
-        return -1;
-      } else if (!isSelectedA && isSelectedB) {
-        return 1;
-      } else {
-        return 0;
-      }
-    });
+getFilterOptions(field: string): any[] {
+  let options: any[];
+  if (field === 'who') {
+    options = [...this.whoOptions];
+  } else if (field === 'vp') {
+    options = [...this.vpOptions];
+  } else if (field === 's') {
+    options = [...this.statusOptions];
+  } else {
+    const uniqueValues = [...new Set(this.allGoals.map((row: any) => row[field] ?? ''))];
+    options = uniqueValues.map((val) => ({
+      label: val === '' ? 'Empty' : val,
+      value: val,
+    }));
+    // Sort these options ascending by label
+    options.sort((a, b) => (a.label > b.label ? 1 : a.label < b.label ? -1 : 0));
   }
+
+  const selected = this.selectedFilters[field] || [];
+  return options.sort((a, b) => {
+    const isSelectedA = selected.some((sel: any) => sel.value === a.value);
+    const isSelectedB = selected.some((sel: any) => sel.value === b.value);
+
+    if (isSelectedA && !isSelectedB) {
+      return -1;
+    } else if (!isSelectedA && isSelectedB) {
+      return 1;
+    } else {
+      return 0;
+    }
+  });
+}
   onFilterChange(field: string): void {
   this.activeFilters[field] =
     Array.isArray(this.selectedFilters[field]) &&
@@ -1570,9 +1576,14 @@ addGoal() {
       this.confirmationService.close();
     }, 5000);
   }
-  cancelEdit(row: any) {
-    row.isEditable = false;
+cancelEdit(row: any): void {
+  if (this.previousRow && this.previousRow.goalid === row.goalid) {
+    Object.assign(row, JSON.parse(JSON.stringify(this.previousRow)));
   }
+  row.isEditable = false;
+  this.isEdit = false;
+  this.previousRow = null;
+}
   getSmartDiffChunksForAction(
     current: string,
     previous: string,
