@@ -147,9 +147,21 @@ export class GoalsService {
     return this.http.get(`${this.baseURL}/action`);
   }
 
-  getGoalsMetrics() {
-    return this.http.get<any>(`${this.baseURL}/goals/metrics`);
+  // getGoalsMetrics() {
+  //   return this.http.get<any>(`${this.baseURL}/goals/metrics`);
+  // }
+  
+getGoalsMetrics(selectedVPs?: string[], selectedProject?: string): Observable<any> {
+    let params = new HttpParams();
+    if (selectedVPs && selectedVPs.length > 0) {
+      params = params.set('vps', selectedVPs.join(','));
+    }
+    if (selectedProject) {
+      params = params.set('project', selectedProject);
+    }
+    return this.http.get<any>(`${this.baseURL}/goals/metrics`, { params });
   }
+  
   createB(b: any) {
     return this.http.post(`${this.baseURL}/b`, b);
   }
