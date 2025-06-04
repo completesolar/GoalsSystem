@@ -151,13 +151,16 @@ export class GoalsService {
   //   return this.http.get<any>(`${this.baseURL}/goals/metrics`);
   // }
   
-getGoalsMetrics(selectedVPs?: string[], selectedProject?: string): Observable<any> {
+getGoalsMetrics(selectedVPs?: string[], selectedProject?: string, userInitials?: string): Observable<any> {
     let params = new HttpParams();
     if (selectedVPs && selectedVPs.length > 0) {
       params = params.set('vps', selectedVPs.join(','));
     }
     if (selectedProject) {
       params = params.set('project', selectedProject);
+    }
+    if (userInitials) {
+      params = params.set('userInitials', userInitials); // Add user_initials to the request
     }
     return this.http.get<any>(`${this.baseURL}/goals/metrics`, { params });
   }

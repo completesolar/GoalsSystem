@@ -496,14 +496,23 @@ def update_goal(db: Session, goal_id: int, goal_update: GoalsUpdate):
 #         "statusWise": [{"status": (row.s or "Unassigned").strip(), "count": row.count} for row in statuswise_data]
 #     }
 
-def get_goals_metrics(db: Session):
+def get_goals_metrics(
+    db: Session,
+    selected_vps: Optional[list[str]] = None,
+    selected_project: Optional[str] = None,
+    user_initials: Optional[str] = None  # Optional user initials filter
+):
+    # Base query filtered by vp and project if provided
     base_query = db.query(Goals)
     if selected_vps:
         base_query = base_query.filter(Goals.vp.in_(selected_vps))
     if selected_project:
         base_query = base_query.filter(Goals.proj == selected_project)
+    
+    if user_initials:
+        # Filter by user initials if provided
+        base_query = base_query.filter(Goals.who == user_initials)
 
-    # 1. Completed and Delinquent counts
     # 1. Completed and Delinquent counts
     completed_delinquent_data = {"Completed": 0, "Delinquent": 0}
     for row in base_query.with_entities(Goals.s, func.count().label("count"))\
@@ -514,10 +523,29 @@ def get_goals_metrics(db: Session):
         elif row.s == 'D':
             completed_delinquent_data["Delinquent"] = row.count
 
-    # 2. Valid projects from Proj table (unfiltered, to maintain master list)
-    valid_projects = set(proj_row.proj for proj_row in db.query(Proj.proj).all())
+    # 2. Total Goals in DB (filtered by selected_vps and selected_project)
+    total_goals = base_query.count()
 
-    # 3. Project-wise by all statuses
+    # 3. Status-wise Goals Count (filtered based on selected_vps and selected_project)
+    statuswise_data = base_query.with_entities(
+        Goals.s,
+        func.count().label('count')
+    ).group_by(Goals.s).all()
+
+    # Clean up statuswise data: normalize the status to uppercase and aggregate counts for duplicate statuses
+    statuswise_cleaned = {}
+    for row in statuswise_data:
+        status = row.s.strip().upper() if row.s else "UNASSIGNED"
+        
+        if status not in statuswise_cleaned:
+            statuswise_cleaned[status] = row.count
+        else:
+            statuswise_cleaned[status] += row.count
+
+    # Convert to a list of dictionaries for the response
+    statuswise_cleaned_data = [{"status": status, "count": count} for status, count in statuswise_cleaned.items()]
+
+    # 4. Project-wise by all statuses
     status_list = ['C', 'CD', 'K', 'N', 'ND', 'R']
     raw_project_status_data = base_query.with_entities(
         Goals.proj,
@@ -534,28 +562,22 @@ def get_goals_metrics(db: Session):
             project_status_map[proj] = {}
         project_status_map[proj][status] = row.count
 
-    all_projects_status = sorted(project_status_map.keys())
+    all_projects = sorted(project_status_map.keys())
 
     project_status_series = []
     for status in status_list:
         project_status_series.append({
             "name": status,
-            "data": [project_status_map.get(p, {}).get(status, 0) for p in all_projects_status]
+            "data": [project_status_map.get(p, {}).get(status, 0) for p in all_projects]
         })
 
-    # 4. Year-wise Goals
+    # 5. Year-wise Goals
     yearwise_data = base_query.with_entities(
         Goals.fiscalyear,
         func.count().label('count')
     ).group_by(Goals.fiscalyear).order_by(Goals.fiscalyear).all()
 
-    # 5. Status-wise Goals
-    statuswise_data = base_query.with_entities(
-        Goals.s,
-        func.count().label('count')
-    ).group_by(Goals.s).all()
-
-    # 6. VP-wise Goals by Project (REVERSED: VP → Project)
+    # 6. VP-wise Goals by Project
     raw_vp_proj_data = base_query.with_entities(
         Goals.vp,
         Goals.proj,
@@ -569,33 +591,46 @@ def get_goals_metrics(db: Session):
     for row in raw_vp_proj_data:
         vp = (row.vp or unassigned_vp).strip()
         proj = (row.proj or unassigned_proj).strip().upper()
-        if vp not in vp_proj_map:
-            vp_proj_map[vp] = {}
-        vp_proj_map[vp][proj] = row.count
+        if proj not in vp_proj_map:
+            vp_proj_map[proj] = {}
+        vp_proj_map[proj][vp] = row.count
 
-    all_projects_vp = sorted({proj for vp_data in vp_proj_map.values() for proj in vp_data})
-    all_vps = sorted(vp_proj_map.keys())
+    all_vps = sorted({vp for proj_data in vp_proj_map.values() for vp in proj_data})
+    all_projects = sorted(vp_proj_map.keys())
 
     vp_proj_series = []
-    for vp in all_vps:
+    for proj in all_projects:
         vp_proj_series.append({
-            "name": vp,
-            "data": [vp_proj_map[vp].get(proj, 0) for proj in all_projects_vp]
+            "name": proj,
+            "data": [vp_proj_map[proj].get(vp, 0) for vp in all_vps]
         })
+
+    # 7. Calculate "No of Projects" (unique project count)
+    project_count = len(all_projects)
+
+    # 8. Calculate "Total goals assigned to user" (if user_initials is provided)
+    total_goals_assigned_to_user = base_query.count() if user_initials else 0
 
     # Final response
     return {
+        "totalGoalsInDB": total_goals,  # Total number of goals in the DB (filtered)
         "completedAndDelinquent": completed_delinquent_data,
         "projectWiseByStatus": {
-            "categories": all_projects_status,
+            "categories": all_projects,
             "series": project_status_series
         },
         "projectsByVP": {
-            "categories": all_projects_vp,
+            "categories": all_vps,
             "series": vp_proj_series
         },
         "yearWise": [{"year": row.fiscalyear, "count": row.count} for row in yearwise_data],
-        "statusWise": [{"status": (row.s or "Unassigned").strip(), "count": row.count} for row in statuswise_data]
+        "statusWise": statuswise_cleaned_data,  # Cleaned and aggregated status-wise data
+        "projectStatusCounts": {
+            "C": completed_delinquent_data["Completed"],
+            "D": completed_delinquent_data["Delinquent"],
+        },
+        "noOfProjects": project_count,  # New data for No of Projects
+        "totalGoalsAssignedToUser": total_goals_assigned_to_user,  # New data for Total goals assigned to user
     }
 # def get_goals_metrics(db: Session):
 #     base_query = db.query(Goals)
