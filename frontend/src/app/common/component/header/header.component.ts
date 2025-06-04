@@ -10,6 +10,10 @@ import { MenuModule } from 'primeng/menu';
 import { RolesService } from '../../../services/roles.service';
 import { GoalsService } from '../../../services/goals.service';
 import { CheckboxModule } from 'primeng/checkbox';
+import { MenubarModule } from 'primeng/menubar';
+import { MenuItem } from 'primeng/api';
+import { SplitButtonModule } from 'primeng/splitbutton';
+
 
 @Component({
   selector: 'app-header',
@@ -23,6 +27,8 @@ import { CheckboxModule } from 'primeng/checkbox';
     ReactiveFormsModule,
     MenuModule,
     CheckboxModule,
+    MenubarModule,
+    SplitButtonModule
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
@@ -42,11 +48,14 @@ export class HeaderComponent {
   ) {}
   showSettings: boolean = false;
   isCloneEnabled: boolean = true;
-  // logoutOptions = [{ label: 'Logout', value: 'logout' }];
+  mobileMenuVisible = false;
+  menuItems: MenuItem[] = [];
+  isMobile = false;
+  menuVisible = false;
+splitButtonMenu: any;
   logoutOptions = [
     { label: 'Logout', severity: 'danger', command: () => this.logout() },
   ];
- 
   settingsMenu = [
     {
       label: 'Priority',
@@ -85,34 +94,32 @@ export class HeaderComponent {
     }
   ];
 
-ngOnInit() {
-  this.today = new Date();
-  this.updateButtonLabel();
-
-  const email = this.getLoggedInEmail();
-  if (email) {
-    this.userName(email);
-  } else {
-    console.warn('No logged-in user email found');
-  }
-
-  this.loadGlobalCloneSetting();
-
-  this.router.events.subscribe(() => {
+  ngOnInit() {
+    this.today = new Date();
     this.updateButtonLabel();
-  });
-
-  this.getPermission();
-
-  this.goalService.accessChanged$.subscribe((shouldRefresh) => {
-    if (shouldRefresh) {
-      this.getPermission();
-    }
-  });
-}
-
   
-
+    const email = this.getLoggedInEmail();
+    if (email) {
+      this.userName(email);
+    } else {
+      console.warn('No logged-in user email found');
+    }
+  
+    this.loadGlobalCloneSetting();
+  
+    this.router.events.subscribe(() => {
+      this.updateButtonLabel();
+    });
+  
+    this.getPermission();
+  
+    this.goalService.accessChanged$.subscribe((shouldRefresh) => {
+      if (shouldRefresh) {
+        this.getPermission();
+      }
+    });
+  }
+  
   loadGlobalCloneSetting(): void {
   this.goalService.getGlobalCloneSetting().subscribe({
     next: (res: boolean) => {
@@ -151,7 +158,7 @@ getLoggedInEmail(): string {
           // console.log("Res", res);
           this.goalService.userData = res;
           const accessList = this.goalService.userData?.access || [];
-          this.settingsMenu = this.settingsMenu.filter(item =>
+          this.menuItems = this.settingsMenu.filter(item =>
             accessList.includes(this.extractRoute(item.routerLink))
                     );
         });
@@ -256,5 +263,33 @@ onDocumentClick(event: MouseEvent) {
       }
     );
   }
+  
+  @HostListener('window:resize', [])
+  onResize() {
+    this.checkScreenSize();
+  }
+
+  checkScreenSize() {
+    if (typeof window !== 'undefined') {
+      this.isMobile = window.innerWidth < 768;
+      if (!this.isMobile) {
+        this.menuVisible = true; // Always visible on desktop
+      } else {
+        this.menuVisible = false; // Hidden by default on mobile
+      }
+    }
+  }
+  
+  toggleMenu() {
+    this.menuVisible = !this.menuVisible;
+  }
+  userMenu = [
+    {
+      label: 'Logout',
+      icon: 'pi pi-sign-out',
+      command: () => this.logout()
+    }
+  ];
+  
   
 }

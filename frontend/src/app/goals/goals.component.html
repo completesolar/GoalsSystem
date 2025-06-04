@@ -1,57 +1,69 @@
 <div class="body">
   <p-toast position="top-right"></p-toast>
-  <div class="mb-1 title-section flex items-center">
-  <div class="flex-1">
-      <div class="flex justify-content-between items-center">
-        
-    <div class="flex items-center "><button class="legend-toggle" (click)="toggleLegend()">
-        <i class="fa" [ngClass]="isLegendVisible ? 'fa-arrow-down' : 'fa-arrow-right'"></i>
-        <span>Legend</span>
-      </button>
-</div>  
-
-    <div class="flex items-center gap-2  align-items-center">
-      <div class="flex items-center gap-2 ml-auto align-items-center">
-  <label for="goalIdToggle" [style]="{ fontSize: '15px', fontWeight: 'bolder', fontFamily: 'Arial' }" class="font-medium">Goal ID:</label>
-  <p-toggleswitch inputId="goalIdToggle" [(ngModel)]="checked" onLabel="Yes" offLabel="No" styleClass="w-24">
-  </p-toggleswitch>
-        <p-button icon="pi pi-sort-alt" [label]="compositeSortEnabled ? 'Default' : 'Sort On E & D'" (click)="toggleSort()"
-  severity="success" size="small" [style]="{ height: '24px', fontSize: '8px', width: '140px' }"
-  pTooltip="Toggle between default (WHO + Priority) and composite sort (E = current week, then Delinquent)"
-  tooltipPosition="top">
-</p-button>
-        <p-button icon="pi pi-filter-slash" (click)="clearAllFilters()" severity="success" size="small" label="Clear"
-          [style]="{ height: '24px', fontSize: '14px', width:'70px'}"></p-button>
-
-        <p-button severity="success" size="small" label="Clear"
-          [style]="{ height: '24px', fontSize: '14px', width:'70px'}" icon="pi pi-plus" label="Add"
-          (click)="addNewgoalDia()"></p-button>
-
-      </div>
-      <span class="white-space-nowrap export-text">Export to</span>
-      <p-select class="custom-select-width" [options]="exportOptions" [(ngModel)]="selectedExport" placeholder="Select"
-        (onChange)="onExportChange($event.value)" optionLabel="label"></p-select>
-    </div>
-   </div>
-      <div *ngIf="isLegendVisible" class="legend-content">
-        <p class="my-1">
-          <strong>Key:</strong> WHO=Owner of the goal, P=Priority, PROJ=Project,
-          VP=Boss of Goal Owner, B=WW goal was given, E=WW goal is due,
-          <strong>S=Status of the goal</strong> N=New, C=Complete, ND=New
-          Delinquent, CD=Continuing Delinquent, R=Revised, K=Killed,
-          <strong>D:</strong> Delinquent.
-        </p>
-
-        <p class="my-1">
-          <strong>PROJ TYPES:</strong>TJRM, TJRS, SHIP, SOX, BATT, ADMN, RCCA,
-          SLES
-        </p>
-      </div>
-    </div>
- 
- 
+  <div class="mb-1 p-1 ">
+    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3">
   
+      <!-- Legend Toggle -->
+      <div class="flex align-items-center">
+        <button class="legend-toggle" (click)="toggleLegend()">
+          <i class="fa mr-2" [ngClass]="isLegendVisible ? 'fa-arrow-down' : 'fa-arrow-right'"></i>
+          <span>Legend</span>
+        </button>
+      </div>
+  
+      <!-- Controls Section -->
+      <div class="flex flex-wrap gap-2 md:align-items-center md:justify-content-end w-full md:w-auto">
+  
+        <!-- Goal ID Toggle -->
+        <div class="flex align-items-center gap-2">
+          <label for="goalIdToggle" class="font-bold text-sm">Goal ID:</label>
+          <p-toggleswitch inputId="goalIdToggle" [(ngModel)]="checked" onLabel="Yes" offLabel="No" styleClass="" />
+        </div>
+  
+        <!-- Sort Button -->
+        <p-button icon="pi pi-sort-alt" [label]="compositeSortEnabled ? 'Default' : 'Sort On E & D'" 
+          (click)="toggleSort()" severity="success" size="small"
+          [style]="{ height: '24px', fontSize: '12px', width: '140px' }"
+          pTooltip="Toggle between default (WHO + Priority) and composite sort (E = current week, then Delinquent)"
+          tooltipPosition="top">
+        </p-button>
+  
+        <!-- Clear Button -->
+        <p-button icon="pi pi-filter-slash" (click)="clearAllFilters()" severity="success" size="small"
+          label="Clear" [style]="{ height: '24px', fontSize: '12px', width: '70px' }">
+        </p-button>
+  
+        <!-- Add Button -->
+        <p-button icon="pi pi-plus" (click)="addNewgoalDia()" severity="success" size="small"
+          label="Add" [style]="{ height: '24px', fontSize: '12px', width: '70px' }">
+        </p-button>
+  
+        <!-- Export -->
+        <div class="flex align-items-center gap-2">
+          <span class="text-sm white-space-nowrap">Export to</span>
+          <p-select [options]="exportOptions" [(ngModel)]="selectedExport" placeholder="Select"
+            (onChange)="onExportChange($event.value)" optionLabel="label" >
+          </p-select>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Legend Section -->
+    <div *ngIf="isLegendVisible" class="mt-3 text-sm surface-section border-round shadow-1 p-2">
+      <p class="my-1">
+        <strong>Key:</strong> WHO=Owner of the goal, P=Priority, PROJ=Project,
+        VP=Boss of Goal Owner, B=WW goal was given, E=WW goal is due,
+        <strong>S=Status of the goal</strong> N=New, C=Complete, ND=New
+        Delinquent, CD=Continuing Delinquent, R=Revised, K=Killed,
+        <strong>D:</strong> Delinquent.
+      </p>
+  
+      <p class="my-1">
+        <strong>PROJ TYPES:</strong> TJRM, TJRS, SHIP, SOX, BATT, ADMN, RCCA, SLES
+      </p>
+    </div>
   </div>
+  
 
   <div class="table-container pr-3 pl-3">
     <p-confirmPopup #confirmPopup></p-confirmPopup>

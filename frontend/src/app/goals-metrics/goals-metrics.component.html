@@ -1,6 +1,6 @@
 
-<div >
-  <div class="pagetitle pb-2 flex align-items-center justify-content-between gap-3">
+<div class="pb-2" >
+  <div class="pagetitle  flex align-items-center justify-content-between gap-3 mx-4 mt-3 mb-3 p-0">
     <div>Dashboard</div>
     <div class="flex gap-2 align-items-center">
       <p-multiSelect
@@ -36,7 +36,120 @@
     
   </div>
   
-<div class="bg-white p-3 border-round-md flex justify-content-center align-items-center" >
+  <div class="p-3 mb-3  border-round-lg bg-white flex flex-column lg:flex-row gap-4 mx-4">
+    <!-- Left Section -->
+  <!-- Right Section -->
+  <div class="w-full lg:w-2 flex flex-column gap-3 mt-4 lg:mt-0 align-items-center justify-content-center">
+
+          <!-- First Row -->
+          <div class="flex flex-column sm:flex-row flex-wrap gap-4 ">
+           <!-- Delinquent -->
+          
+           <div class="flex flex-1 align-items-center justify-content-between p-3  border-round-lg totalback">
+             <div class="flex flex-column gap-2">
+               <div class="dash-htxt1">No of Projects</div>
+             <div class="dash-ptxt1">3222</div>
+             </div>
+             <img src="../../assets/dash-8.svg" class="w-3rem" />
+           </div>
+     
+           <!-- Completed -->
+           <div class="flex flex-1 align-items-center justify-content-between p-3  border-round-lg totalback2">
+             <div class="flex flex-column gap-2">
+               <div class="dash-htxt1">Total goals assigned</div>
+             <div class="dash-ptxt1">3222</div>
+             </div>
+             <img src="../../assets/dash-8.svg" class="w-3rem" />
+           </div>
+     
+        
+         </div>
+     
+       </div>
+   
+
+    <div class="w-full lg:w-6 shadow-1 border-round-lg p-4">
+      <div class="mb-4 proj-txt">No of Goals - <span>3222</span></div>
+  
+      <!-- First Row -->
+      <div class="flex flex-column sm:flex-row flex-wrap gap-4 mb-4">
+        <!-- Delinquent -->
+        <div class="flex-1 min-w-15rem flex align-items-center justify-content-between p-3 bg-1 border-round-lg">
+          <div class="flex flex-column gap-2">
+            <div class="dash-htxt">Delinquent</div>
+            <div class="dash-ptxt">3222</div>
+          </div>
+          <img src="../../assets/dash-1.svg" class="w-3rem" />
+        </div>
+  
+        <!-- Completed -->
+        <div class="flex-1 min-w-15rem flex align-items-center justify-content-between p-3 bg-2 border-round-lg">
+          <div class="flex flex-column gap-2">
+            <div class="dash-htxt">Completed</div>
+            <div class="dash-ptxt">3222</div>
+          </div>
+          <img src="../../assets/dash-2.svg" class="w-3rem" />
+        </div>
+  
+        <!-- Killed -->
+        <div class="flex-1 min-w-15rem flex align-items-center justify-content-between p-3 bg-3 border-round-lg">
+          <div class="flex flex-column gap-2">
+            <div class="dash-htxt">Killed</div>
+            <div class="dash-ptxt">3222</div>
+          </div>
+          <img src="../../assets/dash-3.svg" class="w-3rem" />
+        </div>
+      </div>
+  
+      <!-- Second Row -->
+      <div class="flex flex-column sm:flex-row flex-wrap gap-4">
+        <!-- New -->
+        <div class="flex-1 min-w-15rem flex align-items-center justify-content-between p-3 bg-4 border-round-lg">
+          <div class="flex flex-column gap-2">
+            <div class="dash-htxt">New</div>
+            <div class="dash-ptxt">3222</div>
+          </div>
+          <img src="../../assets/dash-4.svg" class="w-3rem" />
+        </div>
+  
+        <!-- New Delinquent -->
+        <div class="flex-1 min-w-15rem flex align-items-center justify-content-between p-3 bg-5 border-round-lg">
+          <div class="flex flex-column gap-2">
+            <div class="dash-htxt">New Delinquent</div>
+            <div class="dash-ptxt">3222</div>
+          </div>
+          <img src="../../assets/dash-5.svg" class="w-3rem" />
+        </div>
+  
+        <!-- Revised -->
+        <div class="flex-1 min-w-15rem flex align-items-center justify-content-between p-3 bg-6 border-round-lg">
+          <div class="flex flex-column gap-2">
+            <div class="dash-htxt">Revised</div>
+            <div class="dash-ptxt">3222</div>
+          </div>
+          <img src="../../assets/dash-6.svg" class="w-3rem" />
+        </div>
+      </div>
+    </div>
+  
+  
+
+    <div class="bg-white w-full lg:w-4 flex flex-column gap-3  lg:mt-0 p-3   border-round-md flex justify-content-center align-items-center shadow-1 border-round-lg	" style=" max-height: 350px;">
+      <p-chart
+        *ngIf="!isStatusWiseLoading && statusWiseChartData"
+        type="pie"
+        [data]="statusWiseChartData"
+        [options]="statusWiseChartOptions"
+        style="width: 420px; height: 300px;"
+      ></p-chart>
+    </div>
+    
+  </div>
+  
+  
+
+  
+<div class="bg-white p-3 mx-4 mb-3 border-round-md flex justify-content-center align-items-center shadow-1 border-round-lg" >
   <p-chart
   *ngIf="!isProjectsByVPLoading && projectsByVPChartData"
   type="bar"
@@ -47,7 +160,7 @@
 ></p-chart>
 </div>
 
-<div class="bg-white p-3 border-round-md flex justify-content-center align-items-center" >
+<div class="bg-white p-3 mx-4 mb-3 border-round-md flex justify-content-center align-items-center shadow-1 border-round-lg" >
   <p-chart
     *ngIf="!isProjectStatusLoading && projectStatusChartData"
     type="bar"
@@ -58,12 +171,3 @@
     ></p-chart>
 </div> 
 
-<div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; max-height: 400px; display: flex; align-items: center; justify-content: center;">
-  <p-chart
-    *ngIf="!isStatusWiseLoading && statusWiseChartData"
-    type="pie"
-    [data]="statusWiseChartData"
-    [options]="statusWiseChartOptions"
-    style="width: 420px; height: 400px;"
-  ></p-chart>
-</div>

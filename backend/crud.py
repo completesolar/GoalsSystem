@@ -399,9 +399,107 @@ def update_goal(db: Session, goal_id: int, goal_update: GoalsUpdate):
 
     return db_goal
 
+# def get_goals_metrics(db: Session):
+#     base_query = db.query(Goals)
+
+#     completed_delinquent_data = {"Completed": 0, "Delinquent": 0}
+#     for row in base_query.with_entities(Goals.s, func.count().label("count")).filter(
+#         Goals.s.in_(['C', 'D'])
+#     ).group_by(Goals.s).all():
+#         if row.s == 'C':
+#             completed_delinquent_data["Completed"] = row.count
+#         elif row.s == 'D':
+#             completed_delinquent_data["Delinquent"] = row.count
+
+#     # 2. Valid Projects
+#     valid_projects = set(proj_row.proj for proj_row in db.query(Proj.proj).all())
+
+#     # 3. Project-wise by all statuses
+#     status_list = ['C', 'CD', 'K', 'N', 'ND', 'R']
+
+#     raw_project_status_data = base_query.with_entities(
+#         Goals.proj,
+#         Goals.s,
+#         func.count().label("count")
+#     ).group_by(Goals.proj, Goals.s).all()
+
+#     project_status_map = {}
+#     unassigned_key = "Unassigned"
+
+#     for row in raw_project_status_data:
+#         proj = (row.proj or unassigned_key).strip().upper()
+#         status = row.s
+#         if proj not in project_status_map:
+#             project_status_map[proj] = {}
+#         project_status_map[proj][status] = row.count
+
+#     all_projects = sorted(project_status_map.keys())
+
+#     project_status_series = []
+#     for status in status_list:
+#         project_status_series.append({
+#             "name": status,
+#             "data": [project_status_map.get(p, {}).get(status, 0) for p in all_projects]
+#         })
+
+#     # 4. Year-wise Goals
+#     yearwise_data = base_query.with_entities(
+#         Goals.fiscalyear,
+#         func.count().label('count')
+#     ).group_by(Goals.fiscalyear).order_by(Goals.fiscalyear).all()
+
+#     # 5. Status-wise Goals
+#     statuswise_data = base_query.with_entities(
+#         Goals.s,
+#         func.count().label('count')
+#     ).group_by(Goals.s).all()
+
+#     # 6. VP-wise Goals by Project
+#     raw_vp_proj_data = base_query.with_entities(
+#         Goals.vp,
+#         Goals.proj,
+#         func.count().label("count")
+#     ).group_by(Goals.vp, Goals.proj).all()
+
+#     vp_proj_map = {}
+#     unassigned_vp = "Unassigned VP"
+#     unassigned_proj = "Unassigned"
+
+#     for row in raw_vp_proj_data:
+#         vp = (row.vp or unassigned_vp).strip()
+#         proj = (row.proj or unassigned_proj).strip().upper()
+#         if proj not in vp_proj_map:
+#             vp_proj_map[proj] = {}
+#         vp_proj_map[proj][vp] = row.count
+
+#     all_vps = sorted({vp for proj_data in vp_proj_map.values() for vp in proj_data})
+#     all_projects = sorted(vp_proj_map.keys())
+
+#     vp_proj_series = []
+#     for proj in all_projects:
+#         vp_proj_series.append({
+#             "name": proj,
+#             "data": [vp_proj_map[proj].get(vp, 0) for vp in all_vps]
+#         })
+
+#     return {
+#         "completedAndDelinquent": completed_delinquent_data,
+#         "projectWiseByStatus": {
+#             "categories": all_projects,
+#             "series": project_status_series
+#         },
+#         "projectsByVP": {
+#             "categories": all_vps,
+#             "series": vp_proj_series
+#         },
+#         "yearWise": [{"year": row.fiscalyear, "count": row.count} for row in yearwise_data],
+#         "statusWise": [{"status": (row.s or "Unassigned").strip(), "count": row.count} for row in statuswise_data]
+#     }
+
 def get_goals_metrics(db: Session):
     base_query = db.query(Goals)
 
+    # 1. Completed and Delinquent counts
     completed_delinquent_data = {"Completed": 0, "Delinquent": 0}
     for row in base_query.with_entities(Goals.s, func.count().label("count")).filter(
         Goals.s.in_(['C', 'D'])
@@ -416,7 +514,6 @@ def get_goals_metrics(db: Session):
 
     # 3. Project-wise by all statuses
     status_list = ['C', 'CD', 'K', 'N', 'ND', 'R']
-
     raw_project_status_data = base_query.with_entities(
         Goals.proj,
         Goals.s,
@@ -425,7 +522,6 @@ def get_goals_metrics(db: Session):
 
     project_status_map = {}
     unassigned_key = "Unassigned"
-
     for row in raw_project_status_data:
         proj = (row.proj or unassigned_key).strip().upper()
         status = row.s
@@ -433,13 +529,13 @@ def get_goals_metrics(db: Session):
             project_status_map[proj] = {}
         project_status_map[proj][status] = row.count
 
-    all_projects = sorted(project_status_map.keys())
+    all_projects_status = sorted(project_status_map.keys())
 
     project_status_series = []
     for status in status_list:
         project_status_series.append({
             "name": status,
-            "data": [project_status_map.get(p, {}).get(status, 0) for p in all_projects]
+            "data": [project_status_map.get(p, {}).get(status, 0) for p in all_projects_status]
         })
 
     # 4. Year-wise Goals
@@ -454,7 +550,7 @@ def get_goals_metrics(db: Session):
         func.count().label('count')
     ).group_by(Goals.s).all()
 
-    # 6. VP-wise Goals by Project
+    # 6. VP-wise Goals by Project (REVERSED: VP → Project)
     raw_vp_proj_data = base_query.with_entities(
         Goals.vp,
         Goals.proj,
@@ -468,34 +564,34 @@ def get_goals_metrics(db: Session):
     for row in raw_vp_proj_data:
         vp = (row.vp or unassigned_vp).strip()
         proj = (row.proj or unassigned_proj).strip().upper()
-        if proj not in vp_proj_map:
-            vp_proj_map[proj] = {}
-        vp_proj_map[proj][vp] = row.count
+        if vp not in vp_proj_map:
+            vp_proj_map[vp] = {}
+        vp_proj_map[vp][proj] = row.count
 
-    all_vps = sorted({vp for proj_data in vp_proj_map.values() for vp in proj_data})
-    all_projects = sorted(vp_proj_map.keys())
+    all_projects_vp = sorted({proj for vp_data in vp_proj_map.values() for proj in vp_data})
+    all_vps = sorted(vp_proj_map.keys())
 
     vp_proj_series = []
-    for proj in all_projects:
+    for vp in all_vps:
         vp_proj_series.append({
-            "name": proj,
-            "data": [vp_proj_map[proj].get(vp, 0) for vp in all_vps]
+            "name": vp,
+            "data": [vp_proj_map[vp].get(proj, 0) for proj in all_projects_vp]
         })
 
+    # Final response
     return {
         "completedAndDelinquent": completed_delinquent_data,
         "projectWiseByStatus": {
-            "categories": all_projects,
+            "categories": all_projects_status,
             "series": project_status_series
         },
         "projectsByVP": {
-            "categories": all_vps,
+            "categories": all_projects_vp,
             "series": vp_proj_series
         },
         "yearWise": [{"year": row.fiscalyear, "count": row.count} for row in yearwise_data],
         "statusWise": [{"status": (row.s or "Unassigned").strip(), "count": row.count} for row in statuswise_data]
     }
-
 
 def create_b(db: Session, b_data: BCreate):
     db_b = B(**b_data.dict())
