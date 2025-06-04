@@ -126,15 +126,19 @@ async def get_goalshistory(goalid: int, db: Session = Depends(get_db)):
 def read_goals_metrics(
     db: Session = Depends(get_db),
     vps: Optional[str] = Query(None, description="Comma separated VPs"),
-    project: Optional[str] = Query(None, description="Project filter")
+    project: Optional[str] = Query(None, description="Project filter"),
+    user_initials: Optional[str] = Query(None, alias="userInitials", description="User initials filter")  # Add user_initials as query parameter
 ):
+    # Process selected VPs and project filter
     selected_vps = vps.split(",") if vps else None
     selected_project = project if project else None
 
+    # Call the function with the additional `user_initials` filter
     return get_goals_metrics(
         db=db,
         selected_vps=selected_vps,
-        selected_project=selected_project
+        selected_project=selected_project,
+        user_initials=user_initials  # Pass user_initials to the backend function
     )
 
 # @router.get("api/goals/metrics")
