@@ -1,4 +1,8 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+interface StatusWise {
+  status: string;
+  count: number;
+}
+import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { ChartModule } from 'primeng/chart';
 import { GoalsService } from '../services/goals.service';
 import { NgIf } from '@angular/common';
@@ -8,6 +12,7 @@ import { SelectModule } from 'primeng/select';
 import { MultiSelect, MultiSelectModule } from 'primeng/multiselect';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Chart } from 'chart.js';
+import { MsalService } from '@azure/msal-angular';
 Chart.register(ChartDataLabels);
 
 @Component({
@@ -42,6 +47,11 @@ export class GoalsMetricsComponent implements OnInit {
 
   statusWiseChartData: any;
   statusWiseChartOptions: any;
+  totalGoalsInDB: number = 0;
+  statusWise: { status: string; count: number }[] = [];
+  userEmail:any;
+  userInitials: any;
+  @ViewChild('vpMultiSelect') vpMultiSelect: any;
 
   statusLabels: { [key: string]: string } = {
     C: 'Complete',
@@ -52,11 +62,26 @@ export class GoalsMetricsComponent implements OnInit {
     R: 'Revised',
   };
 
-  constructor(private goalsService: GoalsService, private cdRef: ChangeDetectorRef) {}
+  constructor(private goalsService: GoalsService, private cdRef: ChangeDetectorRef, private msalService: MsalService) {}
 
   ngOnInit(): void {
     this.fetchData();
+    // this.fetchUserInitials();
   }
+
+  // fetchUserInitials() {
+  //   const email = this.getLoggedInEmail();
+  //   this.goalsService.getUserInitials(email).subscribe((response) => {
+  //     this.userInitials = response.who; // Store the initials
+  //     this.fetchData(); // Fetch data once initials are available
+  //   });
+  // }
+
+  // getLoggedInEmail(): string {
+  //   const account = this.msalService.instance.getAllAccounts()[0];
+  //   this.userEmail = account?.username;
+  //   return account?.username || '';
+  // }
 
   // fetchData() {
   //   this.isProjectsByVPLoading = true;
@@ -81,25 +106,22 @@ export class GoalsMetricsComponent implements OnInit {
   //     this.cdRef.detectChanges();
   //   });
   // }
-  fetchData() {
+fetchData() {
     this.isProjectsByVPLoading = true;
     this.isProjectStatusLoading = true;
     this.isStatusWiseLoading = true;
-  
-    this.goalsService.getGoalsMetrics(this.selectedVP, this.selectedProject?.value ?? null).subscribe((res) => {
+
+    // Pass user_initials to the getGoalsMetrics API call
+    this.goalsService.getGoalsMetrics(this.selectedVP, this.selectedProject?.value ?? null, this.userInitials).subscribe((res) => {
       this.cachedMetricsResponse = res;
-  
       this.vpOptions = res.projectsByVP.categories.map((vp: string) => ({ label: vp, value: vp }));
       this.projectOptions = res.projectWiseByStatus.categories.map((proj: string) => ({ label: proj, value: proj }));
-  
       this.buildProjectsByVPChart(res);
       this.buildProjectStatusChart(res);
       this.buildStatusWiseChart(res);
-  
       this.isProjectsByVPLoading = false;
       this.isProjectStatusLoading = false;
       this.isStatusWiseLoading = false;
-  
       this.cdRef.detectChanges();
     });
   }
@@ -126,6 +148,10 @@ export class GoalsMetricsComponent implements OnInit {
       this.cdRef.detectChanges();
     });
   }
+  getStatusCount(status: string): number {
+  const statusItem = this.cachedMetricsResponse?.statusWise.find((s: StatusWise) => s.status === status);
+  return statusItem ? statusItem.count : 0;
+}
   
   filterMetricsByVPAndProject(metrics: any, selectedVPs: string[] | null, selectedProject: string | null): any {
     const vpIndexMap = metrics.projectsByVP.categories.reduce((acc: any, vp: string, idx: number) => {
@@ -299,10 +325,6 @@ export class GoalsMetricsComponent implements OnInit {
       };
     }
   }
-
-  
-
-  
   
   buildProjectsByVPChart(res: any) {
     const labels = res.projectsByVP.categories;
@@ -496,7 +518,6 @@ export class GoalsMetricsComponent implements OnInit {
       datasets: filteredDatasets,
     };
   }
-
   buildStatusWiseChart(res: any) {
     const labels = res.statusWise.map((s: any) => s.status);
     const data = res.statusWise.map((s: any) => s.count);
@@ -542,10 +563,14 @@ export class GoalsMetricsComponent implements OnInit {
     
        
   }
-
-  clearFilters() {
+clearFilters() {
     this.selectedVP = [];
     this.selectedProject = null;
+      if (this.vpMultiSelect) {
+      this.vpMultiSelect.filterValue = '';
+      this.vpMultiSelect.onFilterInputChange({ target: { value: '' } });
+    }
+ 
     this.onFilterChange();
   }
   projectsByVPTotal(): number {

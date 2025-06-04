@@ -1,42 +1,160 @@
 
-<div >
-  <div class="pagetitle pb-2 flex align-items-center justify-content-between gap-3">
-    <div>Dashboard</div>
-    <div class="flex gap-2 align-items-center">
-      <p-multiSelect
-        placeholder="Select VP"
-        [options]="vpOptions"
-        [(ngModel)]="selectedVP"
-        optionLabel="label"
-        optionValue="value"
-        styleClass="p-select-sm"
-        (onChange)="onFilterChange()"
-        [style]="{ height: '32px' ,fontSize: '14px'}"
-      ></p-multiSelect>
-    
-      <p-select
-        [options]="projectOptions"
-        [(ngModel)]="selectedProject"
-        placeholder="Select Project"
-        optionLabel="label"
-        styleClass="p-select-sm"
-        (onChange)="onFilterChange()"
-        [style]="{ height: '32px',fontSize: '14px' }"
-      ></p-select>
-    
-      <p-button
-        icon="pi pi-filter-slash"
-        (click)="clearFilters()"
-        severity="success"
-        size="small"
-        label="Clear"
-        [style]="{ height: '32px', fontSize: '14px', width: '70px' }"
-      ></p-button>
+<div class="pb-2" >
+  <div class="pagetitle flex flex-column lg:flex-row align-items-center justify-content-between gap-3 mx-4 mt-3 mb-3 p-0">
+  <div class="flex-1">Dashboard</div>
+
+  <div class="flex flex-wrap gap-2 align-items-center justify-content-end">
+    <p-multiSelect
+    #vpMultiSelect
+      placeholder="Select VP"
+      [options]="vpOptions"
+      [(ngModel)]="selectedVP"
+      optionLabel="label"
+      optionValue="value"
+      styleClass="p-select-sm"
+      (onChange)="onFilterChange()"
+      [style]="{ height: '32px', fontSize: '14px' }"
+      class="sm:w-full md:w-auto"
+    ></p-multiSelect>
+
+    <p-select
+      [options]="projectOptions"
+      [(ngModel)]="selectedProject"
+      placeholder="Select Project"
+      optionLabel="label"
+      styleClass="p-select-sm"
+      (onChange)="onFilterChange()"
+      [style]="{ height: '32px', fontSize: '14px' }"
+      class="sm:w-full md:w-auto"
+    ></p-select>
+
+    <p-button
+      icon="pi pi-filter-slash"
+      (click)="clearFilters()"
+      severity="success"
+      size="small"
+      label="Clear"
+      [style]="{ height: '32px', fontSize: '14px', width: '70px' }"
+      class="sm:w-full md:w-auto"
+    ></p-button>
+  </div>
+</div>
+  
+  <div class="p-3 mb-3  border-round-lg bg-white flex flex-column lg:flex-row gap-4 mx-4">
+    <!-- Left Section -->
+  <!-- Right Section -->
+  <div class="w-full lg:w-2 flex flex-column gap-3 mt-4 lg:mt-0 align-items-center justify-content-center">
+
+          <!-- First Row -->
+          <div class="flex flex-column sm:flex-row flex-wrap gap-4 ">
+           <!-- Delinquent -->
+          
+           <div class="flex flex-1 align-items-center justify-content-between p-3  border-round-lg totalback">
+             <div class="flex flex-column gap-2">
+               <div class="dash-htxt1">No of Projects</div>
+             <div class="dash-ptxt1">{{ cachedMetricsResponse?.noOfProjects ?? 0 }}</div>
+             </div>
+             <img src="../../assets/dash-8.svg" class="w-3rem" />
+           </div>
+     
+           <!-- Completed -->
+           <div class="flex flex-1 align-items-center justify-content-between p-3  border-round-lg totalback2">
+             <div class="flex flex-column gap-2">
+               <div class="dash-htxt1">Total goals assigned to me</div>
+             <div class="dash-ptxt1">{{ cachedMetricsResponse?.totalGoalsAssignedToUser ?? 0 }}</div>
+             </div>
+             <img src="../../assets/dash-7.svg" class="w-4rem" />
+           </div>
+     
+        
+         </div>
+     
+       </div>
+   
+
+<div class="w-full lg:w-6 shadow-1 border-round-lg p-4">
+  <div class="mb-4 proj-txt">Total No of Goals - <span>{{ cachedMetricsResponse?.totalGoalsInDB ?? 0 }}</span></div>
+
+  <!-- First Row -->
+  <div class="flex flex-column sm:flex-row flex-wrap gap-4 mb-4">
+    <!-- Delinquent -->
+    <div class="flex-1 min-w-15rem flex align-items-center justify-content-between p-3 bg-1 border-round-lg">
+      <div class="flex flex-column gap-2">
+        <div class="dash-htxt">Delinquent</div>
+        <div class="dash-ptxt">{{ getStatusCount('D') }}</div>
+      </div>
+      <img src="../../assets/dash-1.svg" class="w-3rem" />
+    </div>
+
+    <!-- Completed -->
+    <div class="flex-1 min-w-15rem flex align-items-center justify-content-between p-3 bg-2 border-round-lg">
+      <div class="flex flex-column gap-2">
+        <div class="dash-htxt">Completed</div>
+        <div class="dash-ptxt">{{ getStatusCount('C') }}</div>
+      </div>
+      <img src="../../assets/dash-2.svg" class="w-3rem" />
+    </div>
+
+    <!-- Killed -->
+    <div class="flex-1 min-w-15rem flex align-items-center justify-content-between p-3 bg-3 border-round-lg">
+      <div class="flex flex-column gap-2">
+        <div class="dash-htxt">Killed</div>
+        <div class="dash-ptxt">{{ getStatusCount('K') }}</div>
+      </div>
+      <img src="../../assets/dash-3.svg" class="w-3rem" />
+    </div>
+  </div>
+
+  <!-- Second Row -->
+  <div class="flex flex-column sm:flex-row flex-wrap gap-4">
+    <!-- New -->
+    <div class="flex-1 min-w-15rem flex align-items-center justify-content-between p-3 bg-4 border-round-lg">
+      <div class="flex flex-column gap-2">
+        <div class="dash-htxt">New</div>
+        <div class="dash-ptxt">{{ getStatusCount('N') }}</div>
+      </div>
+      <img src="../../assets/dash-4.svg" class="w-3rem" />
+    </div>
+
+    <!-- New Delinquent -->
+    <div class="flex-1 min-w-15rem flex align-items-center justify-content-between p-3 bg-5 border-round-lg">
+      <div class="flex flex-column gap-2">
+        <div class="dash-htxt">New Delinquent</div>
+        <div class="dash-ptxt">{{ getStatusCount('ND') }}</div>
+      </div>
+      <img src="../../assets/dash-5.svg" class="w-3rem" />
+    </div>
+
+    <!-- Revised -->
+    <div class="flex-1 min-w-15rem flex align-items-center justify-content-between p-3 bg-6 border-round-lg">
+      <div class="flex flex-column gap-2">
+        <div class="dash-htxt">Revised</div>
+        <div class="dash-ptxt">{{ getStatusCount('R') }}</div>
+      </div>
+      <img src="../../assets/dash-6.svg" class="w-3rem" />
+    </div>
+  </div>
+</div>
+
+  
+  
+
+    <div class="bg-white w-full lg:w-4 flex flex-column gap-3  lg:mt-0 p-3   border-round-md flex justify-content-center align-items-center shadow-1 border-round-lg	" style=" max-height: 350px;">
+      <p-chart
+        *ngIf="!isStatusWiseLoading && statusWiseChartData"
+        type="pie"
+        [data]="statusWiseChartData"
+        [options]="statusWiseChartOptions"
+        style="width: 420px; height: 300px;"
+      ></p-chart>
     </div>
     
   </div>
   
-<div class="bg-white p-3 border-round-md flex justify-content-center align-items-center" >
+  
+
+  
+<div class="bg-white p-3 mx-4 mb-3 border-round-md flex justify-content-center align-items-center shadow-1 border-round-lg" >
   <p-chart
   *ngIf="!isProjectsByVPLoading && projectsByVPChartData"
   type="bar"
@@ -47,7 +165,7 @@
 ></p-chart>
 </div>
 
-<div class="bg-white p-3 border-round-md flex justify-content-center align-items-center" >
+<div class="bg-white p-3 mx-4 mb-3 border-round-md flex justify-content-center align-items-center shadow-1 border-round-lg" >
   <p-chart
     *ngIf="!isProjectStatusLoading && projectStatusChartData"
     type="bar"
@@ -58,12 +176,3 @@
     ></p-chart>
 </div> 
 
-<div class="bg-white p-3 border-round-md" style="flex: 1 1 45%; max-height: 400px; display: flex; align-items: center; justify-content: center;">
-  <p-chart
-    *ngIf="!isStatusWiseLoading && statusWiseChartData"
-    type="pie"
-    [data]="statusWiseChartData"
-    [options]="statusWiseChartOptions"
-    style="width: 420px; height: 400px;"
-  ></p-chart>
-</div>

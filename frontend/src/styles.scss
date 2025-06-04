@@ -64,7 +64,7 @@ table {
 }
 
 html {
-  background-color: whitesmoke;
+  // background-color: whitesmoke;
 }
 
 .p-datatable-flex-scrollable {
@@ -167,7 +167,7 @@ span.p-multiselect-dropdown-icon.pi.pi-filter {
   font-size: 14px;
 }
 
-@media only screen and (min-width: 1199px) and (max-width: 1550px) {
+@media only screen and (min-width: 300px) and (max-width: 1550px) {
 
   .custom-goal-table th:nth-child(10) {
     width: 100px;
@@ -578,13 +578,16 @@ span.p-multiselect-dropdown-icon.pi.pi-filter {
 .pagetitle {
   font-size: 16px;
   font-weight: 600;
-  padding: 35px;
+  padding: 15px;
   padding-bottom: 0px;
-  padding-top: 10px;
+  padding-top: 1px;
 }
 
 .logo-section {
-  background: #fff;
+  margin: 10px;
+  background: #ffffff;
+  padding: 5px 15px !important;
+  border-radius: 10px;
 }
 
 .title-section {
@@ -606,6 +609,7 @@ span.p-multiselect-dropdown-icon.pi.pi-filter {
 
 .p-select {
   height: 28px;
+  align-items: center;
 }
 
 .editable-row {
@@ -621,3 +625,6 @@ apx-chart {
 .apexcharts-canvas {
   width: 100% !important;
 }
+
+.p-multiselect-label, .p-select-label{
+font-weight: normal;}

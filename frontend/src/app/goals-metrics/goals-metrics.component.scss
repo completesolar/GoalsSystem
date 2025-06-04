@@ -10,7 +10,11 @@
     flex: 1 1 45%;
     min-width: 300px;
   }
-  
+  .proj-txt{
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #646464;}
   .full-width {
     flex: 1 1 100%;
   }
@@ -65,4 +69,73 @@
     font-size: 1.2rem;
     color: #333;
   }
-  
+  .bg-1{
+    background-image: url("../../assets/proj-1.svg");
+    background-size: cover;
+    background-repeat: no-repeat;
+  }
+  .bg-2{
+    background-image: url("../../assets/proj-2.svg");
+    background-size: cover;
+    background-repeat: no-repeat;
+  }
+  .bg-3{
+    background-image: url("../../assets/proj-3.svg");
+    background-size: cover;
+    background-repeat: no-repeat;
+  }
+  .bg-4{
+    background-image: url("../../assets/proj-4.svg");
+    background-size: cover;
+    background-repeat: no-repeat;
+  }
+  .bg-5{
+    background-image: url("../../assets/proj-5.svg");
+    background-size: cover;
+    background-repeat: no-repeat;
+  }
+  .bg-6{
+    background-image: url("../../assets/proj-6.svg");
+    background-size: cover;
+    background-repeat: no-repeat;
+  }
+  .bg-7{
+    background: #D1F3D7;
+  }
+  .bg-8{
+    background: #D1F3D7;
+  }
+  .dash-htxt{
+    color: #fff;
+    font-size: 14px;
+  }
+  .dash-ptxt{
+    color: #fff;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  .dash-htxt1{
+    color: #444444;
+    font-size: 14px;
+  }
+  .dash-ptxt1{
+    color: #444444;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  .linediv{
+    height: 2px;
+    width: 100%;
+    background: #ffffff;
+  }
+.totalback{
+  background: #e8e9ff;
+  border-radius: 10px;
+  height: 142px;
+
+}
+.totalback2{
+  background: #d9f5c8;
+  border-radius: 10px;
+  height: 142px;
+}
