@@ -65,23 +65,26 @@ export class GoalsMetricsComponent implements OnInit {
   constructor(private goalsService: GoalsService, private cdRef: ChangeDetectorRef, private msalService: MsalService) {}
 
   ngOnInit(): void {
+    this.fetchUserInitials();
     this.fetchData();
-    // this.fetchUserInitials();
   }
 
-  // fetchUserInitials() {
-  //   const email = this.getLoggedInEmail();
-  //   this.goalsService.getUserInitials(email).subscribe((response) => {
-  //     this.userInitials = response.who; // Store the initials
-  //     this.fetchData(); // Fetch data once initials are available
-  //   });
-  // }
+fetchUserInitials() {
+  const email = this.getLoggedInEmail();
+  
+  // Fetch the initials for the logged-in user
+  this.goalsService.getUserInitials(email).subscribe((response) => {
+    this.userInitials = response.who; // Store the initials
+    console.log(this.userInitials, 'User initials');  // Log the initials to check
+    this.fetchData(); // Now fetch the data once initials are available
+  });
+}
 
-  // getLoggedInEmail(): string {
-  //   const account = this.msalService.instance.getAllAccounts()[0];
-  //   this.userEmail = account?.username;
-  //   return account?.username || '';
-  // }
+getLoggedInEmail(): string {
+  const account = this.msalService.instance.getAllAccounts()[0];
+  this.userEmail = account?.username || '';
+  return this.userEmail; // Return the logged-in user's email
+}
 
   // fetchData() {
   //   this.isProjectsByVPLoading = true;
@@ -131,7 +134,7 @@ fetchData() {
     this.isProjectStatusLoading = true;
     this.isStatusWiseLoading = true;
   
-    this.goalsService.getGoalsMetrics(this.selectedVP, this.selectedProject?.value ?? null).subscribe(res => {
+    this.goalsService.getGoalsMetrics(this.selectedVP, this.selectedProject?.value ?? null, this.userInitials).subscribe(res => {
       this.cachedMetricsResponse = res;
   
       this.vpOptions = res.projectsByVP.categories.map((vp: string) => ({ label: vp, value: vp }));

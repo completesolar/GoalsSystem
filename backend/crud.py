@@ -508,11 +508,6 @@ def get_goals_metrics(
         base_query = base_query.filter(Goals.vp.in_(selected_vps))
     if selected_project:
         base_query = base_query.filter(Goals.proj == selected_project)
-    
-    if user_initials:
-        # Filter by user initials if provided
-        base_query = base_query.filter(Goals.who == user_initials)
-
     # 1. Completed and Delinquent counts
     completed_delinquent_data = {"Completed": 0, "Delinquent": 0}
     for row in base_query.with_entities(Goals.s, func.count().label("count"))\
@@ -608,8 +603,14 @@ def get_goals_metrics(
     # 7. Calculate "No of Projects" (unique project count)
     project_count = len(all_projects)
 
-    # 8. Calculate "Total goals assigned to user" (if user_initials is provided)
-    total_goals_assigned_to_user = base_query.count() if user_initials else 0
+    # 8. Calculate "Total goals assigned to user" (filtered only by selected_project)
+    if user_initials:
+        total_goals_assigned_to_user = db.query(Goals).filter(Goals.who == user_initials)
+        if selected_project:
+            total_goals_assigned_to_user = total_goals_assigned_to_user.filter(Goals.proj == selected_project)
+        total_goals_assigned_to_user_count = total_goals_assigned_to_user.count()
+    else:
+        total_goals_assigned_to_user_count = 0  # Set it to 0 if no user_initials provided
 
     # Final response
     return {
@@ -630,7 +631,7 @@ def get_goals_metrics(
             "D": completed_delinquent_data["Delinquent"],
         },
         "noOfProjects": project_count,  # New data for No of Projects
-        "totalGoalsAssignedToUser": total_goals_assigned_to_user,  # New data for Total goals assigned to user
+        "totalGoalsAssignedToUser": total_goals_assigned_to_user_count,  # Total goals assigned to the user, filtered by selected_project
     }
 # def get_goals_metrics(db: Session):
 #     base_query = db.query(Goals)
