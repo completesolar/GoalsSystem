@@ -2,7 +2,7 @@ interface StatusWise {
   status: string;
   count: number;
 }
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { ChartModule } from 'primeng/chart';
 import { GoalsService } from '../services/goals.service';
 import { NgIf } from '@angular/common';
@@ -51,6 +51,7 @@ export class GoalsMetricsComponent implements OnInit {
   statusWise: { status: string; count: number }[] = [];
   userEmail:any;
   userInitials: any;
+  @ViewChild('vpMultiSelect') vpMultiSelect: any;
 
   statusLabels: { [key: string]: string } = {
     C: 'Complete',
@@ -562,9 +563,14 @@ fetchData() {
     
        
   }
-  clearFilters() {
+clearFilters() {
     this.selectedVP = [];
     this.selectedProject = null;
+      if (this.vpMultiSelect) {
+      this.vpMultiSelect.filterValue = '';
+      this.vpMultiSelect.onFilterInputChange({ target: { value: '' } });
+    }
+ 
     this.onFilterChange();
   }
   projectsByVPTotal(): number {
