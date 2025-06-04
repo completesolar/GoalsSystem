@@ -30,7 +30,7 @@ export class GoalsMetricsComponent implements OnInit {
   vpOptions: { label: string; value: string }[] = [];
   projectOptions: { label: string; value: string }[] = [];
   selectedVP: string[] = [];
-  selectedProject: { label: string; value: string } | null = null;
+  selectedProject:any | null = null;
 
   cachedMetricsResponse: any = null;
 
@@ -58,45 +58,75 @@ export class GoalsMetricsComponent implements OnInit {
     this.fetchData();
   }
 
+  // fetchData() {
+  //   this.isProjectsByVPLoading = true;
+  //   this.isProjectStatusLoading = true;
+  //   this.isStatusWiseLoading = true;
+
+  //   this.goalsService.getGoalsMetrics().subscribe((res) => {
+  //     this.cachedMetricsResponse = res;
+
+  //     console.log("res",res)
+  //     this.vpOptions = res.projectsByVP.categories.map((vp: string) => ({ label: vp, value: vp }));
+  //     this.projectOptions = res.projectWiseByStatus.categories.map((proj: string) => ({ label: proj, value: proj }));
+
+  //     this.buildProjectsByVPChart(res);
+  //     this.buildProjectStatusChart(res);
+  //     this.buildStatusWiseChart(res);
+
+  //     this.isProjectsByVPLoading = false;
+  //     this.isProjectStatusLoading = false;
+  //     this.isStatusWiseLoading = false;
+
+  //     this.cdRef.detectChanges();
+  //   });
+  // }
   fetchData() {
     this.isProjectsByVPLoading = true;
     this.isProjectStatusLoading = true;
     this.isStatusWiseLoading = true;
-
-    this.goalsService.getGoalsMetrics().subscribe((res) => {
+  
+    this.goalsService.getGoalsMetrics(this.selectedVP, this.selectedProject?.value ?? null).subscribe((res) => {
       this.cachedMetricsResponse = res;
-
-      console.log("res",res)
+  
       this.vpOptions = res.projectsByVP.categories.map((vp: string) => ({ label: vp, value: vp }));
       this.projectOptions = res.projectWiseByStatus.categories.map((proj: string) => ({ label: proj, value: proj }));
-
+  
       this.buildProjectsByVPChart(res);
       this.buildProjectStatusChart(res);
       this.buildStatusWiseChart(res);
-
+  
       this.isProjectsByVPLoading = false;
       this.isProjectStatusLoading = false;
       this.isStatusWiseLoading = false;
-
+  
       this.cdRef.detectChanges();
     });
   }
-
-
-
-
+  
   onFilterChange() {
-    const vpValues = this.selectedVP.length > 0 ? this.selectedVP : null;
-    const projValue = this.selectedProject?.value ?? null;
+    this.isProjectsByVPLoading = true;
+    this.isProjectStatusLoading = true;
+    this.isStatusWiseLoading = true;
   
-    const filteredRes = this.filterMetricsByVPAndProject(this.cachedMetricsResponse, vpValues, projValue);
+    this.goalsService.getGoalsMetrics(this.selectedVP, this.selectedProject?.value ?? null).subscribe(res => {
+      this.cachedMetricsResponse = res;
   
-    this.buildProjectsByVPChart(filteredRes);
-    this.buildProjectStatusChart(filteredRes);
-    this.buildStatusWiseChart(filteredRes);
+      this.vpOptions = res.projectsByVP.categories.map((vp: string) => ({ label: vp, value: vp }));
+      this.projectOptions = res.projectWiseByStatus.categories.map((proj: string) => ({ label: proj, value: proj }));
   
-    this.cdRef.detectChanges();
+      this.buildProjectsByVPChart(res);
+      this.buildProjectStatusChart(res);
+      this.buildStatusWiseChart(res);
+  
+      this.isProjectsByVPLoading = false;
+      this.isProjectStatusLoading = false;
+      this.isStatusWiseLoading = false;
+  
+      this.cdRef.detectChanges();
+    });
   }
+  
   filterMetricsByVPAndProject(metrics: any, selectedVPs: string[] | null, selectedProject: string | null): any {
     const vpIndexMap = metrics.projectsByVP.categories.reduce((acc: any, vp: string, idx: number) => {
       if (!selectedVPs || selectedVPs.includes(vp)) acc[vp] = idx;
