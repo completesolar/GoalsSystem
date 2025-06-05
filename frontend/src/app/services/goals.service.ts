@@ -167,6 +167,7 @@ getGoalsMetrics(selectedVPs?: string[], selectedProject?: string): Observable<an
   }
 
   updateB(b: any) {
+    console.log('update b of goals service called');
     return this.http.put(`${this.baseURL}/b/${b.id}`, b);
   }
   

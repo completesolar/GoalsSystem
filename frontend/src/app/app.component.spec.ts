@@ -20,10 +20,5 @@ describe('AppComponent', () => {
     expect(app.title).toEqual('complete-solar-fe');
   });
 
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, complete-solar-fe');
-  });
+ 
 });

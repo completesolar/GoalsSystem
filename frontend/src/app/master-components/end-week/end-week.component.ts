@@ -47,7 +47,7 @@ export class EndWeekComponent {
 
   isValid: boolean = true;
 
-  e: number | undefined;
+  e: any;
   remarks: any;
   status: any;
   selectedFilters: { [key: string]: any[] } = {};
@@ -107,13 +107,14 @@ export class EndWeekComponent {
     this.goalsService.updateE(this.editingItem).subscribe({
       next: (response: any) => {
         if (response && response.id) {
-          this.getE();
           this.messageService.add({
             severity: 'success',
             summary: 'E',
             detail: 'updated successfully!.',
           });
           this.editingItem = null;
+          this.getE();
+
         }
       },
       error: (err) => {
@@ -137,9 +138,9 @@ export class EndWeekComponent {
       return;
     }
     let data = {
-      e: this.e,
+      e: this.e ||undefined,
       active_status: this.status !== undefined ? this.status.value : 1,
-      remarks: this.remarks,
+      remarks: this.remarks|| '',
     };
 
     this.goalsService.createE(data).subscribe({
@@ -254,8 +255,8 @@ export class EndWeekComponent {
     this.selectedFilters = {};
     this.activeFilters = {};
     this.EList = [...this.allEList];
-  this.e = undefined;
-  this.status = null;
+  this.e = null;
+  this.status = undefined;
   this.remarks = '';
   }
 }

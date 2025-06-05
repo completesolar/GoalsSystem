@@ -57,30 +57,6 @@ export class GoalsMetricsComponent implements OnInit {
   ngOnInit(): void {
     this.fetchData();
   }
-
-  // fetchData() {
-  //   this.isProjectsByVPLoading = true;
-  //   this.isProjectStatusLoading = true;
-  //   this.isStatusWiseLoading = true;
-
-  //   this.goalsService.getGoalsMetrics().subscribe((res) => {
-  //     this.cachedMetricsResponse = res;
-
-  //     console.log("res",res)
-  //     this.vpOptions = res.projectsByVP.categories.map((vp: string) => ({ label: vp, value: vp }));
-  //     this.projectOptions = res.projectWiseByStatus.categories.map((proj: string) => ({ label: proj, value: proj }));
-
-  //     this.buildProjectsByVPChart(res);
-  //     this.buildProjectStatusChart(res);
-  //     this.buildStatusWiseChart(res);
-
-  //     this.isProjectsByVPLoading = false;
-  //     this.isProjectStatusLoading = false;
-  //     this.isStatusWiseLoading = false;
-
-  //     this.cdRef.detectChanges();
-  //   });
-  // }
   fetchData() {
     this.isProjectsByVPLoading = true;
     this.isProjectStatusLoading = true;

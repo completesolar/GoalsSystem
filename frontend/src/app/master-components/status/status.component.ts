@@ -141,10 +141,10 @@ export class StatusComponent {
       return;
     }
     let data = {
-      status: this.initial,
-      description: this.name,
+      status: this.initial ||'',
+      description: this.name||'',
       active_status: this.status !== undefined ? this.status.value : 1,
-      remarks: this.remarks,
+      remarks: this.remarks||'',
     };
 
     this.goalsService.createStatus(data).subscribe({

@@ -68,6 +68,7 @@ export class BeginningWeekComponent {
   ) {}
 
   ngOnInit() {
+    console.log('beginning week component init');
     this.getb();
   }
 
@@ -102,8 +103,10 @@ export class BeginningWeekComponent {
     this.editingItem = { ...item };
   }
 
-  async updateB(item: any) {
-    const isChanged = await this.isObjectChanged(item, this.editingItem);
+ updateB(item: any) {
+    console.log('updateB called with', item, this.editingItem);
+    const isChanged = this.isObjectChanged(item, this.editingItem);
+    console.log('isChanged ', isChanged);
     if (isChanged === false) {
       this.messageService.add({
         severity: 'info',
@@ -114,14 +117,17 @@ export class BeginningWeekComponent {
     }
     this.goalsService.updateB(this.editingItem).subscribe({
       next: (response: any) => {
+        console.log('response ', response);
         if (response && response.id) {
-          this.getb();
-          this.editingItem = null;
           this.messageService.add({
             severity: 'success',
             summary: 'B',
             detail: 'updated successfully!.',
           });
+          
+          console.log("getb")
+          this.getb();
+          this.editingItem = null;
         }
       },
       error: (err) => {
@@ -166,7 +172,6 @@ export class BeginningWeekComponent {
         }
       },
       error: (err) => {
-        console.error('Create failed', err);
         this.messageService.add({
           severity: 'error',
           summary: 'B',
@@ -179,6 +184,8 @@ export class BeginningWeekComponent {
   isObjectChanged(objA: any, objB: any): boolean {
     const { isEditable: _, ...restA } = objA;
     const { isEditable: __, ...restB } = objB;
+
+    console.log('rest a and b ', JSON.stringify(restA), JSON.stringify(restB));
 
     return JSON.stringify(restA) !== JSON.stringify(restB);
   }

@@ -28,6 +28,9 @@ import { CheckboxModule } from 'primeng/checkbox';
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent {
+  expandAllNodes(mockNodes: { expanded: boolean; children: never[]; }[]) {
+    throw new Error('Method not implemented.');
+  }
   today: Date = new Date();
   buttonLabel: string = 'Dashboard';
   userEmail:any;
@@ -82,6 +85,8 @@ export class HeaderComponent {
     },
     {
       label: 'Enable clone',
+      routerLink: ['/'],
+
     }
   ];
 
@@ -177,7 +182,7 @@ getLoggedInEmail(): string {
   }
 
   updateButtonLabel(): void {
-    const currentUrl = this.router.url;
+    const currentUrl = this.router.url || 'Goals';
     this.buttonLabel = currentUrl.includes('dashboard')
       ? 'Goals'
       : 'Dashboard';

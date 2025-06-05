@@ -22,6 +22,8 @@ import { isPlatformBrowser } from '@angular/common';
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
+  standalone: true,
+
 })
 export class LoginComponent implements OnInit, OnDestroy {
   title = 'my-app';
@@ -82,38 +84,60 @@ export class LoginComponent implements OnInit, OnDestroy {
       console.log('No user is logged in');
     }
   }
-
-  login() {
+  async login() {
     if (isPlatformBrowser(this.platformId)) {
-      if (this.msalGuardConfig.authRequest) {
-        this.authService.loginPopup({
-          ...this.msalGuardConfig.authRequest,
-        } as RedirectRequest).subscribe({
-          next: () => {
-            this.getUserDetails();
-            this.router.navigate(['goals']);
-            this.loginCred(this.user?.username); 
-          },
-          error: (err) => {
-            console.error('Login Popup Error:', err);
-          },
-        });
-      } else {
-        this.authService.loginRedirect().subscribe({
-          next: () => {
-            this.getUserDetails();
-            this.router.navigate(['goals']);
-            this.loginCred(this.user?.username);
-            // localStorage.setItem('email',this.user?.username);
-
-          },
-          error: (err) => {
-            console.error('Login Redirect Error:', err);
-          },
-        });
+      try {
+        if (this.msalGuardConfig.authRequest) {
+          const result = await this.authService.instance.loginPopup({
+            ...this.msalGuardConfig.authRequest,
+          } as RedirectRequest);
+          this.getUserDetails();
+          this.router.navigate(['goals']);
+          this.loginCred(this.user?.username);
+        } else {
+          await this.authService.instance.loginRedirect();
+          this.getUserDetails();
+          this.router.navigate(['goals']);
+          this.loginCred(this.user?.username);
+        }
+      } catch (err: unknown) {
+        console.error('Login Error:', err);
       }
     }
   }
+  
+  //  login() {
+  //   if (isPlatformBrowser(this.platformId)) {
+  //     if (this.msalGuardConfig.authRequest) {
+  //       this.authService.instance.loginPopup({
+  //         ...this.msalGuardConfig.authRequest,
+  //       } as RedirectRequest).subscribe({
+  //         next: () => {
+  //         this.getUserDetails();
+  //         this.router.navigate(['goals']);
+  //         this.loginCred(this.user?.username);
+  //         },
+  //         error: (err:Error) => {
+  //         console.error('Login Popup Error:', err);
+  //         },
+  //       });
+  //     } else {
+  //       this.authService.instance.loginRedirect().subscribe({
+  //         next: () => {
+  //         this.getUserDetails();
+  //         this.router.navigate(['goals']);
+  //         this.loginCred(this.user?.username);
+  //           // localStorage.setItem('email',this.user?.username);
+
+  //         },
+  //         error: (err:Error) => {
+  //         console.error('Login Redirect Error:', err);
+  //         },
+  //       });
+  //     }
+  //   }
+  // }
+  
   
   loginCred(email: string) {
     if (!email) {
@@ -124,8 +148,6 @@ export class LoginComponent implements OnInit, OnDestroy {
       next: (res) => {
         const response=res as any
         this.goalsService.userData = response;
-        // console.log("response",response)
-        // localStorage.setItem("initial", response.initial);
         localStorage.setItem("email", response.user_email);
       },
       error: (err) => {
@@ -137,7 +159,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   logout() {
     if (isPlatformBrowser(this.platformId)) {
-      this.authService.logoutRedirect({
+      this.authService.instance.logoutRedirect({
         postLogoutRedirectUri: 'http://localhost:4200',
       });
     }

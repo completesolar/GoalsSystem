@@ -138,9 +138,9 @@ export class DelinquentComponent {
       return;
     }
     let data = {
-      d: this.d,
+      d: this.d || null,
       active_status: this.status !== undefined ? this.status.value : 1,
-      remarks: this.remarks,
+      remarks: this.remarks|| '',
     };
 
     this.goalsService.createD(data).subscribe({
@@ -257,7 +257,7 @@ export class DelinquentComponent {
     this.activeFilters = {};
     this.DList = [...this.allDdata];
     this.d = undefined;
-    this.status = null;
+    this.status = undefined;
     this.remarks = '';
   
   }

@@ -13,6 +13,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
 import { TreeModule } from 'primeng/tree';
 import { HeaderComponent } from '../../common/component/header/header.component';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'app-roles-add-edit',
