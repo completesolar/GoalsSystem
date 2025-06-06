@@ -212,7 +212,7 @@ columns = [
 
   constructor(
     @Inject(PLATFORM_ID) private platform: Object,
-    private goalsService: GoalsService,
+    public goalsService: GoalsService,
     private messageService: MessageService,
     private msalService: MsalService,
     private router: Router,
@@ -261,6 +261,7 @@ columns = [
     this.getPriority();
     this.getActions();
   }
+  
   loadWhoOptions(): void {
     this.goalsService.getWhoOptions().subscribe({
       next: (data) => {

@@ -37,7 +37,7 @@ export class HeaderComponent {
   userInitials: any;
   constructor(
     @Inject(PLATFORM_ID) private platform: Object,
-    private msalService: MsalService,
+    public msalService: MsalService,
     private roleService: RolesService,
     public goalService: GoalsService,
     private router: Router,

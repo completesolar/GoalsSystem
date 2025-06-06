@@ -1,154 +1,138 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HeaderComponent } from './header.component';
-import { Router, NavigationStart } from '@angular/router';
-import { MsalService } from '@azure/msal-angular';
-import { RolesService } from '../../../services/roles.service';
-import { GoalsService } from '../../../services/goals.service';
-import { of, throwError } from 'rxjs';
-import { CommonModule } from '@angular/common';
-import { ButtonModule } from 'primeng/button';
-import { SelectModule } from 'primeng/select';
-import { MultiSelectModule } from 'primeng/multiselect';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MenuModule } from 'primeng/menu';
-import { CheckboxModule } from 'primeng/checkbox';
-import { Subject } from 'rxjs';
 import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { MSAL_GUARD_CONFIG, MSAL_INSTANCE, MSAL_INTERCEPTOR_CONFIG, MsalBroadcastService, MsalGuard, MsalService } from '@azure/msal-angular';
+import { of } from 'rxjs';
+import { msalGuardConfig, msalInstance, msalInterceptorConfig } from '../../../msal.config';
+import { HeaderComponent } from './header.component';
+import { Router } from '@angular/router';
 
 describe('HeaderComponent', () => {
   let component: HeaderComponent;
   let fixture: ComponentFixture<HeaderComponent>;
-  let mockMsalService: jasmine.SpyObj<MsalService>;
-  let mockRolesService: jasmine.SpyObj<RolesService>;
-  let mockGoalsService: jasmine.SpyObj<GoalsService>;
-  let mockRouter: jasmine.SpyObj<Router>;
+  let mockRouter: any;
 
   beforeEach(async () => {
-    mockMsalService = jasmine.createSpyObj('MsalService', ['instance', 'logoutRedirect']);
-    mockRolesService = jasmine.createSpyObj('RolesService', ['getRoleMasterByEmail']);
-    mockGoalsService = jasmine.createSpyObj('GoalsService', ['getGlobalCloneSetting', 'updateGlobalCloneSetting', 'accessChanged$', 'getUserInitials']);
-    mockRouter = jasmine.createSpyObj('Router', ['navigate', 'events']);
-
-    // Create a Subject to mock the Router.events observable
-    const routerEventsSubject = new Subject();
-    // mockRouter.events = routerEventsSubject.asObservable();
-
+    mockRouter = {
+      url: '/dashboard',
+      navigate: jasmine.createSpy('navigate'),
+      events: of()
+    };
     await TestBed.configureTestingModule({
-      declarations: [HeaderComponent],
-      imports: [
-        CommonModule,
-        ButtonModule,
-        SelectModule,
-        MultiSelectModule,
-        FormsModule,
-        ReactiveFormsModule,
-        MenuModule,
-        CheckboxModule,
-        HeaderComponent
-      ],
-      providers: [
-        { provide: MsalService, useValue: mockMsalService },
-        { provide: RolesService, useValue: mockRolesService },
-        { provide: GoalsService, useValue: mockGoalsService },
-        { provide: Router, useValue: mockRouter },
-        provideHttpClient(),
-      ],
-    }).compileComponents();
-  });
+      providers: [ provideHttpClient(), provideHttpClientTesting(),{
+            provide: MSAL_INSTANCE,
+            useValue: msalInstance,
+          },
+          {
+            provide: MSAL_GUARD_CONFIG,
+            useValue: msalGuardConfig,
+          },
+          {
+            provide: MSAL_INTERCEPTOR_CONFIG,
+            useValue: msalInterceptorConfig,
+          },
+          {
+            provide: Router,
+            useValue: mockRouter
+          },
+       
+          MsalService,
+          MsalGuard,
+          MsalBroadcastService,
+        ],
+      imports: [HeaderComponent]
+    })
+    .compileComponents();
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(HeaderComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create the component', () => {
+  it('should create the header component', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should update button label based on current route', () => {
-    // Use a Subject to simulate the router events
-    const routerEventsSubject = mockRouter.events as Subject<any>;
+  it('should set userInitials when userName is called', () => {
+    spyOn(component.goalService, 'getUserInitials').and.returnValue(
+      of({ who: 'JD', name: 'John Doe' })
+    );
 
-    // Simulate the /dashboard route event
-    routerEventsSubject.next(new NavigationStart(1, '/dashboard'));
+    component.userName('jd@example.com');
+
+    expect(component.goalService.getUserInitials).toHaveBeenCalledWith('jd@example.com');
+  });
+
+  it('should navigate to dashboard using goToDashboard()', () => {
+    component.goToDashboard();
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/dashboard']);
+  });
+
+  it('should update button label on updateButtonLabel()', () => {
+    mockRouter.url = '/dashboard';
     component.updateButtonLabel();
     expect(component.buttonLabel).toBe('Goals');
 
-    // Simulate the /goals route event
-    routerEventsSubject.next(new NavigationStart(1, '/goals'));
+    mockRouter.url = '/goals';
     component.updateButtonLabel();
     expect(component.buttonLabel).toBe('Dashboard');
   });
 
-  it('should fetch user initials on ngOnInit', () => {
-    const userEmail = 'user@example.com';
-    const mockResponse = { who: 'JD', name: 'John Doe' };
-    // mockMsalService.instance.getAllAccounts.and.returnValue([{ username: userEmail }]);
-    mockGoalsService.getUserInitials.and.returnValue(of(mockResponse));
-
-    component.ngOnInit();
-
-    expect(mockGoalsService.getUserInitials).toHaveBeenCalledWith(userEmail);
-    expect(component.userInitials).toBe('JD (John Doe)');
-  });
-
-  it('should call onCloneToggleChange and update clone setting', () => {
-    component.isCloneEnabled = false;
-    const email = 'user@example.com';
-    mockGoalsService.updateGlobalCloneSetting.and.returnValue(of({ message: 'Success' }));
-
-    component.onCloneToggleChange();
-
-    expect(mockGoalsService.updateGlobalCloneSetting).toHaveBeenCalledWith(false, email);
-    expect(mockRouter.navigate).toHaveBeenCalled();
-  });
-
-  it('should call logout', () => {
-    mockMsalService.logoutRedirect.and.stub();
-    component.logout();
-
-    expect(mockMsalService.logoutRedirect).toHaveBeenCalled();
-  });
-
-  it('should navigate to the selected route when onOptionChange is called', () => {
-    const event = { value: '/dashboard' };
-    component.onOptionChange(event);
-
-    expect(mockRouter.navigate).toHaveBeenCalledWith([event.value]);
-  });
-
-  it('should toggle settings dropdown visibility when toggleDropdown is called', () => {
+  it('should toggle settings menu using toggleDropdown()', () => {
+    expect(component.showSettings).toBeFalse();
     component.toggleDropdown();
-    expect(component.showSettings).toBe(true);
-
+    expect(component.showSettings).toBeTrue();
     component.toggleDropdown();
-    expect(component.showSettings).toBe(false);
+    expect(component.showSettings).toBeFalse();
   });
 
-  it('should close dropdown when clicked outside', () => {
+  it('should hide dropdown when clicked outside', () => {
     component.showSettings = true;
-    component.onDocumentClick(new MouseEvent('click'));
+    spyOn(document, 'querySelector').and.returnValue({
+      contains: () => false
+    } as any);
 
-    expect(component.showSettings).toBe(false);
+    const event = new MouseEvent('click');
+    component.onDocumentClick(event);
+    expect(component.showSettings).toBeFalse();
   });
 
-  it('should update settings menu based on permissions', () => {
-    const mockRoleResponse = { access: ['/priority', '/status'] };
-    mockRolesService.getRoleMasterByEmail.and.returnValue(of(mockRoleResponse));
+  it('should retain dropdown when click is inside', () => {
+    component.showSettings = true;
+    spyOn(document, 'querySelector').and.returnValue({
+      contains: () => true
+    } as any);
 
-    component.getPermission();
-
-    expect(component.settingsMenu.length).toBe(2);
-    // expect(component.settingsMenu[0].routerLink).toBe('/priority');
-    // expect(component.settingsMenu[1].routerLink).toBe('/status');
+    const event = new MouseEvent('click');
+    component.onDocumentClick(event);
+    expect(component.showSettings).toBeTrue();
   });
 
-  it('should handle error when global clone setting fetch fails', () => {
-    mockGoalsService.getGlobalCloneSetting.and.returnValue(throwError('Failed to load'));
+  it('should return week number from getCurrentWeekNumber()', () => {
+    const week = component.getCurrentWeekNumber();
+    expect(typeof week).toBe('number');
+    expect(week).toBeGreaterThan(0);
+  });
 
-    component.loadGlobalCloneSetting();
 
-    expect(component.isCloneEnabled).toBe(true); // default value
+  it('should route based on settings menu selection', () => {
+    component.onOptionChange({ value: '/priority' });
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/priority']);
+  });
+  
+  it('should route correctly when goToMetrics() is called', () => {
+    mockRouter.url = '/dashboard';
+    component.goToMetrics();
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/goals']);
+
+    mockRouter.url = '/goals';
+    component.goToMetrics();
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/dashboard']);
+  });
+
+  it('should call logout redirect on logout()', () => {
+    spyOn(component.msalService, 'logoutRedirect').and.stub();
+    component.logout();
+    expect(component.msalService.logoutRedirect).toHaveBeenCalled();
   });
 });

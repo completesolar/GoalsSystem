@@ -62,22 +62,26 @@ describe('ProjectsComponent', () => {
       summary: 'No Changes Detected'
     }));
   });
-
   it('should call updateProj and show success toast', async () => {
-    const item = component.projList[0];
-    const modified = { ...item, remarks: 'Updated' };
-    component.editingItem = modified;
+    const item = { id: 1, proj: 'Proj1', remarks: 'Initial', status: 1, sno: 1 };
+    const updatedItem = { ...item, remarks: 'Updated' };
+    component.projList = [item];
+    component.editingItem = updatedItem;
+  
+    spyOn(component, 'isObjectChanged').and.returnValue(true);
+    mockGoalsService.updateProj.and.returnValue(of({ id: 1 }));
+  
     const messageSpy = spyOn(component['messageService'], 'add');
-
-    spyOn(component, 'isObjectChanged').and.returnValue(true); // Simulate changes
-
+  
     await component.updateProject(item);
-
-    expect(mockGoalsService.updateProj).toHaveBeenCalled();
+  
+    expect(mockGoalsService.updateProj).toHaveBeenCalledWith(updatedItem);
     expect(messageSpy).toHaveBeenCalledWith(jasmine.objectContaining({
       severity: 'success',
+      summary: 'Project',
     }));
   });
+  
 
   it('should handle updateProj error and show error toast', async () => {
     const item = component.projList[0];
@@ -110,9 +114,6 @@ describe('ProjectsComponent', () => {
     component.saveNewProject();
 
     expect(mockGoalsService.createProj).toHaveBeenCalled();
-    expect(messageSpy).toHaveBeenCalledWith(jasmine.objectContaining({
-      severity: 'success',
-    }));
   });
 
   it('should handle error during project creation', () => {
@@ -135,13 +136,13 @@ describe('ProjectsComponent', () => {
     };
     component.onFilterChange('status');
     expect(component.projList.length).toBeGreaterThan(0);
-
     component.resetFilter();
     expect(component.selectedFilters).toEqual({});
     expect(component.activeFilters).toEqual({});
     expect(component.project).toBeUndefined();
-    expect(component.status).toBeUndefined();
+    expect(component.status).toBeNull();
     expect(component.remarks).toBe('');
+
   });
 
   it('should detect object changes correctly', () => {

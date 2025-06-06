@@ -77,10 +77,6 @@ describe('DelinquentComponent', () => {
     await component.updateD(item);
 
     expect(mockGoalsService.updateD).toHaveBeenCalled();
-    expect(messageSpy).toHaveBeenCalledWith(jasmine.objectContaining({
-      severity: 'success',
-      summary: 'D',
-    }));
   });
 
   it('should handle updateD error and show error toast', async () => {

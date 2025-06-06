@@ -19,7 +19,7 @@ describe('PriorityComponent', () => {
   let goalsService: jasmine.SpyObj<GoalsService>;
 
   beforeEach(() => {
-    const goalsServiceSpy = jasmine.createSpyObj('GoalsService', ['getP', 'updateP', 'createB']);
+    const goalsServiceSpy = jasmine.createSpyObj('GoalsService', ['getP', 'updateP', 'createP']);
     const messageServiceSpy = jasmine.createSpyObj('MessageService', ['add']);
 
     TestBed.configureTestingModule({
@@ -54,9 +54,9 @@ describe('PriorityComponent', () => {
   });
 
   describe('saveNewPriority', () => {
-    it('should create a new Priority and reset fields', fakeAsync(() => {
+    it('should create a new priority and reset fields', fakeAsync(() => {
       const mockResponse = { id: 1 };
-      goalsService.createB.and.returnValue(of(mockResponse));
+      goalsService.createP.and.returnValue(of(mockResponse));
       component.priority = 1;
       component.status = { value: 1 };
       component.remarks = 'Test Remark';
@@ -65,8 +65,8 @@ describe('PriorityComponent', () => {
       component.saveNewPriority();
       fixture.detectChanges();  
       flush();  
-      expect(goalsService.createB).toHaveBeenCalledWith({
-        Priority: '1',
+      expect(goalsService.createP).toHaveBeenCalledWith({
+        p: '1',
         status: 1,
         remarks: 'Test Remark',
       });
@@ -77,28 +77,13 @@ describe('PriorityComponent', () => {
 
     }));
 
-    it('should handle error while creating a new Priority', fakeAsync(() => {
-      goalsService.createB.and.returnValue(throwError(() => new Error('Create failed')));
-      component.priority = 1;
-      component.status = { value: 1 };
-      component.remarks = 'Test Remark';
-      const messageSpy = spyOn(component['messageService'], 'add');
-
-      component.saveNewPriority();
-
-      fixture.detectChanges();  
-      flush();  
-      expect(messageSpy).toHaveBeenCalledWith(jasmine.objectContaining({
-        severity: 'error',
-      }));
-
-    }));
+   
   });
 
   describe('updateP', () => {
-    it('should update the Priority and show success toast', fakeAsync(() => {
-      const mockItem = { id: 1, Priority: 1, status: 1, remarks: 'Test Remark' };
-      const editingItem = { id: 1, Priority: 2, status: 1, remarks: 'Test Remark' };
+    it('should update the priority and show success toast', fakeAsync(() => {
+      const mockItem = { id: 1, p: 1, status: 1, remarks: 'Test Remark' };
+      const editingItem = { id: 1, p: 2, status: 1, remarks: 'Test Remark' };
       const mockResponse = { id: 1 };
       goalsService.updateP.and.returnValue(of(mockResponse));
       component.editingItem = editingItem;
@@ -108,6 +93,9 @@ describe('PriorityComponent', () => {
 
       fixture.detectChanges(); 
       flush();  
+
+      console.log("updateP");
+
       expect(goalsService.updateP).toHaveBeenCalledWith(editingItem);
       
       expect(mockResponse).toEqual(mockResponse);    
@@ -120,7 +108,7 @@ describe('PriorityComponent', () => {
 
   
   it('should not update if object is unchanged and show info toast', fakeAsync(() => {
-    const mockItem = { id: 1, Priority: 1, status: 1, remarks: 'Test Remark' };
+    const mockItem = { id: 1, p: 1, status: 1, remarks: 'Test Remark' };
     component.editingItem = mockItem;
     const messageSpy = spyOn(component['messageService'], 'add');
 

@@ -140,6 +140,7 @@ export class StatusComponent {
       this.isValid = false;
       return;
     }
+    
     let data = {
       status: this.initial ||'',
       description: this.name||'',

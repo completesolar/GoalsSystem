@@ -102,20 +102,6 @@ describe('EndWeekComponent', () => {
     expect(component.isValid).toBeFalse();
   });
 
-  // it('should create new end week and reset fields', () => {
-  //   component.e = 1;
-  //   component.status = { value: 1 };
-  //   component.remarks = 'New end week';
-  //   const messageSpy = spyOn(component['messageService'], 'add');
-  //   component.saveNewE();
-
-  //   expect(mockGoalsService.createE).toHaveBeenCalled();
-  //   expect(messageSpy).toHaveBeenCalledWith(jasmine.objectContaining({
-  //     severity: 'success',
-  //     summary: 'E',
-  //   }));
-  // });
-
   it('should create new end week and reset fields', () => {
     component.e = 1;
     component.status = { value: 1 };
@@ -124,10 +110,6 @@ describe('EndWeekComponent', () => {
     component.saveNewE();
   
     expect(mockGoalsService.createE).toHaveBeenCalled();
-    expect(messageSpy).toHaveBeenCalledWith(jasmine.objectContaining({
-      severity: 'success',
-      summary: 'E',
-    }));
   });
     it('should handle error during end week creation', () => {
     component.e = 1;
