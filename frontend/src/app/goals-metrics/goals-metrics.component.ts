@@ -20,27 +20,42 @@ Chart.register(ChartDataLabels);
   selector: 'app-goals-metrics',
   templateUrl: './goals-metrics.component.html',
   styleUrls: ['./goals-metrics.component.scss'],
-  imports: [ChartModule,NgIf,  FormsModule,
-    SelectModule,
-    
+  imports: [
+    ChartModule,
+    NgIf, 
+    FormsModule,
+    SelectModule,    
     ButtonModule,
-    MultiSelect, MultiSelectModule,
+    MultiSelect,
+    MultiSelectModule,
     ChartModule,],
 })
 export class GoalsMetricsComponent implements OnInit {
   isProjectsByVPLoading = true;
+  isProjectsByWhoLoading = true;
+  isProjectsByWhoByStatusLoading = true;
   isProjectStatusLoading = true;
   isStatusWiseLoading = true;
 
   vpOptions: { label: string; value: string }[] = [];
+  whoOptions: { label: string; value: string }[] = [];
+  StatusOptions: { label: string; value: string }[] = [];
   projectOptions: { label: string; value: string }[] = [];
   selectedVP: string[] = [];
+  selectedWho: string[] = [];
+  selectedStatus: string[] = [];
   selectedProject:any | null = null;
 
   cachedMetricsResponse: any = null;
 
   projectsByVPChartData: any;
   projectsByVPChartOptions: any;
+  
+  projectsByWhoChartData: any;
+  projectsByWhoChartOptions: any;
+
+  projectsByWhoByStatusChartData: any;
+  projectsByWhoByStatusChartOptions: any;
 
   projectStatusChartData: any;
   projectStatusChartOptions: any;
@@ -52,6 +67,7 @@ export class GoalsMetricsComponent implements OnInit {
   userEmail:any;
   userInitials: any;
   @ViewChild('vpMultiSelect') vpMultiSelect: any;
+  @ViewChild('whoMultiSelect') whoMultiSelect: any;
 
   statusLabels: { [key: string]: string } = {
     C: 'Complete',
@@ -72,10 +88,9 @@ export class GoalsMetricsComponent implements OnInit {
 fetchUserInitials() {
   const email = this.getLoggedInEmail();
   
-  // Fetch the initials for the logged-in user
   this.goalsService.getUserInitials(email).subscribe((response) => {
     this.userInitials = response.who; // Store the initials
-    console.log(this.userInitials, 'User initials');  // Log the initials to check
+    // console.log(this.userInitials, 'User initials');  // Log the initials to check
     this.fetchData(); // Now fetch the data once initials are available
   });
 }
@@ -86,43 +101,32 @@ getLoggedInEmail(): string {
   return this.userEmail; // Return the logged-in user's email
 }
 
-  // fetchData() {
-  //   this.isProjectsByVPLoading = true;
-  //   this.isProjectStatusLoading = true;
-  //   this.isStatusWiseLoading = true;
-
-  //   this.goalsService.getGoalsMetrics().subscribe((res) => {
-  //     this.cachedMetricsResponse = res;
-
-  //     console.log("res",res)
-  //     this.vpOptions = res.projectsByVP.categories.map((vp: string) => ({ label: vp, value: vp }));
-  //     this.projectOptions = res.projectWiseByStatus.categories.map((proj: string) => ({ label: proj, value: proj }));
-
-  //     this.buildProjectsByVPChart(res);
-  //     this.buildProjectStatusChart(res);
-  //     this.buildStatusWiseChart(res);
-
-  //     this.isProjectsByVPLoading = false;
-  //     this.isProjectStatusLoading = false;
-  //     this.isStatusWiseLoading = false;
-
-  //     this.cdRef.detectChanges();
-  //   });
-  // }
+  
 fetchData() {
     this.isProjectsByVPLoading = true;
+    this.isProjectsByWhoLoading = true;
+    this.isProjectsByWhoByStatusLoading = true;
     this.isProjectStatusLoading = true;
     this.isStatusWiseLoading = true;
 
-    // Pass user_initials to the getGoalsMetrics API call
-    this.goalsService.getGoalsMetrics(this.selectedVP, this.selectedProject?.value ?? null, this.userInitials).subscribe((res) => {
+    this.goalsService.getGoalsMetrics(this.selectedVP, this.selectedProject?.value ?? null, this.userInitials,this.selectedWho,this.selectedStatus).subscribe((res) => {
+      // console.log("res",res)
       this.cachedMetricsResponse = res;
       this.vpOptions = res.projectsByVP.categories.map((vp: string) => ({ label: vp, value: vp }));
+      this.whoOptions = res.projectsByWHO.categories.map((who: string) => ({ label: who, value: who }));
+      this.StatusOptions = res.statusWise.map((item: any) => ({
+        label: item.status,
+        value: item.status
+      }));     
       this.projectOptions = res.projectWiseByStatus.categories.map((proj: string) => ({ label: proj, value: proj }));
       this.buildProjectsByVPChart(res);
+      this.buildProjectsByWhoChart(res);
       this.buildProjectStatusChart(res);
       this.buildStatusWiseChart(res);
+
       this.isProjectsByVPLoading = false;
+      this.isProjectsByWhoLoading = false;
+      this.isProjectsByWhoByStatusLoading = false;
       this.isProjectStatusLoading = false;
       this.isStatusWiseLoading = false;
       this.cdRef.detectChanges();
@@ -133,100 +137,29 @@ fetchData() {
     this.isProjectsByVPLoading = true;
     this.isProjectStatusLoading = true;
     this.isStatusWiseLoading = true;
-  
-    this.goalsService.getGoalsMetrics(this.selectedVP, this.selectedProject?.value ?? null, this.userInitials).subscribe(res => {
+    this.isProjectsByWhoLoading = true;
+    this.goalsService.getGoalsMetrics(this.selectedVP, this.selectedProject?.value ?? null, this.userInitials,this.selectedWho,this.selectedStatus).subscribe(res => {
       this.cachedMetricsResponse = res;
-  
-      this.vpOptions = res.projectsByVP.categories.map((vp: string) => ({ label: vp, value: vp }));
-      this.projectOptions = res.projectWiseByStatus.categories.map((proj: string) => ({ label: proj, value: proj }));
-  
+
       this.buildProjectsByVPChart(res);
       this.buildProjectStatusChart(res);
       this.buildStatusWiseChart(res);
-  
+      this.buildProjectsByWhoChart(res);  
+
       this.isProjectsByVPLoading = false;
       this.isProjectStatusLoading = false;
       this.isStatusWiseLoading = false;
+      this.isProjectsByWhoLoading = false;
+
   
       this.cdRef.detectChanges();
     });
   }
+ 
   getStatusCount(status: string): number {
   const statusItem = this.cachedMetricsResponse?.statusWise.find((s: StatusWise) => s.status === status);
   return statusItem ? statusItem.count : 0;
 }
-  
-  filterMetricsByVPAndProject(metrics: any, selectedVPs: string[] | null, selectedProject: string | null): any {
-    const vpIndexMap = metrics.projectsByVP.categories.reduce((acc: any, vp: string, idx: number) => {
-      if (!selectedVPs || selectedVPs.includes(vp)) acc[vp] = idx;
-      return acc;
-    }, {});
-  
-    const filteredVPs = Object.keys(vpIndexMap);
-  
-    const filteredProjectsSet = new Set<string>();
-    metrics.projectsByVP.series.forEach((serie: any) => {
-      serie.data.forEach((count: number, idx: number) => {
-        const vp = metrics.projectsByVP.categories[idx];
-        const project = serie.name;
-        if ((!selectedVPs || selectedVPs.includes(vp)) && count > 0) {
-          filteredProjectsSet.add(project);
-        }
-      });
-    });
-  
-    let filteredProjects = Array.from(filteredProjectsSet);
-    if (selectedProject) {
-      filteredProjects = filteredProjects.filter((proj) => proj === selectedProject);
-    }
-  
-    const projectsByVPSeries = metrics.projectsByVP.series
-      .filter((serie: any) => filteredProjects.includes(serie.name))
-      .map((serie: any) => ({
-        name: serie.name,
-        data: filteredVPs.map(vp => serie.data[vpIndexMap[vp]] ?? 0),
-      }));
-  
-    const projIndexMap = metrics.projectWiseByStatus.categories.reduce((acc: any, proj: string, idx: number) => {
-      if (filteredProjects.includes(proj)) acc[proj] = idx;
-      return acc;
-    }, {});
-  
-    const filteredProjectsFinal = Object.keys(projIndexMap);
-  
-    const projectStatusSeries = metrics.projectWiseByStatus.series.map((serie: any) => ({
-      name: serie.name,
-      data: filteredProjectsFinal.map(proj => serie.data[projIndexMap[proj]] ?? 0),
-    }));
-  
-    const statusCountMap: { [key: string]: number } = {};
-    metrics.projectWiseByStatus.series.forEach((serie: any) => {
-      serie.data.forEach((count: number, idx: number) => {
-        const proj = metrics.projectWiseByStatus.categories[idx];
-        if (filteredProjects.includes(proj)) {
-          statusCountMap[serie.name] = (statusCountMap[serie.name] || 0) + count;
-        }
-      });
-    });
-  
-    const statusWise = Object.entries(statusCountMap).map(([status, count]) => ({
-      status,
-      count,
-    }));
-  
-    return {
-      ...metrics,
-      projectsByVP: {
-        categories: filteredVPs,
-        series: projectsByVPSeries,
-      },
-      projectWiseByStatus: {
-        categories: filteredProjectsFinal,
-        series: projectStatusSeries,
-      },
-      statusWise,
-    };
-  }
     
   filterMetricsByVP(metrics: any, selectedVPs: string[] | null): any {
     if (!selectedVPs || selectedVPs.length === 0) {
@@ -314,6 +247,25 @@ fetchData() {
       };
     }
   }
+  getWhoStyle(chartData: any): { [key: string]: string } {
+    const labelCount = chartData?.labels?.length ?? 0;
+  
+    if (labelCount >= 1 && labelCount <= 20) {
+      return {
+        minWidth: '100%',
+        height: '200px',
+        display: 'block',
+        '--canvas-height': '200px !important' // Mark it important in the variable
+      };
+    } else {
+      return {
+        minWidth: '100%',
+        display: 'block',
+        height: '400px',
+          '--canvas-height': '1800px !important'
+      };
+    }
+  }
   getProjChartStyle(chartData: any): { [key: string]: string } {
     const labelCount = chartData?.labels?.length ?? 0;
     if (labelCount >= 1 && labelCount <= 6) {
@@ -342,11 +294,7 @@ fetchData() {
       data: serie.data,
       backgroundColor: colors[idx % colors.length],
       stack: 'Stack 0',
-    }));
-
-
-
-    
+    }));   
 
     this.projectsByVPChartData = {
       labels,
@@ -401,7 +349,6 @@ fetchData() {
         },
       },
     };
-    
     
   }
 
@@ -573,7 +520,13 @@ clearFilters() {
       this.vpMultiSelect.filterValue = '';
       this.vpMultiSelect.onFilterInputChange({ target: { value: '' } });
     }
- 
+      if (this.whoMultiSelect) {
+      this.whoMultiSelect.filterValue = '';
+      this.whoMultiSelect.onFilterInputChange({ target: { value: '' } });
+    }
+    this.selectedWho = [];
+    this.selectedStatus = [];
+
     this.onFilterChange();
   }
   projectsByVPTotal(): number {
@@ -583,9 +536,81 @@ clearFilters() {
   }
   
   projectStatusTotal(): number {
+    
     if (!this.projectStatusChartData?.datasets) return 0;
     return this.projectStatusChartData.datasets.reduce((total: any, ds: any) => 
       total + ds.data.reduce((sum: number, val: number) => sum + val, 0), 0);
   }
   
+  buildProjectsByWhoChart(res: any) {  
+    const labels = res.projectsByWHO.categories;
+    const filteredSeries =  res.projectsByWHO.series;
+    const colors = [
+      '#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8',
+      '#6f42c1', '#20c997', '#fd7e14', '#6610f2', '#e83e8c',
+      '#6c757d', '#198754', '#0dcaf0', '#d63384', '#343a40',
+    ];
+
+    const datasets = filteredSeries.map((series: any, index: number) => ({
+      label: series.name,
+      data: series.data,
+      backgroundColor: colors[index % colors.length],
+    }));
+  
+    this.projectsByWhoChartData = {
+      labels,
+      datasets,
+    };
+  
+    this.projectsByWhoChartOptions = {
+      indexAxis: 'y', 
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: {
+            boxWidth: 10,
+          },
+        },
+        title: {
+          display: true,
+          text: 'Projects by WHO',
+        },
+        datalabels: {
+          anchor: 'end',
+          align: 'end',
+          font: {
+            weight: 'bold'
+          },
+          formatter: (value: any, context: any) => {
+            const datasets = context.chart.data.datasets;
+            const dataIndex = context.dataIndex;
+            const datasetIndex = context.datasetIndex;
+  
+            if (datasetIndex === datasets.length - 1) {
+              let total = 0;
+              datasets.forEach((ds: any) => {
+                total += ds.data[dataIndex] || 0;
+              });
+              return total;
+            }
+            return '';
+          }
+        }
+      },
+      scales: {
+        x: {
+          stacked: true,
+          beginAtZero: true,
+          grid: { display: false },
+        },
+        y: {
+          stacked: true,
+          grid: { display: false },
+        },
+      },
+    };
+  }
+
 }

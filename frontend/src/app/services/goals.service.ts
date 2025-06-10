@@ -151,19 +151,37 @@ export class GoalsService {
   //   return this.http.get<any>(`${this.baseURL}/goals/metrics`);
   // }
   
-getGoalsMetrics(selectedVPs?: string[], selectedProject?: string, userInitials?: string): Observable<any> {
-    let params = new HttpParams();
-    if (selectedVPs && selectedVPs.length > 0) {
-      params = params.set('vps', selectedVPs.join(','));
-    }
-    if (selectedProject) {
-      params = params.set('project', selectedProject);
-    }
-    if (userInitials) {
-      params = params.set('userInitials', userInitials); // Add user_initials to the request
-    }
-    return this.http.get<any>(`${this.baseURL}/goals/metrics`, { params });
+getGoalsMetrics(selectedVPs?: string[], selectedProject?: string, userInitials?: string,selectedWhos?: string[],selectedStatus?:string[]): Observable<any> {
+  let params = new HttpParams();
+
+  if (selectedVPs?.length) {
+    selectedVPs.forEach(vp => {
+      params = params.append('vps', vp);
+    });
   }
+  
+  if (selectedProject) {
+    params = params.set('project', selectedProject);
+  }
+  
+  if (userInitials) {
+    params = params.set('userInitials', userInitials);
+  }
+  
+  if (selectedWhos?.length) {
+    selectedWhos.forEach(who => {
+      params = params.append('whos', who);
+    });
+  }
+  
+  if (selectedStatus?.length) {
+    selectedStatus.forEach(status => {
+      params = params.append('status', status);
+    });
+  }
+  
+  return this.http.get<any>(`${this.baseURL}/goals/metrics`, { params });
+    }
   
   createB(b: any) {
     return this.http.post(`${this.baseURL}/b`, b);
