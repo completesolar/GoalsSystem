@@ -183,6 +183,27 @@ getGoalsMetrics(selectedVPs?: string[], selectedProject?: string, userInitials?:
   return this.http.get<any>(`${this.baseURL}/goals/metrics`, { params });
     }
   
+getGoalsMetricsForWho(selectedProject?: string, userInitials?: string,selectedWhos?: string[],selectedStatus?:string[]): Observable<any> {
+  let params = new HttpParams();
+  if (selectedProject) {
+    params = params.set('project', selectedProject);
+  }  
+  if (userInitials) {
+    params = params.set('userInitials', userInitials);
+  }  
+  if (selectedWhos?.length) {
+    selectedWhos.forEach(who => {
+      params = params.append('whos', who);
+    });
+  }  
+  if (selectedStatus?.length) {
+    selectedStatus.forEach(status => {
+      params = params.append('status', status);
+    });
+  }  
+  return this.http.get<any>(`${this.baseURL}/goals/metrics_who`, { params });
+ }
+  
   createB(b: any) {
     return this.http.post(`${this.baseURL}/b`, b);
   }

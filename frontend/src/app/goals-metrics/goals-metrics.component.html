@@ -41,13 +41,9 @@
 </div>
   
   <div class="p-3 mb-3  border-round-lg bg-white flex flex-column lg:flex-row gap-4 mx-4">
-    <!-- Left Section -->
-  <!-- Right Section -->
   <div class="w-full lg:w-2 flex flex-column gap-3 mt-4 lg:mt-0 align-items-center justify-content-center">
 
-          <!-- First Row -->
           <div class="flex flex-column sm:flex-row flex-wrap gap-4 ">
-           <!-- Delinquent -->
           
            <div class="flex flex-1 align-items-center justify-content-between p-3  border-round-lg totalback">
              <div class="flex flex-column gap-2">
@@ -57,7 +53,6 @@
              <img src="assets/dash-8.svg" class="w-3rem" />
            </div>
      
-           <!-- Completed -->
            <div class="flex flex-1 align-items-center justify-content-between p-3  border-round-lg totalback2">
              <div class="flex flex-column gap-2">
                <div class="dash-htxt1">Total goals assigned to me</div>
@@ -183,11 +178,11 @@
 #whoMultiSelect
   placeholder="Select WHO"
   [options]="whoOptions"
-  [(ngModel)]="selectedWho"
+  [(ngModel)]="selectedWhoProject"
   optionLabel="label"
   optionValue="value"
   styleClass="p-select-sm"
-  (onChange)="onFilterChange()"
+  (onChange)="onWhoFilterChange()"
   [style]="{ height: '32px', fontSize: '12px' }"
   class="sm:w-full md:w-auto"
 ></p-multiSelect>
@@ -200,10 +195,21 @@
   optionLabel="label"
   optionValue="value"
   styleClass="p-select-sm"
-  (onChange)="onFilterChange()"
+  (onChange)="onWhoFilterChange()"
   [style]="{ height: '32px', fontSize: '12px' }"
   class="sm:w-full md:w-auto"
 ></p-multiSelect>
+
+<p-select
+[options]="projectOptions"
+[(ngModel)]="selectedProject"
+placeholder="Select Project"
+optionLabel="label"
+styleClass="p-select-sm"
+(onChange)="onWhoFilterChange()"
+[style]="{ height: '32px', fontSize: '12px' }"
+class="sm:w-full md:w-auto"
+></p-select>
 
 <p-button
 icon="pi pi-filter-slash"
@@ -227,16 +233,5 @@ class="sm:w-full md:w-auto"
 ></p-chart>
 </div>
 
-<!-- 
-<div class="bg-white p-3 mx-4 mb-3 border-round-md flex justify-content-center align-items-center shadow-1 border-round-lg" >
-  <p-chart
-  *ngIf="!isProjectsByWhoByStatusLoading && projectsByWhoByStatusChartData"
-  type="bar"
-  [data]="projectsByWhoByStatusChartData"
-  [options]="projectsByWhoByStatusChartOptions"
-  [style]="getChartStyle(projectsByWhoByStatusChartData)"
-  class="bar-chart"
-></p-chart>
-</div> -->
 
 

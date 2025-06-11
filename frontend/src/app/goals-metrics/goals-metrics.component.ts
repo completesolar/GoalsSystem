@@ -43,10 +43,12 @@ export class GoalsMetricsComponent implements OnInit {
   projectOptions: { label: string; value: string }[] = [];
   selectedVP: string[] = [];
   selectedWho: string[] = [];
+  selectedWhoProject: string[] = [];
   selectedStatus: string[] = [];
   selectedProject:any | null = null;
 
   cachedMetricsResponse: any = null;
+  cachedwhoMetricsResponse: any = null;
 
   projectsByVPChartData: any;
   projectsByVPChartOptions: any;
@@ -83,6 +85,7 @@ export class GoalsMetricsComponent implements OnInit {
   ngOnInit(): void {
     this.fetchUserInitials();
     this.fetchData();
+    this.fetchwhoChartData();
   }
 
 fetchUserInitials() {
@@ -92,6 +95,7 @@ fetchUserInitials() {
     this.userInitials = response.who; // Store the initials
     // console.log(this.userInitials, 'User initials');  // Log the initials to check
     this.fetchData(); // Now fetch the data once initials are available
+    this.fetchwhoChartData(); // Now fetch the data once initials are available
   });
 }
 
@@ -120,7 +124,6 @@ fetchData() {
       }));     
       this.projectOptions = res.projectWiseByStatus.categories.map((proj: string) => ({ label: proj, value: proj }));
       this.buildProjectsByVPChart(res);
-      this.buildProjectsByWhoChart(res);
       this.buildProjectStatusChart(res);
       this.buildStatusWiseChart(res);
 
@@ -129,6 +132,22 @@ fetchData() {
       this.isProjectsByWhoByStatusLoading = false;
       this.isProjectStatusLoading = false;
       this.isStatusWiseLoading = false;
+      this.cdRef.detectChanges();
+    });
+  }
+  
+fetchwhoChartData() {
+    this.isProjectsByWhoLoading = true;
+    this.goalsService.getGoalsMetricsForWho( this.selectedProject?.value ?? null, this.userInitials,this.selectedWhoProject,this.selectedStatus).subscribe((res) => {
+      this.cachedwhoMetricsResponse = res;
+      this.whoOptions = res.projectsByWHO.categories.map((who: string) => ({ label: who, value: who }));
+      this.StatusOptions = res.statusWise.map((item: any) => ({
+        label: item.status,
+        value: item.status
+      }));     
+      this.projectOptions = res.projectWiseByStatus.categories.map((proj: string) => ({ label: proj, value: proj }));
+      this.buildProjectsByWhoChart(res);
+      this.isProjectsByWhoLoading = false;
       this.cdRef.detectChanges();
     });
   }
@@ -144,14 +163,23 @@ fetchData() {
       this.buildProjectsByVPChart(res);
       this.buildProjectStatusChart(res);
       this.buildStatusWiseChart(res);
-      this.buildProjectsByWhoChart(res);  
-
       this.isProjectsByVPLoading = false;
       this.isProjectStatusLoading = false;
       this.isStatusWiseLoading = false;
       this.isProjectsByWhoLoading = false;
 
   
+      this.cdRef.detectChanges();
+    });
+  }
+  onWhoFilterChange() {
+    this.isProjectsByWhoLoading = true;
+    this.goalsService.getGoalsMetricsForWho(this.selectedProject?.value ?? null, this.userInitials,this.selectedWhoProject,this.selectedStatus).subscribe(res => {
+      this.cachedwhoMetricsResponse = res;
+      this.buildProjectStatusChart(res);
+      this.buildStatusWiseChart(res);
+      this.buildProjectsByWhoChart(res);  
+      this.isProjectsByWhoLoading = false;  
       this.cdRef.detectChanges();
     });
   }
@@ -255,7 +283,7 @@ fetchData() {
         minWidth: '100%',
         height: '200px',
         display: 'block',
-        '--canvas-height': '200px !important' // Mark it important in the variable
+        '--canvas-height': '200px !important'
       };
     } else {
       return {
@@ -525,9 +553,11 @@ clearFilters() {
       this.whoMultiSelect.onFilterInputChange({ target: { value: '' } });
     }
     this.selectedWho = [];
+    this.selectedWhoProject = [];
     this.selectedStatus = [];
 
     this.onFilterChange();
+    this.onWhoFilterChange();
   }
   projectsByVPTotal(): number {
     if (!this.projectsByVPChartData?.datasets) return 0;
