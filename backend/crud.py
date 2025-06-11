@@ -399,7 +399,7 @@ def update_goal(db: Session, goal_id: int, goal_update: GoalsUpdate):
 
     return db_goal
 
-def get_goals_metrics(
+def get_goals_metrics_vp(
     db: Session,
     selected_vps: Optional[list[str]] = None,
     selected_project: Optional[str] = None,
@@ -512,6 +512,384 @@ def get_goals_metrics(
         print("selected_status",selected_status)
         base_query = base_query.filter(Goals.s.in_(selected_status))
 
+        
+    raw_who_proj_status_data = base_query.with_entities(
+        Goals.who,
+        Goals.proj,
+        Goals.s,
+        func.count().label("count")
+    ).group_by(Goals.who, Goals.proj, Goals.s).all()
+
+    who_proj_status_map = {}
+    unassigned_who = "Unassigned WHO"
+    unassigned_proj = "Unassigned"
+    status_list = ['C', 'CD', 'K', 'N', 'ND', 'R']
+
+    for row in raw_who_proj_status_data:
+        who = (row.who or unassigned_who).strip()
+        proj = (row.proj or unassigned_proj).strip().upper()
+        status = row.s or "UNASSIGNED"
+
+        if who not in who_proj_status_map:
+            who_proj_status_map[who] = {}
+        if status not in who_proj_status_map[who]:
+            who_proj_status_map[who][status] = {}
+
+        who_proj_status_map[who][status][proj] = row.count
+
+    all_whos = sorted(who_proj_status_map.keys())
+    all_projects_who = sorted({proj for who_data in who_proj_status_map.values()
+                                      for status_data in who_data.values()
+                                      for proj in status_data})
+
+    # Final series: for each status, build data = [count for proj1, proj2, ...] for each WHO
+    who_proj_status_series = []
+    for status in status_list:
+        who_proj_status_series.append({
+            "name": status,
+            "data": [
+                sum(who_proj_status_map.get(who, {}).get(status, {}).get(proj, 0)
+                    for proj in all_projects_who)
+                for who in all_whos
+            ]
+        })
+
+    # 7. Calculate "No of Projects" (unique project count)
+    project_count = len(all_projects)
+
+    # 8. Calculate "Total goals assigned to user" (filtered only by selected_project)
+    if user_initials:
+        total_goals_assigned_to_user = db.query(Goals).filter(Goals.who == user_initials)
+        if selected_project:
+            total_goals_assigned_to_user = total_goals_assigned_to_user.filter(Goals.proj == selected_project)
+        total_goals_assigned_to_user_count = total_goals_assigned_to_user.count()
+    else:
+        total_goals_assigned_to_user_count = 0  # Set it to 0 if no user_initials provided
+
+    # Final response
+    return {
+        "totalGoalsInDB": total_goals,  # Total number of goals in the DB (filtered)
+        "completedAndDelinquent": completed_delinquent_data,
+        "projectWiseByStatus": {
+            "categories": all_projects,
+            "series": project_status_series
+        },
+        "projectsByVP": {
+            "categories": all_vps,
+            "series": vp_proj_series
+        },
+               "projectsByWHO": {
+            "categories": all_whos,  
+            "series": who_proj_status_series  
+        },
+        "projectsByStatus": {
+        "categories": list(statuswise_cleaned.keys())
+        },
+
+        "yearWise": [{"year": row.fiscalyear, "count": row.count} for row in yearwise_data],
+        "statusWise": statuswise_cleaned_data,  # Cleaned and aggregated status-wise data
+        "projectStatusCounts": {
+            "C": completed_delinquent_data["Completed"],
+            "D": completed_delinquent_data["Delinquent"],
+        },
+        "noOfProjects": project_count,  # New data for No of Projects
+        "totalGoalsAssignedToUser": total_goals_assigned_to_user_count,  # Total goals assigned to the user, filtered by selected_project
+    }
+
+def get_goals_metrics_status(
+    db: Session,
+    selected_vps: Optional[list[str]] = None,
+    selected_project: Optional[str] = None,
+    user_initials: Optional[str] = None ,
+):
+    base_query = db.query(Goals)
+   
+    if selected_vps:
+        base_query = base_query.filter(Goals.vp.in_(selected_vps))
+    if selected_project:
+        base_query = base_query.filter(Goals.proj == selected_project)
+    # 1. Completed and Delinquent counts
+    completed_delinquent_data = {"Completed": 0, "Delinquent": 0}
+    for row in base_query.with_entities(Goals.s, func.count().label("count"))\
+                         .filter(Goals.s.in_(['C', 'D']))\
+                         .group_by(Goals.s).all():
+        if row.s == 'C':
+            completed_delinquent_data["Completed"] = row.count
+        elif row.s == 'D':
+            completed_delinquent_data["Delinquent"] = row.count
+
+    # 2. Total Goals in DB (filtered by selected_vps and selected_project)
+    total_goals = base_query.count()
+
+    # 3. Status-wise Goals Count (filtered based on selected_vps and selected_project)
+    statuswise_data = base_query.with_entities(
+        Goals.s,
+        func.count().label('count')
+    ).group_by(Goals.s).all()
+
+    # Clean up statuswise data: normalize the status to uppercase and aggregate counts for duplicate statuses
+    statuswise_cleaned = {}
+    for row in statuswise_data:
+        status = row.s.strip().upper() if row.s else "UNASSIGNED"
+        
+        if status not in statuswise_cleaned:
+            statuswise_cleaned[status] = row.count
+        else:
+            statuswise_cleaned[status] += row.count
+
+    # Convert to a list of dictionaries for the response
+    statuswise_cleaned_data = [{"status": status, "count": count} for status, count in statuswise_cleaned.items()]
+
+    # 4. Project-wise by all statuses
+    status_list = ['C', 'CD', 'K', 'N', 'ND', 'R']
+    raw_project_status_data = base_query.with_entities(
+        Goals.proj,
+        Goals.s,
+        func.count().label("count")
+    ).group_by(Goals.proj, Goals.s).all()
+
+    project_status_map = {}
+    unassigned_key = "Unassigned"
+    for row in raw_project_status_data:
+        proj = (row.proj or unassigned_key).strip().upper()
+        status = row.s
+        if proj not in project_status_map:
+            project_status_map[proj] = {}
+        project_status_map[proj][status] = row.count
+
+    all_projects = sorted(project_status_map.keys())
+
+    project_status_series = []
+    for status in status_list:
+        project_status_series.append({
+            "name": status,
+            "data": [project_status_map.get(p, {}).get(status, 0) for p in all_projects]
+        })
+
+    # 5. Year-wise Goals
+    yearwise_data = base_query.with_entities(
+        Goals.fiscalyear,
+        func.count().label('count')
+    ).group_by(Goals.fiscalyear).order_by(Goals.fiscalyear).all()
+
+    # 6. VP-wise Goals by Project
+    raw_vp_proj_data = base_query.with_entities(
+        Goals.vp,
+        Goals.proj,
+        func.count().label("count")
+    ).group_by(Goals.vp, Goals.proj).all()
+
+    vp_proj_map = {}
+    unassigned_vp = "Unassigned VP"
+    unassigned_proj = "Unassigned"
+
+    for row in raw_vp_proj_data:
+        vp = (row.vp or unassigned_vp).strip()
+        proj = (row.proj or unassigned_proj).strip().upper()
+        if proj not in vp_proj_map:
+            vp_proj_map[proj] = {}
+        vp_proj_map[proj][vp] = row.count
+
+    all_vps = sorted({vp for proj_data in vp_proj_map.values() for vp in proj_data})
+    all_projects = sorted(vp_proj_map.keys())
+
+    vp_proj_series = []
+    for proj in all_projects:
+        vp_proj_series.append({
+            "name": proj,
+            "data": [vp_proj_map[proj].get(vp, 0) for vp in all_vps]
+        })
+    if selected_project:
+        base_query = base_query.filter(Goals.proj == selected_project)
+        
+    raw_who_proj_status_data = base_query.with_entities(
+        Goals.who,
+        Goals.proj,
+        Goals.s,
+        func.count().label("count")
+    ).group_by(Goals.who, Goals.proj, Goals.s).all()
+
+    who_proj_status_map = {}
+    unassigned_who = "Unassigned WHO"
+    unassigned_proj = "Unassigned"
+    status_list = ['C', 'CD', 'K', 'N', 'ND', 'R']
+
+    for row in raw_who_proj_status_data:
+        who = (row.who or unassigned_who).strip()
+        proj = (row.proj or unassigned_proj).strip().upper()
+        status = row.s or "UNASSIGNED"
+
+        if who not in who_proj_status_map:
+            who_proj_status_map[who] = {}
+        if status not in who_proj_status_map[who]:
+            who_proj_status_map[who][status] = {}
+
+        who_proj_status_map[who][status][proj] = row.count
+
+    all_whos = sorted(who_proj_status_map.keys())
+    all_projects_who = sorted({proj for who_data in who_proj_status_map.values()
+                                      for status_data in who_data.values()
+                                      for proj in status_data})
+
+    # Final series: for each status, build data = [count for proj1, proj2, ...] for each WHO
+    who_proj_status_series = []
+    for status in status_list:
+        who_proj_status_series.append({
+            "name": status,
+            "data": [
+                sum(who_proj_status_map.get(who, {}).get(status, {}).get(proj, 0)
+                    for proj in all_projects_who)
+                for who in all_whos
+            ]
+        })
+
+    # 7. Calculate "No of Projects" (unique project count)
+    project_count = len(all_projects)
+
+    # 8. Calculate "Total goals assigned to user" (filtered only by selected_project)
+    if user_initials:
+        total_goals_assigned_to_user = db.query(Goals).filter(Goals.who == user_initials)
+        if selected_project:
+            total_goals_assigned_to_user = total_goals_assigned_to_user.filter(Goals.proj == selected_project)
+        total_goals_assigned_to_user_count = total_goals_assigned_to_user.count()
+    else:
+        total_goals_assigned_to_user_count = 0  # Set it to 0 if no user_initials provided
+
+    # Final response
+    return {
+        "totalGoalsInDB": total_goals,  # Total number of goals in the DB (filtered)
+        "completedAndDelinquent": completed_delinquent_data,
+        "projectWiseByStatus": {
+            "categories": all_projects,
+            "series": project_status_series
+        },
+        "projectsByVP": {
+            "categories": all_vps,
+            "series": vp_proj_series
+        },
+               "projectsByWHO": {
+            "categories": all_whos,  
+            "series": who_proj_status_series  
+        },
+        "projectsByStatus": {
+        "categories": list(statuswise_cleaned.keys())
+        },
+
+        "yearWise": [{"year": row.fiscalyear, "count": row.count} for row in yearwise_data],
+        "statusWise": statuswise_cleaned_data,  # Cleaned and aggregated status-wise data
+        "projectStatusCounts": {
+            "C": completed_delinquent_data["Completed"],
+            "D": completed_delinquent_data["Delinquent"],
+        },
+        "noOfProjects": project_count,  # New data for No of Projects
+        "totalGoalsAssignedToUser": total_goals_assigned_to_user_count,  # Total goals assigned to the user, filtered by selected_project
+    }
+
+def get_goals_metrics_proj(
+    db: Session,
+    selected_vps: Optional[list[str]] = None,
+    selected_project: Optional[str] = None,
+    user_initials: Optional[str] = None ,
+):
+    base_query = db.query(Goals)
+   
+    if selected_vps:
+        base_query = base_query.filter(Goals.vp.in_(selected_vps))
+    if selected_project:
+        base_query = base_query.filter(Goals.proj == selected_project)
+    # 1. Completed and Delinquent counts
+    completed_delinquent_data = {"Completed": 0, "Delinquent": 0}
+    for row in base_query.with_entities(Goals.s, func.count().label("count"))\
+                         .filter(Goals.s.in_(['C', 'D']))\
+                         .group_by(Goals.s).all():
+        if row.s == 'C':
+            completed_delinquent_data["Completed"] = row.count
+        elif row.s == 'D':
+            completed_delinquent_data["Delinquent"] = row.count
+
+    # 2. Total Goals in DB (filtered by selected_vps and selected_project)
+    total_goals = base_query.count()
+
+    # 3. Status-wise Goals Count (filtered based on selected_vps and selected_project)
+    statuswise_data = base_query.with_entities(
+        Goals.s,
+        func.count().label('count')
+    ).group_by(Goals.s).all()
+
+    # Clean up statuswise data: normalize the status to uppercase and aggregate counts for duplicate statuses
+    statuswise_cleaned = {}
+    for row in statuswise_data:
+        status = row.s.strip().upper() if row.s else "UNASSIGNED"
+        
+        if status not in statuswise_cleaned:
+            statuswise_cleaned[status] = row.count
+        else:
+            statuswise_cleaned[status] += row.count
+
+    # Convert to a list of dictionaries for the response
+    statuswise_cleaned_data = [{"status": status, "count": count} for status, count in statuswise_cleaned.items()]
+
+    # 4. Project-wise by all statuses
+    status_list = ['C', 'CD', 'K', 'N', 'ND', 'R']
+    raw_project_status_data = base_query.with_entities(
+        Goals.proj,
+        Goals.s,
+        func.count().label("count")
+    ).group_by(Goals.proj, Goals.s).all()
+
+    project_status_map = {}
+    unassigned_key = "Unassigned"
+    for row in raw_project_status_data:
+        proj = (row.proj or unassigned_key).strip().upper()
+        status = row.s
+        if proj not in project_status_map:
+            project_status_map[proj] = {}
+        project_status_map[proj][status] = row.count
+
+    all_projects = sorted(project_status_map.keys())
+
+    project_status_series = []
+    for status in status_list:
+        project_status_series.append({
+            "name": status,
+            "data": [project_status_map.get(p, {}).get(status, 0) for p in all_projects]
+        })
+
+    # 5. Year-wise Goals
+    yearwise_data = base_query.with_entities(
+        Goals.fiscalyear,
+        func.count().label('count')
+    ).group_by(Goals.fiscalyear).order_by(Goals.fiscalyear).all()
+
+    # 6. VP-wise Goals by Project
+    raw_vp_proj_data = base_query.with_entities(
+        Goals.vp,
+        Goals.proj,
+        func.count().label("count")
+    ).group_by(Goals.vp, Goals.proj).all()
+
+    vp_proj_map = {}
+    unassigned_vp = "Unassigned VP"
+    unassigned_proj = "Unassigned"
+
+    for row in raw_vp_proj_data:
+        vp = (row.vp or unassigned_vp).strip()
+        proj = (row.proj or unassigned_proj).strip().upper()
+        if proj not in vp_proj_map:
+            vp_proj_map[proj] = {}
+        vp_proj_map[proj][vp] = row.count
+
+    all_vps = sorted({vp for proj_data in vp_proj_map.values() for vp in proj_data})
+    all_projects = sorted(vp_proj_map.keys())
+
+    vp_proj_series = []
+    for proj in all_projects:
+        vp_proj_series.append({
+            "name": proj,
+            "data": [vp_proj_map[proj].get(vp, 0) for vp in all_vps]
+        })
+    if selected_project:
+        base_query = base_query.filter(Goals.proj == selected_project)
         
     raw_who_proj_status_data = base_query.with_entities(
         Goals.who,

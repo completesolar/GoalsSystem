@@ -25,6 +25,9 @@ from crud import (
     get_direct_reports,
     get_goals_by_id,
     get_all_goals,
+    get_goals_metrics_proj,
+    get_goals_metrics_status,
+    get_goals_metrics_vp,
     get_goals_metrics_who,
     get_latest_goal_diff_by_goalid,
     get_supervisor_chain,
@@ -48,7 +51,6 @@ from crud import (
     get_action,
     update_p,
     create_p,
-    get_goals_metrics,
     create_b,
     update_b,
     create_E,
@@ -123,33 +125,62 @@ async def get_goalshistory(goalid: int, db: Session = Depends(get_db)):
     return [goalhistoryResponse.model_validate(record).model_dump() for record in records]
 
 
-@router.get("/api/goals/metrics")
+@router.get("/api/goals/metrics_vp")
 def read_goals_metrics(
     db: Session = Depends(get_db),
     vps: Optional[list[str]] = Query(None, description="Comma separated VPs"),
     project: Optional[str] = Query(None, description="Project filter"),
     user_initials: Optional[str] = Query(None, alias="userInitials", description="User initials filter") ,
-    whos: Optional[list[str]] = Query(None, description="Comma separated Whos"),
     status:  Optional[list[str]]  = Query(None, description="Comma separated status"),
 ):
-    print("selected",status)
     selected_vps = vps
-    selected_who = whos
     selected_status = status
     selected_project = project if project else None
 
-    return get_goals_metrics(
+    return get_goals_metrics_vp(
         db=db,
         selected_vps=selected_vps,
         selected_project=selected_project,
         user_initials=user_initials ,
-        selected_who=selected_who,
         selected_status = selected_status
     )
 
+@router.get("/api/goals/metrics_status")
+def read_goals_status_metrics(
+    db: Session = Depends(get_db),
+    vps: Optional[list[str]] = Query(None, description="Comma separated VPs"),
+    project: Optional[str] = Query(None, description="Project filter"),
+    user_initials: Optional[str] = Query(None, alias="userInitials", description="User initials filter") ,
+):
+    selected_vps = vps
+    selected_project = project if project else None
+
+    return get_goals_metrics_status(
+        db=db,
+        selected_vps=selected_vps,
+        selected_project=selected_project,
+        user_initials=user_initials ,
+    )
+
+@router.get("/api/goals/metrics_proj")
+def read_goals_proj_metrics(
+    db: Session = Depends(get_db),
+    vps: Optional[list[str]] = Query(None, description="Comma separated VPs"),
+    project: Optional[str] = Query(None, description="Project filter"),
+    user_initials: Optional[str] = Query(None, alias="userInitials", description="User initials filter") ,
+):
+    selected_vps = vps
+    selected_project = project if project else None
+
+    return get_goals_metrics_proj(
+        db=db,
+        selected_vps=selected_vps,
+        selected_project=selected_project,
+        user_initials=user_initials ,
+    )
 
 @router.get("/api/goals/metrics_who")
-def read_goals_metrics(
+def read_goals_who_metrics(
     db: Session = Depends(get_db),
     project: Optional[str] = Query(None, description="Project filter"),
     user_initials: Optional[str] = Query(None, alias="userInitials", description="User initials filter") ,

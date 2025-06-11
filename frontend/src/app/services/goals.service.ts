@@ -147,13 +147,39 @@ export class GoalsService {
     return this.http.get(`${this.baseURL}/action`);
   }
 
-  // getGoalsMetrics() {
-  //   return this.http.get<any>(`${this.baseURL}/goals/metrics`);
-  // }
+  getGoalsMetrics(selectedVPs?: string[], selectedProject?: string, userInitials?: string,selectedWhos?: string[],selectedStatus?:string[]): Observable<any> {
+    let params = new HttpParams();
   
-getGoalsMetrics(selectedVPs?: string[], selectedProject?: string, userInitials?: string,selectedWhos?: string[],selectedStatus?:string[]): Observable<any> {
+    if (selectedVPs?.length) {
+      selectedVPs.forEach(vp => {
+        params = params.append('vps', vp);
+      });
+    }if (selectedProject) {
+      params = params.set('project', selectedProject);
+    }
+    
+    if (userInitials) {
+      params = params.set('userInitials', userInitials);
+    }
+    
+    if (selectedWhos?.length) {
+      selectedWhos.forEach(who => {
+        params = params.append('whos', who);
+      });
+    }
+    
+    if (selectedStatus?.length) {
+      selectedStatus.forEach(status => {
+        params = params.append('status', status);
+      });
+    }
+    
+    return this.http.get<any>(`${this.baseURL}/goals/metrics`, { params });
+      }
+  
+      
+getGoalsVpMetrics(selectedVPs?: string[], selectedProject?: string, userInitials?: string): Observable<any> {
   let params = new HttpParams();
-
   if (selectedVPs?.length) {
     selectedVPs.forEach(vp => {
       params = params.append('vps', vp);
@@ -166,21 +192,42 @@ getGoalsMetrics(selectedVPs?: string[], selectedProject?: string, userInitials?:
   
   if (userInitials) {
     params = params.set('userInitials', userInitials);
-  }
+  }  
+  return this.http.get<any>(`${this.baseURL}/goals/metrics_vp`, { params });
+    }
   
-  if (selectedWhos?.length) {
-    selectedWhos.forEach(who => {
-      params = params.append('whos', who);
+
+getGoalsStatusMetrics(selectedVPs?: string[], selectedProject?: string, userInitials?: string): Observable<any> {
+  let params = new HttpParams();
+
+  if (selectedVPs?.length) {
+    selectedVPs.forEach(vp => {
+      params = params.append('vps', vp);
     });
   }
-  
-  if (selectedStatus?.length) {
-    selectedStatus.forEach(status => {
-      params = params.append('status', status);
+  if (selectedProject) {
+    params = params.set('project', selectedProject);
+  }  
+  if (userInitials) {
+    params = params.set('userInitials', userInitials);
+  }  
+  return this.http.get<any>(`${this.baseURL}/goals/metrics_status`, { params });
+    }
+getGoalsProjMetrics(selectedVPs?: string[], selectedProject?: string, userInitials?: string): Observable<any> {
+  let params = new HttpParams();
+
+  if (selectedVPs?.length) {
+    selectedVPs.forEach(vp => {
+      params = params.append('vps', vp);
     });
   }
-  
-  return this.http.get<any>(`${this.baseURL}/goals/metrics`, { params });
+  if (selectedProject) {
+    params = params.set('project', selectedProject);
+  }  
+  if (userInitials) {
+    params = params.set('userInitials', userInitials);
+  }  
+  return this.http.get<any>(`${this.baseURL}/goals/metrics_proj`, { params });
     }
   
 getGoalsMetricsForWho(selectedProject?: string, userInitials?: string,selectedWhos?: string[],selectedStatus?:string[]): Observable<any> {
@@ -204,6 +251,8 @@ getGoalsMetricsForWho(selectedProject?: string, userInitials?: string,selectedWh
   return this.http.get<any>(`${this.baseURL}/goals/metrics_who`, { params });
  }
   
+
+
   createB(b: any) {
     return this.http.post(`${this.baseURL}/b`, b);
   }
