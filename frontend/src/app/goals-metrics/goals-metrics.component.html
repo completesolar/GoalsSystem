@@ -1,36 +1,97 @@
 
-<div class="pb-2" >
-  <div class="pagetitle flex flex-column lg:flex-row align-items-center justify-content-between gap-3 mx-4 mt-3 mb-3 p-0">
-  <div class="flex-1">Dashboard</div>
+<div class="flex-1">Dashboard</div>
+<div class="flex flex-wrap gap-2 align-items-center justify-content-end pb-2 pr-4">
 
-  <div class="flex flex-wrap gap-2 align-items-center justify-content-end">
-    <p-multiSelect
-    #vpMultiSelect
+
+  <p-multiSelect
+  #whoMultiSelect
+    placeholder="Select WHO"
+    [options]="whoOptions"
+    [(ngModel)]="selectedWhoProject"
+    optionLabel="label"
+    optionValue="value"
+    styleClass="p-select-sm"
+    (onChange)="onWhoFilterChange()"
+    [style]="{ height: '32px', fontSize: '12px' }"
+    class="sm:w-full md:w-auto"
+  ></p-multiSelect>
+  
+  <p-multiSelect
+  #StatusMultiSelect
+    placeholder="Select Status"
+    [options]="StatusOptions"
+    [(ngModel)]="selectedStatusInWho"
+    optionLabel="label"
+    optionValue="value"
+    styleClass="p-select-sm"
+    (onChange)="onWhoFilterChange()"
+    [style]="{ height: '32px', fontSize: '12px' }"
+    class="sm:w-full md:w-auto"
+  ></p-multiSelect>
+  
+  <p-select
+  [options]="projectOptions"
+  [(ngModel)]="selectedProjectInWho"
+  placeholder="Select Project"
+  optionLabel="label"
+  styleClass="p-select-sm"
+  (onChange)="onWhoFilterChange()"
+  [style]="{ height: '32px', fontSize: '12px' }"
+  class="sm:w-full md:w-auto"
+  ></p-select>
+  
+  <p-button
+  icon="pi pi-filter-slash"
+  (click)="clearWhoFilters()"
+  severity="success"  
+  size="small"
+  label="Clear"
+  [style]="{ height: '32px', fontSize: '12px', width: '70px' }"
+  class="sm:w-full md:w-auto"
+  ></p-button>
+  
+  </div>
+  <div class="bg-white p-3 mx-4 mb-3 border-round-md flex justify-content-center align-items-center shadow-1 border-round-lg" >
+    <p-chart
+    *ngIf="!isProjectsByWhoLoading && projectsByWhoChartData"
+    type="bar"
+    [data]="projectsByWhoChartData"
+    [options]="projectsByWhoChartOptions"
+    [style]="getWhoStyle(projectsByWhoChartData)"
+    class="bar-chart h-bar-chart"
+  ></p-chart>
+  </div>
+
+    <div class="flex flex-wrap gap-2 align-items-center justify-content-end pb-2 pr-4">
+      <p-multiSelect
+    #vpMultiSelectVP
       placeholder="Select VP"
       [options]="vpOptions"
-      [(ngModel)]="selectedVP"
+      [(ngModel)]="selectedStatusVP"
       optionLabel="label"
       optionValue="value"
       styleClass="p-select-sm"
-      (onChange)="onFilterChange()"
+      (onChange)="onStatusFilterChange()"
       [style]="{ height: '32px', fontSize: '12px' }"
       class="sm:w-full md:w-auto"
     ></p-multiSelect>
 
     <p-select
+    #projectMultiSelect
+
       [options]="projectOptions"
-      [(ngModel)]="selectedProject"
+      [(ngModel)]="selectedProjectStatus"
       placeholder="Select Project"
       optionLabel="label"
       styleClass="p-select-sm"
-      (onChange)="onFilterChange()"
+      (onChange)="onStatusFilterChange()"
       [style]="{ height: '32px', fontSize: '12px' }"
       class="sm:w-full md:w-auto"
     ></p-select>
 
     <p-button
       icon="pi pi-filter-slash"
-      (click)="clearFilters()"
+      (click)="clearStatusFilters()"
       severity="success"
       size="small"
       label="Clear"
@@ -38,16 +99,11 @@
       class="sm:w-full md:w-auto"
     ></p-button>
   </div>
-</div>
   
   <div class="p-3 mb-3  border-round-lg bg-white flex flex-column lg:flex-row gap-4 mx-4">
-    <!-- Left Section -->
-  <!-- Right Section -->
   <div class="w-full lg:w-2 flex flex-column gap-3 mt-4 lg:mt-0 align-items-center justify-content-center">
 
-          <!-- First Row -->
           <div class="flex flex-column sm:flex-row flex-wrap gap-4 ">
-           <!-- Delinquent -->
           
            <div class="flex flex-1 align-items-center justify-content-between p-3  border-round-lg totalback">
              <div class="flex flex-column gap-2">
@@ -57,7 +113,6 @@
              <img src="assets/dash-8.svg" class="w-3rem" />
            </div>
      
-           <!-- Completed -->
            <div class="flex flex-1 align-items-center justify-content-between p-3  border-round-lg totalback2">
              <div class="flex flex-column gap-2">
                <div class="dash-htxt1">Total goals assigned to me</div>
@@ -135,10 +190,6 @@
     </div>
   </div>
 </div>
-
-  
-  
-
     <div class="bg-white w-full lg:w-4 flex flex-column gap-3  lg:mt-0 p-3   border-round-md flex justify-content-center align-items-center shadow-1 border-round-lg	" style=" max-height: 350px;">
       <p-chart
         *ngIf="!isStatusWiseLoading && statusWiseChartData"
@@ -150,10 +201,45 @@
     </div>
     
   </div>
-  
-  
+    
+<div class="flex flex-wrap gap-2 align-items-center justify-content-end pb-2 pr-4">
+  <p-multiSelect
+#vpMultiSelectVp
+  placeholder="Select VP"
+  [options]="vpOptions"
+  [(ngModel)]="selectedVPOnVp"
+  optionLabel="label"
+  optionValue="value"
+  styleClass="p-select-sm"
+  (onChange)="onVpFilterChange()"
+  [style]="{ height: '32px', fontSize: '12px' }"
+  class="sm:w-full md:w-auto"
+></p-multiSelect>
 
-  
+<p-select
+#ProjMultiSelectVp
+  [options]="projectOptions"
+  [(ngModel)]="selectedProjectVP"
+  placeholder="Select Project"
+  optionLabel="label"
+  styleClass="p-select-sm"
+  (onChange)="onVpFilterChange()"
+  [style]="{ height: '32px', fontSize: '12px' }"
+  class="sm:w-full md:w-auto"
+></p-select>
+
+<p-button
+  icon="pi pi-filter-slash"
+  (click)="clearVPFilters()"
+  severity="success"
+  size="small"
+  label="Clear"
+  [style]="{ height: '32px', fontSize: '12px', width: '70px' }"
+  class="sm:w-full md:w-auto"
+></p-button>
+</div>
+
+
 <div class="bg-white p-3 mx-4 mb-3 border-round-md flex justify-content-center align-items-center shadow-1 border-round-lg" >
   <p-chart
   *ngIf="!isProjectsByVPLoading && projectsByVPChartData"
@@ -164,6 +250,47 @@
   class="bar-chart"
 ></p-chart>
 </div>
+
+
+
+<div class="flex flex-wrap gap-2 align-items-center justify-content-end pb-2 pr-4">
+  <p-multiSelect
+#vpMultiSelectProj
+  placeholder="Select VP"
+  [options]="vpOptions"
+  [(ngModel)]="selectedProjVP"
+  optionLabel="label"
+  optionValue="value"
+  styleClass="p-select-sm"
+  (onChange)="onProjFilterChange()"
+  [style]="{ height: '32px', fontSize: '12px' }"
+  class="sm:w-full md:w-auto"
+></p-multiSelect>
+
+<p-select
+#ProjMultiSelectProj
+
+  [options]="projectOptions"
+  [(ngModel)]="selectedProjectProj"
+  placeholder="Select Project"
+  optionLabel="label"
+  styleClass="p-select-sm"
+  (onChange)="onProjFilterChange()"
+  [style]="{ height: '32px', fontSize: '12px' }"
+  class="sm:w-full md:w-auto"
+></p-select>
+
+<p-button
+  icon="pi pi-filter-slash"
+  (click)="clearProjectFilters()"
+  severity="success"
+  size="small"
+  label="Clear"
+  [style]="{ height: '32px', fontSize: '12px', width: '70px' }"
+  class="sm:w-full md:w-auto"
+></p-button>
+</div>
+
 
 <div class="bg-white p-3 mx-4 mb-3 border-round-md flex justify-content-center align-items-center shadow-1 border-round-lg" >
   <p-chart
@@ -176,67 +303,6 @@
     ></p-chart>
 </div> 
 
-<div class="flex flex-wrap gap-2 align-items-center justify-content-end pb-2 pr-4">
 
-
-<p-multiSelect
-#whoMultiSelect
-  placeholder="Select WHO"
-  [options]="whoOptions"
-  [(ngModel)]="selectedWho"
-  optionLabel="label"
-  optionValue="value"
-  styleClass="p-select-sm"
-  (onChange)="onFilterChange()"
-  [style]="{ height: '32px', fontSize: '12px' }"
-  class="sm:w-full md:w-auto"
-></p-multiSelect>
-
-<p-multiSelect
-#StatusMultiSelect
-  placeholder="Select Status"
-  [options]="StatusOptions"
-  [(ngModel)]="selectedStatus"
-  optionLabel="label"
-  optionValue="value"
-  styleClass="p-select-sm"
-  (onChange)="onFilterChange()"
-  [style]="{ height: '32px', fontSize: '12px' }"
-  class="sm:w-full md:w-auto"
-></p-multiSelect>
-
-<p-button
-icon="pi pi-filter-slash"
-(click)="clearFilters()"
-severity="success"
-size="small"
-label="Clear"
-[style]="{ height: '32px', fontSize: '12px', width: '70px' }"
-class="sm:w-full md:w-auto"
-></p-button>
-
-</div>
-<div class="bg-white p-3 mx-4 mb-3 border-round-md flex justify-content-center align-items-center shadow-1 border-round-lg" >
-  <p-chart
-  *ngIf="!isProjectsByWhoLoading && projectsByWhoChartData"
-  type="bar"
-  [data]="projectsByWhoChartData"
-  [options]="projectsByWhoChartOptions"
-  [style]="getWhoStyle(projectsByWhoChartData)"
-  class="bar-chart h-bar-chart"
-></p-chart>
-</div>
-
-<!-- 
-<div class="bg-white p-3 mx-4 mb-3 border-round-md flex justify-content-center align-items-center shadow-1 border-round-lg" >
-  <p-chart
-  *ngIf="!isProjectsByWhoByStatusLoading && projectsByWhoByStatusChartData"
-  type="bar"
-  [data]="projectsByWhoByStatusChartData"
-  [options]="projectsByWhoByStatusChartOptions"
-  [style]="getChartStyle(projectsByWhoByStatusChartData)"
-  class="bar-chart"
-></p-chart>
-</div> -->
 
 

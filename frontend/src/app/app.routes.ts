@@ -11,12 +11,10 @@ import { ProjectsComponent } from './master-components/projects/projects.compone
 import { RolesAddEditComponent } from './roles/roles-add-edit/roles-add-edit.component';
 import { ManageRolesComponent } from './roles/manage-roles/manage-roles.component';
 import { authGuard } from './services/auth.guard';
-import { SampleHeaderComponent } from './common/component/sample-header/sample-header.component';
 
 export const routes: Routes = [
   { path: '', component: LoginComponent },
   { path: 'goals', component: GoalsComponent },
-  { path: 'sample', component: SampleHeaderComponent },
   {
     path: 'dashboard',
     component: GoalsMetricsComponent,

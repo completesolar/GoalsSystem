@@ -42,11 +42,23 @@ export class GoalsMetricsComponent implements OnInit {
   StatusOptions: { label: string; value: string }[] = [];
   projectOptions: { label: string; value: string }[] = [];
   selectedVP: string[] = [];
+  selectedProjVP: string[] = [];
+  selectedVPOnVp: string[] = [];
+  selectedStatusVP: string[] = [];
   selectedWho: string[] = [];
+  selectedWhoProject: string[] = [];
   selectedStatus: string[] = [];
+  selectedStatusInWho: string[] = [];
   selectedProject:any | null = null;
+  selectedProjectProj:any | null = null;
+  selectedProjectVP:any | null = null;
+  selectedProjectStatus:any | null = null;
+  selectedProjectInWho:any | null = null;
 
   cachedMetricsResponse: any = null;
+  cachedwhoMetricsResponse: any = null;
+  cachedVpMetricsResponse: any = null;
+  cachedProjMetricsResponse: any = null;
 
   projectsByVPChartData: any;
   projectsByVPChartOptions: any;
@@ -67,7 +79,14 @@ export class GoalsMetricsComponent implements OnInit {
   userEmail:any;
   userInitials: any;
   @ViewChild('vpMultiSelect') vpMultiSelect: any;
+  @ViewChild('vpMultiSelectVP') vpMultiSelectVP: any;
+  @ViewChild('vpMultiSelectProj') vpMultiSelectProj: any;
+  @ViewChild('vpMultiSelectVp') vpMultiSelectVp: any;
+
   @ViewChild('whoMultiSelect') whoMultiSelect: any;
+  @ViewChild('projectMultiSelect') projectMultiSelect: any;
+  @ViewChild('ProjMultiSelectProj') ProjMultiSelectProj: any;
+  @ViewChild('ProjMultiSelectVp') ProjMultiSelectVp: any;
 
   statusLabels: { [key: string]: string } = {
     C: 'Complete',
@@ -82,76 +101,129 @@ export class GoalsMetricsComponent implements OnInit {
 
   ngOnInit(): void {
     this.fetchUserInitials();
-    this.fetchData();
+    this.fetchStatusData();
+    this.fetchProjData();
+    this.fetchwhoChartData();
+    this.fetchVpData();
   }
 
 fetchUserInitials() {
   const email = this.getLoggedInEmail();
   
   this.goalsService.getUserInitials(email).subscribe((response) => {
-    this.userInitials = response.who; // Store the initials
-    // console.log(this.userInitials, 'User initials');  // Log the initials to check
-    this.fetchData(); // Now fetch the data once initials are available
+    this.userInitials = response.who; 
+    this.fetchStatusData();
+    this.fetchProjData();
+    this.fetchwhoChartData();
+    this.fetchVpData();
   });
 }
 
 getLoggedInEmail(): string {
   const account = this.msalService.instance.getAllAccounts()[0];
   this.userEmail = account?.username || '';
-  return this.userEmail; // Return the logged-in user's email
+  return this.userEmail; 
 }
 
-  
-fetchData() {
-    this.isProjectsByVPLoading = true;
-    this.isProjectsByWhoLoading = true;
-    this.isProjectsByWhoByStatusLoading = true;
-    this.isProjectStatusLoading = true;
+fetchStatusData() {
     this.isStatusWiseLoading = true;
-
-    this.goalsService.getGoalsMetrics(this.selectedVP, this.selectedProject?.value ?? null, this.userInitials,this.selectedWho,this.selectedStatus).subscribe((res) => {
-      // console.log("res",res)
+    this.goalsService.getGoalsStatusMetrics(this.selectedProjVP, this.selectedProjectStatus?.value ?? null, this.userInitials).subscribe((res) => {
       this.cachedMetricsResponse = res;
       this.vpOptions = res.projectsByVP.categories.map((vp: string) => ({ label: vp, value: vp }));
+      this.StatusOptions = res.statusWise.map((item: any) => ({
+        label: item.status,
+        value: item.status
+      }));     
+      this.buildStatusWiseChart(res);
+      this.isStatusWiseLoading = false;
+      this.cdRef.detectChanges();
+    });
+  }
+  
+  
+fetchProjData() {
+    this.isProjectStatusLoading = true;
+    this.goalsService.getGoalsProjMetrics(this.selectedProjVP, this.selectedProjectProj?.value ?? null, this.userInitials).subscribe((res) => {
+      this.cachedProjMetricsResponse = res;
+      this.vpOptions = res.projectsByVP.categories.map((vp: string) => ({ label: vp, value: vp }));
+      this.StatusOptions = res.statusWise.map((item: any) => ({
+        label: item.status,
+        value: item.status
+      }));     
+      this.buildProjectStatusChart(res);
+      this.isProjectStatusLoading = false;
+      this.cdRef.detectChanges();
+    });
+  }
+  
+  
+  
+fetchVpData() {
+    this.isProjectsByVPLoading = true;
+    this.goalsService.getGoalsVpMetrics(this.selectedProjVP, this.selectedProjectProj?.value ?? null, this.userInitials).subscribe((res) => {
+      this.cachedVpMetricsResponse = res;
+      this.vpOptions = res.projectsByVP.categories.map((vp: string) => ({ label: vp, value: vp }));
+      this.StatusOptions = res.statusWise.map((item: any) => ({
+        label: item.status,
+        value: item.status
+      }));     
+      this.buildProjectsByVPChart(res);
+      this.isProjectsByVPLoading = false;
+      this.cdRef.detectChanges();
+    });
+  }
+  
+fetchwhoChartData() {
+    this.isProjectsByWhoLoading = true;
+    this.goalsService.getGoalsMetricsForWho( this.selectedProjectInWho?.value ?? null, this.userInitials,this.selectedWhoProject,this.selectedStatusInWho).subscribe((res) => {
+      this.cachedwhoMetricsResponse = res;
       this.whoOptions = res.projectsByWHO.categories.map((who: string) => ({ label: who, value: who }));
       this.StatusOptions = res.statusWise.map((item: any) => ({
         label: item.status,
         value: item.status
       }));     
       this.projectOptions = res.projectWiseByStatus.categories.map((proj: string) => ({ label: proj, value: proj }));
-      this.buildProjectsByVPChart(res);
       this.buildProjectsByWhoChart(res);
-      this.buildProjectStatusChart(res);
-      this.buildStatusWiseChart(res);
-
-      this.isProjectsByVPLoading = false;
       this.isProjectsByWhoLoading = false;
-      this.isProjectsByWhoByStatusLoading = false;
-      this.isProjectStatusLoading = false;
-      this.isStatusWiseLoading = false;
       this.cdRef.detectChanges();
     });
   }
   
-  onFilterChange() {
-    this.isProjectsByVPLoading = true;
-    this.isProjectStatusLoading = true;
-    this.isStatusWiseLoading = true;
-    this.isProjectsByWhoLoading = true;
-    this.goalsService.getGoalsMetrics(this.selectedVP, this.selectedProject?.value ?? null, this.userInitials,this.selectedWho,this.selectedStatus).subscribe(res => {
-      this.cachedMetricsResponse = res;
-
-      this.buildProjectsByVPChart(res);
-      this.buildProjectStatusChart(res);
-      this.buildStatusWiseChart(res);
-      this.buildProjectsByWhoChart(res);  
-
-      this.isProjectsByVPLoading = false;
-      this.isProjectStatusLoading = false;
-      this.isStatusWiseLoading = false;
-      this.isProjectsByWhoLoading = false;
-
   
+  onWhoFilterChange() {
+    this.isProjectsByWhoLoading = true;
+    this.goalsService.getGoalsMetricsForWho(this.selectedProjectInWho?.value ?? null, this.userInitials,this.selectedWhoProject,this.selectedStatusInWho).subscribe(res => {
+      this.cachedwhoMetricsResponse = res;
+      this.buildProjectsByWhoChart(res);  
+      this.isProjectsByWhoLoading = false;  
+      this.cdRef.detectChanges();
+    });
+  }
+ 
+  onStatusFilterChange() {
+    this.isStatusWiseLoading = true;
+    this.goalsService.getGoalsStatusMetrics(this.selectedStatusVP, this.selectedProjectStatus?.value ?? null, this.userInitials).subscribe((res) => {
+      this.cachedMetricsResponse = res;
+      this.buildStatusWiseChart(res);
+      this.isStatusWiseLoading = false;  
+      this.cdRef.detectChanges();
+    });
+  }
+  onVpFilterChange() {
+    this.isProjectsByVPLoading = true;
+    this.goalsService.getGoalsVpMetrics(this.selectedVPOnVp, this.selectedProjectVP?.value ?? null, this.userInitials).subscribe((res) => {
+      this.cachedVpMetricsResponse = res;
+      this.buildProjectsByVPChart(res);
+      this.isProjectsByVPLoading = false;  
+      this.cdRef.detectChanges();
+    });
+  }
+  onProjFilterChange() {
+    this.isProjectsByWhoLoading = true;
+    this.goalsService.getGoalsProjMetrics(this.selectedProjVP, this.selectedProjectProj?.value ?? null, this.userInitials).subscribe((res) => {
+      this.cachedProjMetricsResponse = res;
+      this.buildProjectStatusChart(res);
+      this.isProjectsByWhoLoading = false;
       this.cdRef.detectChanges();
     });
   }
@@ -255,7 +327,7 @@ fetchData() {
         minWidth: '100%',
         height: '200px',
         display: 'block',
-        '--canvas-height': '200px !important' // Mark it important in the variable
+        '--canvas-height': '200px !important'
       };
     } else {
       return {
@@ -513,9 +585,69 @@ fetchData() {
     
        
   }
+  
 clearFilters() {
     this.selectedVP = [];
     this.selectedProject = null;
+      if (this.vpMultiSelectProj) {
+      this.vpMultiSelectProj.filterValue = '';
+      this.vpMultiSelectProj.onFilterInputChange({ target: { value: '' } });
+    }
+    if (this.ProjMultiSelectProj) {
+      this.ProjMultiSelectProj.filterValue = '';
+      this.ProjMultiSelectProj.onFilterInputChange({ target: { value: '' } });
+    }
+    this.selectedWho = [];
+    this.selectedWhoProject = [];
+    this.selectedStatus = [];
+    this.onWhoFilterChange();
+  }
+
+clearStatusFilters() {
+    this.selectedStatusVP = [];
+    this.selectedProjectStatus = null;
+      if (this.vpMultiSelectVP) {
+      this.vpMultiSelectVP.filterValue = '';
+      this.vpMultiSelectVP.onFilterInputChange({ target: { value: '' } });
+    }
+      if (this.projectMultiSelect) {
+      this.projectMultiSelect.filterValue = '';
+      this.projectMultiSelect.onFilterInputChange({ target: { value: '' } });
+    }
+        this.onStatusFilterChange();
+  }
+clearProjectFilters() {
+      if (this.vpMultiSelectProj) {
+      this.vpMultiSelectProj.filterValue = '';
+      this.vpMultiSelectProj.onFilterInputChange({ target: { value: '' } });
+    }
+      if (this.ProjMultiSelectProj) {
+      this.ProjMultiSelectProj.filterValue = '';
+      this.ProjMultiSelectProj.onFilterInputChange({ target: { value: '' } });
+    }
+    this.selectedProjVP = [];
+    this.selectedProjectProj = null;
+
+        this.onProjFilterChange();
+  }
+clearVPFilters() {
+      if (this.vpMultiSelectVp) {
+      this.vpMultiSelectVp.filterValue = '';
+      this.vpMultiSelectVp.onFilterInputChange({ target: { value: '' } });
+    }
+      if (this.ProjMultiSelectVp) {
+      this.ProjMultiSelectVp.filterValue = '';
+      this.ProjMultiSelectVp.onFilterInputChange({ target: { value: '' } });
+    }
+    this.selectedVPOnVp = [];
+    this.selectedProjectVP = null;
+
+        this.onVpFilterChange();
+  }
+
+  clearWhoFilters() {
+    this.selectedVP = [];
+    this.selectedProjectInWho = null;
       if (this.vpMultiSelect) {
       this.vpMultiSelect.filterValue = '';
       this.vpMultiSelect.onFilterInputChange({ target: { value: '' } });
@@ -525,10 +657,11 @@ clearFilters() {
       this.whoMultiSelect.onFilterInputChange({ target: { value: '' } });
     }
     this.selectedWho = [];
-    this.selectedStatus = [];
-
-    this.onFilterChange();
+    this.selectedWhoProject = [];
+    this.selectedStatusInWho = [];
+    this.onWhoFilterChange();
   }
+
   projectsByVPTotal(): number {
     if (!this.projectsByVPChartData?.datasets) return 0;
     return this.projectsByVPChartData.datasets.reduce((total: any, ds: any) => 
